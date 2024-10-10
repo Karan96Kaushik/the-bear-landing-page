@@ -33,10 +33,11 @@ const Home = () => {
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 1, duration: 0.8 }}
+          className="z-[100]"
         >
           <motion.a
             href="/explore"
-            className="relative inline-block px-6 py-3 text-gray-900 font-bold rounded-lg overflow-hidden z-[100]"
+            className="relative inline-block px-6 py-3 text-gray-900 font-bold rounded-lg overflow-hidden"
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.95 }}
             initial={{ background: 'linear-gradient(90deg, #F59E0B, #D97706)' }}
@@ -44,22 +45,21 @@ const Home = () => {
           >
             {/* Animated Gradient Background */}
             <motion.div
-              className="absolute inset-0 w-full h-full bg-gradient-to-r from-yellow-500 to-yellow-600"
+              className="absolute inset-0 w-full h-full bg-gradient-to-r from-yellow-500 to-yellow-600 "
               whileHover={{ x: 0 }}
               animate={{ x: [0, 100, 0] }}
               transition={{ duration: 1.5, ease: 'easeInOut', repeat: Infinity }}
             ></motion.div>
 
             {/* Glowing Border Effect */}
-            <div className="absolute inset-0 w-full h-full border-2 border-yellow-500 rounded-lg opacity-0 hover:opacity-100 transition-opacity duration-300"></div>
+            <div className="absolute inset-0 w-full h-full border-2 border-yellow-500 rounded-lg opacity-0 hover:opacity-100 transition-opacity duration-300 -z-5"></div>
 
             {/* Text Content */}
             <div className="relative flex items-center justify-center space-x-2">
-              <span className="z-10">Explore Now</span>
+              <span>Explore Now</span>
               
               {/* Animated Arrow */}
               <motion.div
-                className="z-10"
                 initial={{ x: -5 }}
                 animate={{ x: [0, 5, 0] }}
                 transition={{ duration: 0.6, repeat: Infinity, ease: 'easeInOut' }}
