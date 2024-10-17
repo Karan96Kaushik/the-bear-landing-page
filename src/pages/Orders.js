@@ -128,7 +128,7 @@ function Orders() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <h2 className="text-2xl font-bold mb-6 text-center text-gray-900">Create New Order</h2>
+        <h2 className="text-2xl font-bold mb-6 text-center text-gray-900">Create MIS Sell Order</h2>
 
         <form onSubmit={handleSubmit} className="flex flex-col space-y-4">
           {sheetFields.map(({ key, label, type }) => (
