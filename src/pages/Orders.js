@@ -7,7 +7,7 @@ import Autosuggest from 'react-autosuggest';
 
 const sheetFields = [
       { key: 'stockSymbol', label: 'Stock' },
-      { key: 'buyAtMarket', label: 'Buy At Market (MKT)', type: 'checkbox' },
+      { key: 'sellAtMarket', label: 'Sell At Market (MKT)', type: 'checkbox' },
       { key: 'sellPrice', label: 'Sell Price', type: 'number', validate: (value) => value > 0 },
       { key: 'stopLossPrice', label: 'Stop Loss', type: 'number', validate: (value) => value > 0 },
       { key: 'targetPrice', label: 'Target', type: 'number', validate: (value) => value > 0 },
@@ -35,8 +35,8 @@ function Orders() {
     setFormData((prevData) => {
       const newData = { ...prevData, [key]: checked };
       
-      // Clear and disable sell price when buyAtMarket is checked
-      if (key === 'buyAtMarket' && checked) {
+      // Clear and disable sell price when sellAtMarket is checked
+      if (key === 'sellAtMarket' && checked) {
         newData.sellPrice = '';
       }
       
@@ -51,7 +51,7 @@ function Orders() {
     // Validate inputs
     const errors = sheetFields.reduce((acc, field) => {
       if (field.validate && !field.validate(formData[field.key])) {
-        if (field.key === 'sellPrice' && !formData.buyAtMarket) 
+        if (field.key === 'sellPrice' && !formData.sellAtMarket) 
           acc[field.key] = `Invalid ${field.label}`;
       }
       return acc;
@@ -173,10 +173,10 @@ function Orders() {
                   name={key}
                   value={formData[key] || ''}
                   onChange={handleInputChange}
-                  required={key !== 'sellPrice' || !formData.buyAtMarket}
-                  disabled={key === 'sellPrice' && formData.buyAtMarket}
+                  required={key !== 'sellPrice' || !formData.sellAtMarket}
+                  disabled={key === 'sellPrice' && formData.sellAtMarket}
                   className={`p-2 border rounded-lg focus:outline-none focus:border-yellow-500 ${
-                    key === 'sellPrice' && formData.buyAtMarket ? 'bg-gray-100 cursor-not-allowed' : ''
+                    key === 'sellPrice' && formData.sellAtMarket ? 'bg-gray-100 cursor-not-allowed' : ''
                   }`}
                 />
               )}
