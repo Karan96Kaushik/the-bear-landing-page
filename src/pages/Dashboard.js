@@ -115,7 +115,8 @@ const Dashboard = () => {
 
         let orders = orderResponse.orders.map(o => ({
             ...o,
-            order_timestamp_ist: moment(o.order_timestamp).add(5.5,'h').format('YYYY-MM-DD HH:mm:ss')
+            order_timestamp_ist: moment(o.order_timestamp).add(5.5,'h').format('YYYY-MM-DD HH:mm:ss'),
+            order_timestamp: +new Date(o.order_timestamp),
         }));
         setOrdersData(orders);
 
@@ -184,23 +185,34 @@ const Dashboard = () => {
       annotation: {
         annotations: ordersData
           ?.filter(order => order.tradingsymbol === selectedStock && order.status === 'COMPLETE')
-          .map(order => ({
-            type: 'line',
-            xMin: new Date(order.order_timestamp),
-            xMax: new Date(order.order_timestamp),
-            borderColor: order.transaction_type === 'BUY' ? 'green' : 'red',
-            borderWidth: 2,
-            label: {
-              content: `${order.transaction_type} at ${order.average_price.toFixed(2)}`,
-              display: true,
-              position: 'start',
-              backgroundColor: order.transaction_type === 'BUY' ? 'green' : 'red',
-              font: {
-                size: 12
-              },
-              padding: 4
+          .map(order => {
+            const orderTimestamp = order.order_timestamp;
+            const chartStartTime = yahooData?.chart.result[0].timestamp[0] * 1000;
+            const chartEndTime = yahooData?.chart.result[0].timestamp[yahooData.chart.result[0].timestamp.length - 1] * 1000;
+            
+            // Only include annotations within the chart's time range
+            if (orderTimestamp >= chartStartTime && orderTimestamp <= chartEndTime) {
+              return {
+                type: 'line',
+                xMin: orderTimestamp,
+                xMax: orderTimestamp,
+                borderColor: order.transaction_type === 'BUY' ? 'green' : 'red',
+                borderWidth: 2,
+                label: {
+                  content: `${order.transaction_type} at ${order.average_price.toFixed(2)}`,
+                  display: true,
+                  position: 'start',
+                  backgroundColor: order.transaction_type === 'BUY' ? 'green' : 'red',
+                  font: {
+                    size: 12
+                  },
+                  padding: 4
+                }
+              };
             }
-          }))
+            return null;
+          })
+          .filter(Boolean) // Remove any null entries
       }
     }
   };
