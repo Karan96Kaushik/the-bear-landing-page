@@ -64,7 +64,11 @@ function Orders() {
     }
 
     try {
-      await postAuthorizedData('/orders/create-sell-orders', formData);
+        const _formData = {
+            ...formData,
+            sellPrice: formData.sellAtMarket ? 'MKT' : formData.sellPrice
+        }
+      await postAuthorizedData('/orders/create-sell-orders', _formData);
       console.log('Form submitted:', formData);
       toast.success('Order submitted successfully!');
       setFormData({});
