@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // Base URL for API
-const API_URL = 'http://localhost:9000';
+const API_URL =  '/api/';
 
 /**
  * Login user API call

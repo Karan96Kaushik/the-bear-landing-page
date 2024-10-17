@@ -2,7 +2,7 @@ import axios from 'axios';
 import { getToken } from './auth';
 
 // Base URL for API
-const API_URL = 'http://localhost:9000';
+const API_URL =  '/api/';
 
 /**
  * Fetch data with authorization

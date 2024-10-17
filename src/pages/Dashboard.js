@@ -14,7 +14,6 @@ import {
 } from 'chart.js';
 import 'chartjs-adapter-date-fns';
 import { fetchAuthorizedData } from '../api/api';
-import axios from 'axios';
 import { getDataFromYahoo } from '../api/external';
 import yahooData from '../samples/yahoo-charts.json';
 import { CandlestickController, CandlestickElement } from 'chartjs-chart-financial';
@@ -70,7 +69,7 @@ const Dashboard = () => {
         let _endDate = new Date(endDate);
 
         const [yahooResponse] = await Promise.all([
-          fetchAuthorizedData(`/api/dashboard/yahoo?symbol=${selectedStock}&interval=${selectedInterval}&startDate=${_startDate.toISOString()}&endDate=${_endDate.toISOString()}`)
+          fetchAuthorizedData(`/dashboard/yahoo?symbol=${selectedStock}&interval=${selectedInterval}&startDate=${_startDate.toISOString()}&endDate=${_endDate.toISOString()}`)
         ]);
         setYahooData(yahooResponse);
         setLoading(false);
@@ -90,7 +89,7 @@ const Dashboard = () => {
         let _endDate = new Date(endDate);
 
         const [orderResponse] = await Promise.all([
-          fetchAuthorizedData(`/api/dashboard/orders`)
+          fetchAuthorizedData(`/dashboard/orders`)
         ]);
         setOrdersData(orderResponse);
         setLoading(false);
