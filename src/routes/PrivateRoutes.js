@@ -3,22 +3,29 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import Profile from '../pages/Profile';
 import Dashboard from '../pages/Dashboard';
+import Orders from '../pages/Orders';
+
+const routes = [
+  { path: '/profile', Component: Profile, name: 'Profile' },
+  { path: '/dashboard', Component: Dashboard, name: 'Dashboard' },
+  { path: '/orders', Component: Orders, name: 'Orders' }
+];
 
 const PrivateRoutes = () => {
   const isAuthenticated = useSelector(state => state.auth.isAuthenticated);
 
   return (
     <Routes>
-      <Route
-        path="/profile"
-        element={isAuthenticated ? <Profile /> : <Navigate to="/login" replace />}
-      />
-      <Route
-        path="/dashboard"
-        element={isAuthenticated ? <Dashboard /> : <Navigate to="/login" replace />}
-      />
+      {routes.map(({ path, Component }) => (
+        <Route
+          key={path}
+          path={path}
+          element={isAuthenticated ? <Component /> : <Navigate to="/login" replace />}
+        />
+      ))}
     </Routes>
   );
 };
 
+export {routes as privateRoutes}
 export default PrivateRoutes;

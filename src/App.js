@@ -5,7 +5,9 @@ import store from './redux/store';
 import PublicRoutes from './routes/PublicRoutes';
 import PrivateRoutes from './routes/PrivateRoutes';
 import MobileMenu from './components/MobileMenu';
-
+import { Toaster } from 'react-hot-toast';
+import { privateRoutes } from './routes/PrivateRoutes';
+import { publicRoutes } from './routes/PublicRoutes';
 function App() {
   const [navbar, setNavbar] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -40,6 +42,21 @@ function App() {
 
   return (
     <Provider store={store}>
+      <Toaster
+        position="bottom-left"
+        toastOptions={{
+          success: {
+            style: {
+              background: 'green',
+            },
+          },
+          error: {
+            style: {
+              background: '#e15549',
+            },
+          },
+        }}
+      />
       <Router>
         {/* Navbar */}
         <header className={`fixed w-full z-50 transition-all duration-300 ${navbar ? 'bg-gray-900 shadow-lg' : 'bg-transparent'}`}>
@@ -49,13 +66,13 @@ function App() {
               <h1 className="text-2xl font-bold text-white">The Bear</h1>
             </Link>
             <ul className="hidden md:flex space-x-6">
-              {(isAuthenticated ? ['Profile', 'Dashboard'] :  ['Home', 'About', 'Explore', 'Contact', 'Login']).map((item) => (
+              {(isAuthenticated ? privateRoutes : publicRoutes).map((item) => (
                 <li key={item}>
                   <Link
-                    to={item === 'Home' ? '/' : `/${item.toLowerCase()}`}
+                    to={item.path}
                     className="text-white hover:text-yellow-500 transition duration-300 font-medium"
                   >
-                    {item}
+                    {item.name}
                   </Link>
                 </li>
               ))}

@@ -20,6 +20,7 @@ import 'react-datepicker/dist/react-datepicker.css';
 import GeneralTable from '../components/GeneralTable';
 import annotationPlugin from 'chartjs-plugin-annotation';
 import moment from 'moment';
+import {toast} from 'react-hot-toast'
 
 ChartJS.register(
   CategoryScale,
@@ -68,25 +69,25 @@ const Dashboard = () => {
   const [ordersData, setOrdersData] = useState(null);
   const [sheetData, setSheetData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [selectedStock, setSelectedStock] = useState('');
   const [selectedInterval, setSelectedInterval] = useState('15m');
   const [startDate, setStartDate] = useState(new Date(Date.now() - 30 * 24 * 60 * 60 * 1000));
   const [endDate, setEndDate] = useState(new Date());
 
   useEffect(() => {
+    if (selectedStock.length < 2) return;
     const fetchYahooData = async () => {
       try {
         let _startDate = new Date(startDate);
         let _endDate = new Date(endDate);
 
         const [yahooResponse] = await Promise.all([
-          fetchAuthorizedData(`/dashboard/yahoo?symbol=${selectedStock}&interval=${selectedInterval}&startDate=${_startDate.toISOString()}&endDate=${_endDate.toISOString()}`)
+          fetchAuthorizedData(`/data/yahoo?symbol=${selectedStock}&interval=${selectedInterval}&startDate=${_startDate.toISOString()}&endDate=${_endDate.toISOString()}`)
         ]);
         setYahooData(yahooResponse);
         setLoading(false);
       } catch (err) {
-        setError('Failed to fetch data');
+        toast.error('Failed to fetch data');
         setLoading(false);
       }
     };
@@ -101,7 +102,7 @@ const Dashboard = () => {
         let _endDate = new Date(endDate);
 
         let [orderResponse] = await Promise.all([
-          fetchAuthorizedData(`/dashboard/orders`)
+          fetchAuthorizedData(`/orders/kite-orders`)
         ]);
 
         let sheetData = orderResponse.sheetData.map(o => ({
@@ -120,7 +121,7 @@ const Dashboard = () => {
 
         setLoading(false);
       } catch (err) {
-        setError('Failed to fetch data');
+        toast.error('Failed to fetch data');
         setLoading(false);
       }
     };
