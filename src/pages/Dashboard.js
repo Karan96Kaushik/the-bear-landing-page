@@ -21,6 +21,7 @@ import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import GeneralTable from '../components/GeneralTable';
 import annotationPlugin from 'chartjs-plugin-annotation';
+import moment from 'moment';
 
 ChartJS.register(
   CategoryScale,
@@ -37,12 +38,12 @@ ChartJS.register(
   annotationPlugin
 );
 
-const stocks = ['', 'MOIL', 'KNRCON','KIRLOSBROS'];
+const stocks = [''];
 const intervals = ['1m', '5m', '15m', '1d'];
 
 const ordersFields = [
   { key: 'tradingsymbol', label: 'Symbol' },
-  { key: 'order_timestamp', label: 'Date' },
+  { key: 'order_timestamp_ist', label: 'Date' },
   { key: 'quantity', label: 'Quantity' },
   { key: 'average_price', label: 'Price' },
   { key: 'trigger_price', label: 'Trigger' },
@@ -88,9 +89,13 @@ const Dashboard = () => {
         let _startDate = new Date(startDate);
         let _endDate = new Date(endDate);
 
-        const [orderResponse] = await Promise.all([
+        let [orderResponse] = await Promise.all([
           fetchAuthorizedData(`/dashboard/orders`)
         ]);
+        orderResponse = orderResponse.map(o => ({
+            ...o,
+            order_timestamp_ist: moment(o.order_timestamp).add(5.5,'h').format('YYYY-MM-DD HH:mm:ss')
+        }));
         setOrdersData(orderResponse);
         setLoading(false);
       } catch (err) {
@@ -137,7 +142,13 @@ const Dashboard = () => {
       x: {
         type: 'time',
         time: {
-          unit: selectedInterval === '10m' ? 'hour' : 'day'
+          unit: selectedInterval.endsWith('m') ? 'hour' : 'day',
+          displayFormats: {
+            hour: 'HH:mm',
+            day: 'MMM d'
+          },
+          tooltipFormat: 'MMM d, yyyy HH:mm',
+          timezone: 'Asia/Kolkata' 
         }
       },
       y: {
@@ -158,9 +169,14 @@ const Dashboard = () => {
             borderColor: order.transaction_type === 'BUY' ? 'green' : 'red',
             borderWidth: 2,
             label: {
-              content: `${order.transaction_type} at ${order.average_price}`,
-              enabled: true,
-              position: 'left'
+              content: `${order.transaction_type} at ${order.average_price.toFixed(2)}`,
+              display: true,
+              position: 'start',
+              backgroundColor: order.transaction_type === 'BUY' ? 'green' : 'red',
+              font: {
+                size: 12
+              },
+              padding: 4
             }
           }))
       }
@@ -181,7 +197,7 @@ const Dashboard = () => {
               onChange={(e) => setSelectedStock(e.target.value)}
               className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
             >
-              {stocks.map((stock) => (
+              {[...stocks, ...new Set(ordersData?.map(o => o.tradingsymbol))].map((stock) => (
                 <option key={stock} value={stock}>{stock}</option>
               ))}
             </select>
