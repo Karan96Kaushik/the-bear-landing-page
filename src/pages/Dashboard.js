@@ -14,8 +14,6 @@ import {
 } from 'chart.js';
 import 'chartjs-adapter-date-fns';
 import { fetchAuthorizedData } from '../api/api';
-import { getDataFromYahoo } from '../api/external';
-import yahooData from '../samples/yahoo-charts.json';
 import { CandlestickController, CandlestickElement } from 'chartjs-chart-financial';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
@@ -60,8 +58,8 @@ const sheetFields = [
   { key: 'targetPrice', label: 'Target' },
   { key: 'quantity', label: 'Quantity' },
   { key: 'lastAction', label: 'Last Action' },
-  { key: 'ignore', label: 'Ignore' },
   { key: 'reviseSL', label: 'Revise SL' },
+  { key: 'ignore', label: 'Ignore' },
 ];
 
 const Dashboard = () => {
@@ -218,6 +216,7 @@ const Dashboard = () => {
   };
 
   return (
+    <div className="bg-gray-900">
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-6">Dashboard</h1>
 
@@ -296,6 +295,7 @@ const Dashboard = () => {
     <div className="bg-white p-6 rounded-lg shadow mb-8">
         <h2 className="text-xl font-semibold mb-4">Sheet Data</h2>
         <GeneralTable data={sheetData} fields={sheetFields} />
+    </div>
     </div>
     </div>
   );

@@ -8,6 +8,20 @@ import MobileMenu from './components/MobileMenu';
 
 function App() {
   const [navbar, setNavbar] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  useEffect(() => {
+    const unsubscribe = store.subscribe(() => {
+      const authState = store.getState().auth;
+      setIsAuthenticated(authState.isAuthenticated);
+    });
+
+    // Initial check
+    const authState = store.getState().auth;
+    setIsAuthenticated(authState.isAuthenticated);
+
+    return () => unsubscribe();
+  }, []);
 
   const changeBackground = () => {
     if (window.scrollY >= 80) {
@@ -35,7 +49,7 @@ function App() {
               <h1 className="text-2xl font-bold text-white">The Bear</h1>
             </Link>
             <ul className="hidden md:flex space-x-6">
-              {['Home', 'About', 'Explore', 'Contact', 'Profile', 'Dashboard'].map((item) => (
+              {(isAuthenticated ? ['Profile', 'Dashboard'] :  ['Home', 'About', 'Explore', 'Contact', 'Login']).map((item) => (
                 <li key={item}>
                   <Link
                     to={item === 'Home' ? '/' : `/${item.toLowerCase()}`}

@@ -8,6 +8,8 @@ const Profile = () => {
   const navigate = useNavigate();
   const user = useSelector(state => state.auth.user);
 
+  console.debug(user);
+
   const handleLogout = () => {
     dispatch(logout());
     navigate('/login');
@@ -16,10 +18,10 @@ const Profile = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-900 text-white">
       <div className="bg-gray-800 p-8 rounded-lg shadow-lg text-center">
-        <h2 className="text-3xl font-bold mb-4">Welcome, {user?.name}</h2>
+        <h2 className="text-3xl font-bold mb-4">Welcome, {user?.username}</h2>
         <div className="mb-6 text-left">
           <p><strong>Email:</strong> {user?.email}</p>
-          {user?.username && <p><strong>Username:</strong> {user?.username}</p>}
+          {/* {user?.username && <p><strong>Username:</strong> {user?.username}</p>} */}
           {/* Add more user information fields as needed */}
         </div>
         <button 
