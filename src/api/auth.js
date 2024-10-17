@@ -6,18 +6,20 @@ const API_URL = 'http://localhost:9000';
 /**
  * Login user API call
  * @param {Object} credentials - The user's login credentials (email, password)
- * @returns {Promise} - Resolves with the user token or error
+ * @returns {Promise} - Resolves with the user token and data or error
  */
 export const loginUser = async (credentials) => {
   try {
     const response = await axios.post(`${API_URL}/login`, credentials);
 
-    // Save token to localStorage (or cookies)
-    localStorage.setItem('userToken', response.data.token);
+    const { accessToken, user } = response.data;
+    localStorage.setItem('thebearToken', accessToken);
 
-    return response.data;
+    return {
+      token: accessToken,
+      user: user
+    };
   } catch (error) {
-    // Throw error for UI to handle
     throw new Error('Login failed. Please check your credentials.');
   }
 };
@@ -27,7 +29,7 @@ export const loginUser = async (credentials) => {
  * @returns {string | null} - The user's token or null if not logged in
  */
 export const getToken = () => {
-  return localStorage.getItem('userToken');
+  return localStorage.getItem('thebearToken');
 };
 
 /**
@@ -35,5 +37,5 @@ export const getToken = () => {
  * Removes token from storage
  */
 export const logoutUser = () => {
-  localStorage.removeItem('userToken');
+  localStorage.removeItem('thebearToken');
 };

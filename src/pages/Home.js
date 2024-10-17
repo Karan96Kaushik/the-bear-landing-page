@@ -86,7 +86,7 @@ const Home = () => {
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8 }}
             >
-              <img src="/path-to-icon1.svg" alt="Feature 1" className="mx-auto mb-4" />
+              <img src="/path-to-icon1.svg" alt="" className="mx-auto mb-4" />
               <h3 className="text-2xl font-bold mb-2">Manage Projects</h3>
               <p className="text-gray-400">Easily keep track of your projects, deadlines, and teams with powerful management tools.</p>
             </motion.div>
@@ -97,7 +97,7 @@ const Home = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8 }}
             >
-              <img src="/path-to-icon2.svg" alt="Feature 2" className="mx-auto mb-4" />
+              <img src="/path-to-icon2.svg" alt="" className="mx-auto mb-4" />
               <h3 className="text-2xl font-bold mb-2">Connect with Teams</h3>
               <p className="text-gray-400">Collaborate with your team in real-time, share documents, and ensure everyone stays on the same page.</p>
             </motion.div>
@@ -108,7 +108,7 @@ const Home = () => {
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8 }}
             >
-              <img src="/path-to-icon3.svg" alt="Feature 3" className="mx-auto mb-4" />
+              <img src="/path-to-icon3.svg" alt="" className="mx-auto mb-4" />
               <h3 className="text-2xl font-bold mb-2">Grow Your Business</h3>
               <p className="text-gray-400">Leverage analytics and insights to grow your business and make data-driven decisions with ease.</p>
             </motion.div>

@@ -1,18 +1,21 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import Profile from '../pages/Profile';
-
-// Fake authentication function (replace with actual logic)
-const isAuthenticated = () => {
-  return localStorage.getItem('userToken') !== null;
-};
+import Dashboard from '../pages/Dashboard';
 
 const PrivateRoutes = () => {
+  const isAuthenticated = useSelector(state => state.auth.isAuthenticated);
+
   return (
     <Routes>
       <Route
         path="/profile"
-        element={isAuthenticated() ? <Profile /> : <Navigate to="/login" replace />}
+        element={isAuthenticated ? <Profile /> : <Navigate to="/login" replace />}
+      />
+      <Route
+        path="/dashboard"
+        element={isAuthenticated ? <Dashboard /> : <Navigate to="/login" replace />}
       />
     </Routes>
   );

@@ -1,12 +1,18 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
+import { useDispatch } from 'react-redux';
 import { loginUser } from '../api/auth'; // Import the API helper
+import { setUser } from '../redux/actions/authActions'; // Update this line
+import { useNavigate } from 'react-router-dom';
 
 const Login = () => {
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -14,11 +20,11 @@ const Login = () => {
     setError(null);
 
     try {
-      const response = await loginUser({ email, password });
-      console.log(response);
-      // Redirect or do something with the response
+      const { user, token } = await loginUser({ username, password });
+      dispatch(setUser(user, token));
+      navigate('/dashboard');
     } catch (err) {
-      setError('Invalid email or password. Please try again.');
+      setError('Invalid username or password. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -47,13 +53,13 @@ const Login = () => {
         <form onSubmit={handleLogin}>
           {/* Email Input */}
           <div className="mb-4">
-            <label htmlFor="email" className="block text-sm font-bold text-gray-700">Email</label>
+            <label htmlFor="username" className="block text-sm font-bold text-gray-700">Username</label>
             <input 
-              type="email" 
-              id="email" 
+              type="username" 
+              id="username" 
               className="w-full p-3 mt-1 border rounded-lg focus:outline-none focus:border-yellow-500"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
               required
             />
           </div>
