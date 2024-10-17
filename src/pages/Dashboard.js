@@ -52,10 +52,23 @@ const ordersFields = [
   { key: 'status', label: 'Status' }
 ];
 
+const sheetFields = [
+{ key: 'id', label: 'ID' },
+  { key: 'stockSymbol', label: 'Stock' },
+  { key: 'sellPrice', label: 'Sell Price' },
+  { key: 'stopLossPrice', label: 'Stop Loss' },
+  { key: 'targetPrice', label: 'Target' },
+  { key: 'quantity', label: 'Quantity' },
+  { key: 'lastAction', label: 'Last Action' },
+  { key: 'ignore', label: 'Ignore' },
+  { key: 'reviseSL', label: 'Revise SL' },
+];
+
 const Dashboard = () => {
   const [dashboardData, setDashboardData] = useState(null);
   const [yahooData, setYahooData] = useState(null);
   const [ordersData, setOrdersData] = useState(null);
+  const [sheetData, setSheetData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedStock, setSelectedStock] = useState('');
@@ -92,11 +105,20 @@ const Dashboard = () => {
         let [orderResponse] = await Promise.all([
           fetchAuthorizedData(`/dashboard/orders`)
         ]);
-        orderResponse = orderResponse.map(o => ({
+
+        let sheetData = orderResponse.sheetData.map(o => ({
+            ...o,
+            reviseSL: o.reviseSL && '🔄',
+            ignore: o.ignore && '🚫',
+        }));
+        setSheetData(sheetData);
+
+        let orders = orderResponse.orders.map(o => ({
             ...o,
             order_timestamp_ist: moment(o.order_timestamp).add(5.5,'h').format('YYYY-MM-DD HH:mm:ss')
         }));
-        setOrdersData(orderResponse);
+        setOrdersData(orders);
+
         setLoading(false);
       } catch (err) {
         setError('Failed to fetch data');
@@ -197,7 +219,7 @@ const Dashboard = () => {
               onChange={(e) => setSelectedStock(e.target.value)}
               className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
             >
-              {[...stocks, ...new Set(ordersData?.map(o => o.tradingsymbol))].map((stock) => (
+              {[...stocks, ...new Set(ordersData?.map(o => o.tradingsymbol)), ...new Set(sheetData?.map(o => o.stockSymbol))].map((stock) => (
                 <option key={stock} value={stock}>{stock}</option>
               ))}
             </select>
@@ -254,10 +276,15 @@ const Dashboard = () => {
         {!selectedStock && <p className="text-gray-500">Please select a stock</p>}
       </div>
 
-      <div className="bg-white p-6 rounded-lg shadow">
+      <div className="bg-white p-6 rounded-lg shadow mb-8">
         <h2 className="text-xl font-semibold mb-4">Recent Transactions</h2>
         <GeneralTable data={selectedStock ? ordersData?.filter(order => order.tradingsymbol === selectedStock) : ordersData} fields={ordersFields} />
       </div>
+
+    <div className="bg-white p-6 rounded-lg shadow mb-8">
+        <h2 className="text-xl font-semibold mb-4">Sheet Data</h2>
+        <GeneralTable data={sheetData} fields={sheetFields} />
+    </div>
     </div>
   );
 };
