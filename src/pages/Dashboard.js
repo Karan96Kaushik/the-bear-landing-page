@@ -172,12 +172,14 @@ const Dashboard = () => {
       y: {
         beginAtZero: false,
         min: (context) => {
-          const data = context.chart.data.datasets[0].data;
+          const data = context.chart.data?.datasets[0].data;
+          if (!data) return 0;
           const validLows = data.map(d => d.l).filter(val => val !== null && val !== 0);
           return Math.min(...validLows) * 0.998; // 0.5% below the lowest point
         },
         max: (context) => {
-          const data = context.chart.data.datasets[0].data;
+          const data = context.chart.data?.datasets[0].data;
+          if (!data) return 0;
           const validHighs = data.map(d => d.h).filter(val => val !== null && val !== 0);
           return Math.max(...validHighs) * 1.002; // 0.5% above the highest point
         }
@@ -239,8 +241,8 @@ const Dashboard = () => {
 
   const handleChartUpdate = (chart) => {
     const { min, max } = chart.scales.x;
-    setStartDate(new Date(min));
-    setEndDate(new Date(max));
+    // setStartDate(new Date(min));
+    // setEndDate(new Date(max));
   };
 
   return (
