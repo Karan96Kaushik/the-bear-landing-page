@@ -48,6 +48,7 @@ const ordersFields = [
   { key: 'trigger_price', label: 'Trigger' },
   { key: 'order_type', label: 'Type' },
   { key: 'transaction_type', label: 'B/S' },
+  { key: 'placed_by', label: 'Placed By' },
   { key: 'status', label: 'Status' }
 ];
 
@@ -80,6 +81,9 @@ const Dashboard = () => {
       try {
         let _startDate = new Date(startDate);
         let _endDate = new Date(endDate);
+
+        _startDate.setHours(0, 0, 0, 0);
+        _endDate.setHours(23, 59, 59, 999);
 
         const [yahooResponse] = await Promise.all([
           fetchAuthorizedData(`/data/yahoo?symbol=${selectedStock}&interval=${selectedInterval}&startDate=${_startDate.toISOString()}&endDate=${_endDate.toISOString()}`)

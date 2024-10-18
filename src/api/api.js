@@ -1,8 +1,16 @@
 import axios from 'axios';
 import { getToken } from './auth';
+import { logout } from '../redux/actions/authActions';
 
 // Base URL for API
 const API_URL =  '/api';
+
+// New function to handle unauthorized errors
+const handleUnauthorizedError = () => {
+  // You can add additional logic here, such as clearing the token or redirecting to login
+  logout()
+  throw new Error('Unauthorized. Please log in again.');
+};
 
 /**
  * Fetch data with authorization
@@ -26,7 +34,7 @@ export const fetchAuthorizedData = async (endpoint) => {
     return response.data;
   } catch (error) {
     if (error.response && error.response.status === 401) {
-      throw new Error('Unauthorized. Please log in again.');
+      handleUnauthorizedError();
     }
     throw new Error('Failed to fetch data. Please try again later.');
   }
@@ -56,7 +64,7 @@ export const postAuthorizedData = async (endpoint, data) => {
     return response.data;
   } catch (error) {
     if (error.response && error.response.status === 401) {
-      throw new Error('Unauthorized. Please log in again.');
+      handleUnauthorizedError();
     }
     throw error;
   }
