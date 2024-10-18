@@ -4,11 +4,13 @@ import { useSelector } from 'react-redux';
 import Profile from '../pages/Profile';
 import Dashboard from '../pages/Dashboard';
 import Orders from '../pages/Orders';
+import Simulator from '../pages/Simulator';
 
 const routes = [
   { path: '/profile', Component: Profile, name: 'Profile' },
   { path: '/dashboard', Component: Dashboard, name: 'Dashboard' },
-  { path: '/orders', Component: Orders, name: 'Orders' }
+  { path: '/orders', Component: Orders, name: 'Orders' },
+  { path: '/simulator', Component: Simulator, name: 'Simulator' }
 ];
 
 const PrivateRoutes = () => {
