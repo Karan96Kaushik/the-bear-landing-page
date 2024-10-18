@@ -21,6 +21,7 @@ import GeneralTable from '../components/GeneralTable';
 import annotationPlugin from 'chartjs-plugin-annotation';
 import moment from 'moment';
 import {toast} from 'react-hot-toast'
+import zoomPlugin from 'chartjs-plugin-zoom';
 
 ChartJS.register(
   CategoryScale,
@@ -34,7 +35,8 @@ ChartJS.register(
   CandlestickController,
   CandlestickElement,
   TimeScale,
-  annotationPlugin
+  annotationPlugin,
+  zoomPlugin
 );
 
 const stocks = [''];
@@ -79,14 +81,8 @@ const Dashboard = () => {
     if (selectedStock.length < 2) return;
     const fetchYahooData = async () => {
       try {
-        let _startDate = new Date(startDate);
-        let _endDate = new Date(endDate);
-
-        _startDate.setHours(0, 0, 0, 0);
-        _endDate.setHours(23, 59, 59, 999);
-
         const [yahooResponse] = await Promise.all([
-          fetchAuthorizedData(`/data/yahoo?symbol=${selectedStock}&interval=${selectedInterval}&startDate=${_startDate.toISOString()}&endDate=${_endDate.toISOString()}`)
+          fetchAuthorizedData(`/data/yahoo?symbol=${selectedStock}&interval=${selectedInterval}&startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}`)
         ]);
         setYahooData(yahooResponse);
         setLoading(false);
@@ -97,7 +93,7 @@ const Dashboard = () => {
     };
 
     fetchYahooData();    
-  }, [selectedStock, startDate, endDate]);
+  }, [selectedStock, startDate, endDate, selectedInterval]);
 
   useEffect(() => {
     const fetchBaseData = async () => {
@@ -137,15 +133,11 @@ const Dashboard = () => {
     let _startDate = new Date(startDate);
     let _endDate = new Date(endDate);
 
-    if (selectedInterval.endsWith('m') && !selectedInterval.includes('d')) {
+    if (selectedInterval.endsWith('m') && !selectedInterval.includes('d') && (_endDate - _startDate > 24 * 60 * 60 * 1000)) {
       _endDate = new Date();
       _startDate = new Date(_endDate.getTime() - 24 * 60 * 60 * 1000);
       setStartDate(_startDate);
       setEndDate(_endDate);
-    } else {
-      _startDate.setHours(0, 0, 0, 0);
-      setStartDate(_startDate);
-
     }
   }, [selectedInterval])
 
@@ -178,7 +170,17 @@ const Dashboard = () => {
         }
       },
       y: {
-        beginAtZero: false
+        beginAtZero: false,
+        min: (context) => {
+          const data = context.chart.data.datasets[0].data;
+          const validLows = data.map(d => d.l).filter(val => val !== null && val !== 0);
+          return Math.min(...validLows) * 0.998; // 0.5% below the lowest point
+        },
+        max: (context) => {
+          const data = context.chart.data.datasets[0].data;
+          const validHighs = data.map(d => d.h).filter(val => val !== null && val !== 0);
+          return Math.max(...validHighs) * 1.002; // 0.5% above the highest point
+        }
       }
     },
     plugins: {
@@ -216,8 +218,29 @@ const Dashboard = () => {
             return null;
           })
           .filter(Boolean) // Remove any null entries
-      }
+      },
+      zoom: {
+        pan: {
+          enabled: true,
+          mode: 'x',
+        },
+        zoom: {
+          wheel: {
+            enabled: true,
+          },
+          pinch: {
+            enabled: true,
+          },
+          mode: 'x',
+        },
+      },
     }
+  };
+
+  const handleChartUpdate = (chart) => {
+    const { min, max } = chart.scales.x;
+    setStartDate(new Date(min));
+    setEndDate(new Date(max));
   };
 
   return (
@@ -255,7 +278,7 @@ const Dashboard = () => {
           </div>
           <div className="w-full md:w-auto flex items-center">
             <div className="mr-4">
-              <label htmlFor="start-date" className="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
+              <label htmlFor="start-date" className="block text-sm font-medium text-gray-700 mb-1">Start Date & Time</label>
               <DatePicker
                 id="start-date"
                 selected={startDate}
@@ -264,13 +287,14 @@ const Dashboard = () => {
                 startDate={startDate}
                 endDate={endDate}
                 className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
-                showTimeSelect={selectedInterval === '10m'}
+                showTimeSelect
                 timeIntervals={15}
-                dateFormat={selectedInterval === '10m' ? "MMMM d, yyyy h:mm aa" : "MMMM d, yyyy"}
+                dateFormat="MMMM d, yyyy h:mm aa"
+                timeFormat="HH:mm"
               />
             </div>
             <div>
-              <label htmlFor="end-date" className="block text-sm font-medium text-gray-700 mb-1">End Date</label>
+              <label htmlFor="end-date" className="block text-sm font-medium text-gray-700 mb-1">End Date & Time</label>
               <DatePicker
                 id="end-date"
                 selected={endDate}
@@ -280,15 +304,28 @@ const Dashboard = () => {
                 endDate={endDate}
                 minDate={startDate}
                 className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
-                showTimeSelect={selectedInterval === '10m'}
+                showTimeSelect
                 timeIntervals={15}
-                dateFormat={selectedInterval === '10m' ? "MMMM d, yyyy h:mm aa" : "MMMM d, yyyy"}
+                dateFormat="MMMM d, yyyy h:mm aa"
+                timeFormat="HH:mm"
               />
             </div>
           </div>
         </div>
         <h2 className="text-xl font-semibold mb-4">{selectedStock} Stock Price</h2>
-        {selectedStock && <Chart type='candlestick' data={yahooChartData} options={candlestickOptions} />}
+        {selectedStock && (
+          <Chart
+            type='candlestick'
+            data={yahooChartData}
+            options={candlestickOptions}
+            plugins={[
+              {
+                id: 'chartUpdateHandler',
+                afterUpdate: (chart) => handleChartUpdate(chart),
+              },
+            ]}
+          />
+        )}
         {!selectedStock && <p className="text-gray-500">Please select a stock</p>}
       </div>
 
