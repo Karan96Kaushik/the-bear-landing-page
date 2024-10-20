@@ -79,11 +79,11 @@ const Dashboard = () => {
 
   const runSchedule = async () => {
     try {
-      const resp = window.confirm('This will rerun all the jobs. Are you sure?');
+      const resp = window.confirm('This will rerun the jobs for stocks without a "Last Action" in sheet. Are you sure?');
       if (!resp) return;
       setLoading(true);
       const response = await fetchAuthorizedData('/kite/run-init-schedule');
-      toast.success('Jobs run successfully');
+      toast.success('Jobs run successfully, please refresh the page to see the changes in sheet data');
     } catch (error) {
       toast.error('Failed to run jobs; ' + error?.message);
     } finally {
