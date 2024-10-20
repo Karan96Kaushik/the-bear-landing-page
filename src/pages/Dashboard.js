@@ -77,6 +77,20 @@ const Dashboard = () => {
   const [startDate, setStartDate] = useState(new Date(Date.now() - 30 * 24 * 60 * 60 * 1000));
   const [endDate, setEndDate] = useState(new Date());
 
+  const runSchedule = async () => {
+    try {
+      const resp = window.confirm('This will rerun all the jobs. Are you sure?');
+      if (!resp) return;
+      setLoading(true);
+      const response = await fetchAuthorizedData('/kite/run-init-schedule');
+      toast.success('Jobs run successfully');
+    } catch (error) {
+      toast.error('Failed to run jobs; ' + error?.message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
   useEffect(() => {
     if (selectedStock.length < 2) return;
     const fetchYahooData = async () => {
@@ -329,6 +343,19 @@ const Dashboard = () => {
           />
         )}
         {!selectedStock && <p className="text-gray-500">Please select a stock</p>}
+      </div>
+      <div className="mb-4">
+        <button
+          onClick={runSchedule}
+          disabled={loading}
+          className={`px-4 py-2 rounded ${
+            loading
+              ? 'bg-gray-300 cursor-not-allowed'
+              : 'bg-blue-500 hover:bg-blue-600 text-white'
+          }`}
+        >
+          {loading ? 'Running...' : 'Rerun Sheet Data Jobs'}
+        </button>
       </div>
 
       <div className="bg-white p-6 rounded-lg shadow mb-8">

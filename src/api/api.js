@@ -36,7 +36,7 @@ export const fetchAuthorizedData = async (endpoint) => {
     if (error.response && error.response.status === 401) {
       handleUnauthorizedError();
     }
-    throw new Error('Failed to fetch data. Please try again later.');
+    throw new Error( error?.message);
   }
 };
 
