@@ -98,7 +98,7 @@ const ShortSellingSimulatorPage = () => {
   const [isMarketOrder, setIsMarketOrder] = useState(true);
   const [updateStopLossFunctionText, setUpdateStopLossFunctionText] = useState(updateStopLossFunction_text);
   const [functionName, setFunctionName] = useState('');
-  const [editorHeight, setEditorHeight] = useState('200px');
+  const [editorHeight, setEditorHeight] = useState('400px');
   const [savedFunctions, setSavedFunctions] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [updateTargetPriceFunctionText, setUpdateTargetPriceFunctionText] = useState('');
