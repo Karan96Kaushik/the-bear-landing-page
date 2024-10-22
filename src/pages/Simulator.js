@@ -19,6 +19,7 @@ import 'ace-builds/src-noconflict/theme-monokai';
 import 'ace-builds/webpack-resolver';
 import 'ace-builds/src-noconflict/mode-javascript';
 
+import 'chartjs-adapter-date-fns';
 // Import the necessary mode and theme for the Ace editor
 
 ChartJS.register(
@@ -31,6 +32,8 @@ ChartJS.register(
   annotationPlugin,
   zoomPlugin
 );
+
+// Add this import at the top of the file
 
 // const updateStopLossFunction = (timestamps, i, high, low, open, close, stopLossPrice) => {
     // console.log(i, i % 15 , i > 15)
@@ -160,16 +163,30 @@ const ShortSellingSimulatorPage = () => {
   };
 
   const chartData = {
-    datasets: [{
+    datasets: [
+      {
         label: 'Stock Price',
         data: simulationResult?.data.map((d, i) => ({
-            x: d.time,
-            o: d.open,
-            h: d.high,
-            l: d.low,
-            c: d.close
+          x: d.time,
+          o: d.open,
+          h: d.high,
+          l: d.low,
+          c: d.close
         })) || [],
-    }]
+      },
+      {
+        label: 'SMA44',
+        data: simulationResult?.data.map((d) => ({
+          x: d.time,
+          y: d.sma44
+        })) || [],
+        type: 'line',
+        borderColor: 'rgba(255, 99, 132, 1)',
+        borderWidth: 1,
+        pointRadius: 0,
+        yAxisID: 'y',
+      }
+    ]
   };
 
   const candlestickOptions = {
