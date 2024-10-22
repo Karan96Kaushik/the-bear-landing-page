@@ -14,6 +14,7 @@ import zoomPlugin from 'chartjs-plugin-zoom';
 import AceEditor from 'react-ace';
 import Modal from 'react-modal'; // Add this import
 import { Tab } from '@headlessui/react'
+import { X, FileCode, Trash2 } from 'lucide-react'; // Add this import
 
 import 'ace-builds/src-noconflict/theme-monokai';
 import 'ace-builds/webpack-resolver';
@@ -103,6 +104,9 @@ const ShortSellingSimulatorPage = () => {
   const [updateTargetPriceFunctionText, setUpdateTargetPriceFunctionText] = useState('');
   const [updateTriggerPriceFunctionText, setUpdateTriggerPriceFunctionText] = useState(updateTriggerPriceFunction_text);
   const [activeTab, setActiveTab] = useState('stopLoss');
+  const [stopLossFunctionName, setStopLossFunctionName] = useState('');
+  const [targetPriceFunctionName, setTargetPriceFunctionName] = useState('');
+  const [triggerPriceFunctionName, setTriggerPriceFunctionName] = useState('');
 
   useEffect(() => {
     // Dynamically import the JavaScript mode
@@ -268,10 +272,11 @@ const ShortSellingSimulatorPage = () => {
 
   const saveFunction = async () => {
     try {
-      const functionType = activeTab === 'stopLoss' ? 'stopLoss' :
-                           activeTab === 'targetPrice' ? 'targetPrice' : 'triggerPrice';
+      const functionType = activeTab;
       const functionText = activeTab === 'stopLoss' ? updateStopLossFunctionText :
                            activeTab === 'targetPrice' ? updateTargetPriceFunctionText : updateTriggerPriceFunctionText;
+      const functionName = activeTab === 'stopLoss' ? stopLossFunctionName :
+                           activeTab === 'targetPrice' ? targetPriceFunctionName : triggerPriceFunctionName;
 
       await postAuthorizedData('/data/save-function', {
         name: functionName,
@@ -296,18 +301,36 @@ const ShortSellingSimulatorPage = () => {
     }
   };
 
-  const loadFunction = (functionCode, functionType) => {
+  const loadFunction = (functionCode, functionType, functionName) => {
     if (functionType === 'stopLoss') {
       setUpdateStopLossFunctionText(functionCode);
+      setStopLossFunctionName(functionName);
       setActiveTab('stopLoss');
     } else if (functionType === 'targetPrice') {
       setUpdateTargetPriceFunctionText(functionCode);
+      setTargetPriceFunctionName(functionName);
       setActiveTab('targetPrice');
     } else if (functionType === 'triggerPrice') {
       setUpdateTriggerPriceFunctionText(functionCode);
+      setTriggerPriceFunctionName(functionName);
       setActiveTab('triggerPrice');
     }
     setIsModalOpen(false);
+  };
+
+  const deleteFunction = async (functionId) => {
+    if (window.confirm('Are you sure you want to delete this function?')) {
+      try {
+        await postAuthorizedData('/data/delete-function', { _id: functionId });
+        toast.success('Function deleted successfully');
+        // Refresh the list of saved functions
+        const response = await fetchAuthorizedData('/data/functions');
+        setSavedFunctions(response);
+      } catch (error) {
+        console.error('Error deleting function:', error);
+        toast.error('Failed to delete function');
+      }
+    }
   };
 
   const handleResize = (e) => {
@@ -436,8 +459,13 @@ const ShortSellingSimulatorPage = () => {
                 type="text"
                 placeholder="Function Name"
                 className="w-1/3 px-3 py-2 text-base border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 mr-2"
-                value={functionName}
-                onChange={(e) => setFunctionName(e.target.value)}
+                value={activeTab === 'stopLoss' ? stopLossFunctionName :
+                       activeTab === 'targetPrice' ? targetPriceFunctionName : triggerPriceFunctionName}
+                onChange={(e) => {
+                  if (activeTab === 'stopLoss') setStopLossFunctionName(e.target.value);
+                  else if (activeTab === 'targetPrice') setTargetPriceFunctionName(e.target.value);
+                  else setTriggerPriceFunctionName(e.target.value);
+                }}
               />
               <button
                 onClick={saveFunction}
@@ -587,21 +615,50 @@ const ShortSellingSimulatorPage = () => {
         onRequestClose={() => setIsModalOpen(false)}
         contentLabel="Saved Functions"
         className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+        overlayClassName="fixed inset-0 bg-black bg-opacity-50"
       >
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h2 className="text-xl font-semibold mb-4">Saved Functions</h2>
-          <ul className="list-disc pl-5">
-            {savedFunctions.map((functionCode, index) => (
-              <li key={index} className="mb-2">
-                <button
-                  onClick={() => { loadFunction(functionCode.code, functionCode.type); setFunctionName(functionCode.name); }}
-                  className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors"
-                >
-                  Load {functionCode.name} ({functionCode.type})
-                </button>
-              </li>
-            ))}
-          </ul>
+        <div className="bg-white rounded-lg shadow-xl w-full max-w-md mx-4">
+          <div className="flex justify-between items-center border-b border-gray-200 px-6 py-4">
+            <h2 className="text-xl font-semibold text-gray-900">Saved Functions</h2>
+            <button
+              onClick={() => setIsModalOpen(false)}
+              className="text-gray-400 hover:text-gray-500 transition-colors"
+            >
+              <X className="h-6 w-6" />
+            </button>
+          </div>
+          <div className="px-6 py-4 max-h-[60vh] overflow-y-auto">
+            {savedFunctions.length > 0 ? (
+              <ul className="space-y-3">
+                {savedFunctions.map((functionCode) => (
+                  <li key={functionCode.id} className="flex items-center justify-between bg-gray-50 rounded-lg p-3">
+                    <div className="flex items-center space-x-3">
+                      <FileCode className="h-5 w-5 text-gray-400" />
+                      <span className="text-sm font-medium text-gray-900">
+                        {functionCode.name} <span className="text-gray-500">({functionCode.type})</span>
+                      </span>
+                    </div>
+                    <div className="flex space-x-2">
+                      <button
+                        onClick={() => loadFunction(functionCode.code, functionCode.type, functionCode.name)}
+                        className="bg-blue-500 text-white text-sm px-3 py-1 rounded-md hover:bg-blue-600 transition-colors"
+                      >
+                        Load
+                      </button>
+                      <button
+                        onClick={() => deleteFunction(functionCode._id)}
+                        className="bg-red-500 text-white text-sm px-3 py-1 rounded-md hover:bg-red-600 transition-colors"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-gray-500 text-center py-4">No saved functions found.</p>
+            )}
+          </div>
         </div>
       </Modal>
     </div>
