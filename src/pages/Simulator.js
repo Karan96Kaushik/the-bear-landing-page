@@ -82,7 +82,7 @@ return triggerPrice;
 
 const ShortSellingSimulatorPage = () => {
   const [stockSymbol, setStockSymbol] = useState('MOIL');
-  const [sellPrice, setSellPrice] = useState();
+  const [triggerPrice, setTriggerPrice] = useState();
   const [stopLossPrice, setStopLossPrice] = useState(389);
   const [targetPrice, setTargetPrice] = useState(347.2);
   const [quantity, setQuantity] = useState(239);
@@ -97,8 +97,8 @@ const ShortSellingSimulatorPage = () => {
   const [editorHeight, setEditorHeight] = useState('200px');
   const [savedFunctions, setSavedFunctions] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [updateTargetPriceFunctionText, setUpdateTargetPriceFunctionText] = useState(updateTriggerPriceFunction_text);
-  const [updateSellPriceFunctionText, setUpdateSellPriceFunctionText] = useState('');
+  const [updateTargetPriceFunctionText, setUpdateTargetPriceFunctionText] = useState('');
+  const [updateTriggerPriceFunctionText, setUpdateTriggerPriceFunctionText] = useState(updateTriggerPriceFunction_text);
   const [activeTab, setActiveTab] = useState('stopLoss');
 
   useEffect(() => {
@@ -135,15 +135,17 @@ const ShortSellingSimulatorPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const updateStopLossFunction = new Function('i', 'data', 'stopLossPrice', 'logAction', updateStopLossFunctionText);
-    const updateTriggerPriceFunction = new Function('i', 'data', 'triggerPrice', 'logAction', updateTargetPriceFunctionText);
+    const updateTriggerPriceFunction = new Function('i', 'data', 'triggerPrice', 'logAction', updateTriggerPriceFunctionText);
+    const updateTargetPriceFunction = new Function('i', 'data', 'targetPrice', 'logAction', updateTargetPriceFunctionText);
     const simulator = new ShortSellingSimulator({
       stockSymbol,
-      sellPrice: isMarketOrder ? 'MKT' : sellPrice,
+      triggerPrice: isMarketOrder ? 'MKT' : triggerPrice,
       stopLossPrice,
       targetPrice,
       quantity,
       updateStopLossFunction,
       updateTriggerPriceFunction,
+      updateTargetPriceFunction,
       startTime,
       endTime,
       yahooData
@@ -221,21 +223,21 @@ const ShortSellingSimulatorPage = () => {
                 xMin: action.time,
                 xMax: action.time,
                 borderColor: 
-                    action.action.includes('Short') ? 'red' : 
-                    action.action === 'Stop Loss Hit' ? 'orange' :
-                    action.action === 'Target Hit' ? 'green' :
-                    action.action === 'Auto Square-off' ? 'blue' :
+                    action?.action.includes('Short') ? 'red' : 
+                    action?.action === 'Stop Loss Hit' ? 'orange' :
+                    action?.action === 'Target Hit' ? 'green' :
+                    action?.action === 'Auto Square-off' ? 'blue' :
                     'gray',
                 borderWidth: 2,
                 label: {
-                    content: `${action.action} at ${action.price.toFixed(2)}`,
+                    content: `${action?.action} at ${action?.price?.toFixed(2)}`,
                     display: true,
                     position: 'start',
                     backgroundColor: 
-                        action.action.includes('Short') ? 'red' : 
-                        action.action === 'Stop Loss Hit' ? 'orange' :
-                        action.action === 'Target Hit' ? 'green' :
-                        action.action === 'Auto Square-off' ? 'blue' :
+                        action?.action.includes('Short') ? 'red' : 
+                        action?.action === 'Stop Loss Hit' ? 'orange' :
+                        action?.action === 'Target Hit' ? 'green' :
+                        action?.action === 'Auto Square-off' ? 'blue' :
                         'gray',
                     font: {
                         size: 12
@@ -250,9 +252,9 @@ const ShortSellingSimulatorPage = () => {
   const saveFunction = async () => {
     try {
       const functionType = activeTab === 'stopLoss' ? 'stopLoss' :
-                           activeTab === 'targetPrice' ? 'targetPrice' : 'sellPrice';
+                           activeTab === 'targetPrice' ? 'targetPrice' : 'triggerPrice';
       const functionText = activeTab === 'stopLoss' ? updateStopLossFunctionText :
-                           activeTab === 'targetPrice' ? updateTargetPriceFunctionText : updateSellPriceFunctionText;
+                           activeTab === 'targetPrice' ? updateTargetPriceFunctionText : updateTriggerPriceFunctionText;
 
       await postAuthorizedData('/data/save-function', {
         name: functionName,
@@ -284,9 +286,9 @@ const ShortSellingSimulatorPage = () => {
     } else if (functionType === 'targetPrice') {
       setUpdateTargetPriceFunctionText(functionCode);
       setActiveTab('targetPrice');
-    } else if (functionType === 'sellPrice') {
-      setUpdateSellPriceFunctionText(functionCode);
-      setActiveTab('sellPrice');
+    } else if (functionType === 'triggerPrice') {
+      setUpdateTriggerPriceFunctionText(functionCode);
+      setActiveTab('triggerPrice');
     }
     setIsModalOpen(false);
   };
@@ -337,13 +339,13 @@ const ShortSellingSimulatorPage = () => {
               />
             </div>
             <div className="w-full md:w-1/3 px-2 mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Sell Price</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Trigger Price</label>
               <div className="flex items-center">
                 {!isMarketOrder && (
                   <input
                     type="number"
-                    value={sellPrice}
-                    onChange={(e) => setSellPrice(Number(e.target.value))}
+                    value={triggerPrice}
+                    onChange={(e) => setTriggerPrice(Number(e.target.value))}
                     className="w-full px-3 py-2 text-base border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                   />
                 )}
@@ -433,9 +435,9 @@ const ShortSellingSimulatorPage = () => {
                 View Saved Functions
               </button>
             </div>
-            <Tab.Group selectedIndex={['stopLoss', 'targetPrice', 'sellPrice'].indexOf(activeTab)} onChange={(index) => setActiveTab(['stopLoss', 'targetPrice', 'sellPrice'][index])}>
+            <Tab.Group selectedIndex={['stopLoss', 'targetPrice', 'triggerPrice'].indexOf(activeTab)} onChange={(index) => setActiveTab(['stopLoss', 'targetPrice', 'triggerPrice'][index])}>
               <Tab.List className="flex p-1 space-x-1 bg-blue-900/20 rounded-xl">
-                {['Stop Loss', 'Target Price', 'Sell Price'].map((category) => (
+                {['Stop Loss', 'Target Price', 'Trigger Price'].map((category) => (
                   <Tab
                     key={category}
                     className={({ selected }) =>
@@ -505,10 +507,10 @@ const ShortSellingSimulatorPage = () => {
                   <AceEditor
                     mode="javascript"
                     theme="monokai"
-                    onChange={setUpdateSellPriceFunctionText}
+                    onChange={setUpdateTriggerPriceFunctionText}
                     name="updateSellPriceFunction"
                     editorProps={{ $blockScrolling: true }}
-                    value={updateSellPriceFunctionText}
+                    value={updateTriggerPriceFunctionText}
                     width="100%"
                     height={editorHeight}
                     fontSize={12}
@@ -549,13 +551,13 @@ const ShortSellingSimulatorPage = () => {
             <ul className="list-disc pl-5">
               {simulationResult.tradeActions.map((action, index) => (
                 <li key={index} className={`mb-1 ${
-                  action.action.includes('Short') ? 'text-red-600' :
-                  action.action === 'Stop Loss Hit' ? 'text-orange-600' :
-                  action.action === 'Target Hit' ? 'text-green-600' :
-                  action.action === 'Auto Square-off' ? 'text-blue-600' :
+                  action?.action.includes('Short') ? 'text-red-600' :
+                  action?.action === 'Stop Loss Hit' ? 'text-orange-600' :
+                  action?.action === 'Target Hit' ? 'text-green-600' :
+                  action?.action === 'Auto Square-off' ? 'text-blue-600' :
                   'text-gray-600'
                 }`}>
-                  {new Date(action.time).toLocaleString()}: {action.action} at {action.price.toFixed(2)}
+                  {new Date(action.time).toLocaleString()}: {action?.action} at {action?.price?.toFixed(2)}
                 </li>
               ))}
             </ul>

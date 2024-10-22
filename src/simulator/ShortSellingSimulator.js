@@ -2,7 +2,7 @@ class ShortSellingSimulator {
     constructor(simulationParams) {
         const {
             stockSymbol, 
-            sellPrice, 
+            triggerPrice, 
             stopLossPrice, 
             targetPrice, 
             quantity, 
@@ -16,7 +16,7 @@ class ShortSellingSimulator {
         console.log('simulationParams', simulationParams);
 
         this.stockSymbol = stockSymbol;
-        this.sellPrice = sellPrice;
+        this.triggerPrice = triggerPrice;
         this.stopLossPrice = stopLossPrice;
         this.targetPrice = targetPrice;
         this.quantity = quantity;
@@ -71,21 +71,22 @@ class ShortSellingSimulator {
             }
 
             if (!this.isPositionOpen) {
-                if (this.sellPrice === 'MKT' && i === 0) {
+                if (this.triggerPrice === 'MKT' && i === 0) {
                     this.position = open;
                     this.isPositionOpen = true;
                     this.tradeActions.push({ time, action: 'Short at Market', price: open });
                 }
-                else if (!this.isPositionOpen && Number(this.sellPrice) && low <= this.sellPrice) {
-                    this.position = this.sellPrice;
+                else if (!this.isPositionOpen && Number(this.triggerPrice) && low <= this.triggerPrice) {
+                    this.position = this.triggerPrice;
                     this.isPositionOpen = true;
-                    this.tradeActions.push({ time, action: 'Short at Limit', price: this.sellPrice });
+                    this.tradeActions.push({ time, action: 'Short at Limit', price: this.triggerPrice });
                 }
                 else if (this.updateTriggerPriceFunction) {
-                    const newTP = this.updateTriggerPriceFunction(i, data, this.targetPrice, this.logAction);
-                    if (newTP !== this.targetPrice) {
+                    const newTP = this.updateTriggerPriceFunction(i, data, this.triggerPrice, this.logAction);
+                    console.log('newTP', newTP, this.triggerPrice);
+                    if (newTP && newTP !== this.triggerPrice) {
                         this.tradeActions.push({ time, action: 'Target price updated', price: newTP });
-                        this.targetPrice = newTP;
+                        this.triggerPrice = newTP;
                     }
                 }
             }
