@@ -51,7 +51,7 @@ class ShortSellingSimulator {
     logAction(time, action, price=0) {
         console.log(action);
         
-        this.tradeActions.push({ time, action, price });
+        this.tradeActions.push({ time, action: String(action), price });
     }
 
     simulateTrading(data) {

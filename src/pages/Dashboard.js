@@ -159,13 +159,25 @@ const Dashboard = () => {
   const yahooChartData = {
     datasets: [{
       label: selectedStock + ' Stock Price',
-      data: yahooData?.chart.result[0].indicators.quote[0].close.map((c, i) => ({
-        x: yahooData?.chart.result[0].timestamp[i] * 1000,
-        o: yahooData?.chart.result[0].indicators.quote[0].open[i],
-        h: yahooData?.chart.result[0].indicators.quote[0].high[i],
-        l: yahooData?.chart.result[0].indicators.quote[0].low[i],
-        c: c
+      data: yahooData?.map((c, i) => ({
+        x: c.time,
+        o: c.open,
+        h: c.high,
+        l: c.low,
+        c: c.close
       }))
+    },
+    {
+      label: 'SMA44',
+      data: yahooData?.map((d) => ({
+        x: d.time,
+        y: d.sma44
+      })) || [],
+      type: 'line',
+      borderColor: 'rgba(255, 99, 132, 1)',
+      borderWidth: 1,
+      pointRadius: 0,
+      yAxisID: 'y',
     }]
   };
 
@@ -208,8 +220,8 @@ const Dashboard = () => {
           ?.filter(order => order.tradingsymbol === selectedStock && order.status === 'COMPLETE')
           .map(order => {
             const orderTimestamp = order.order_timestamp;
-            const chartStartTime = yahooData?.chart.result[0].timestamp[0] * 1000;
-            const chartEndTime = yahooData?.chart.result[0].timestamp[yahooData.chart.result[0].timestamp.length - 1] * 1000;
+            const chartStartTime = yahooData?.[0].time;
+            const chartEndTime = yahooData?.[yahooData.length - 1].time;
             
             // Only include annotations within the chart's time range
             if (orderTimestamp >= chartStartTime && orderTimestamp <= chartEndTime) {
