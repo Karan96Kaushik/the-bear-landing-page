@@ -107,6 +107,7 @@ const ShortSellingSimulatorPage = () => {
   const [stopLossFunctionName, setStopLossFunctionName] = useState('');
   const [targetPriceFunctionName, setTargetPriceFunctionName] = useState('');
   const [triggerPriceFunctionName, setTriggerPriceFunctionName] = useState('');
+  const [dailyPnL, setDailyPnL] = useState([]);
 
   useEffect(() => {
     // Dynamically import the JavaScript mode
@@ -144,25 +145,87 @@ const ShortSellingSimulatorPage = () => {
     const updateStopLossFunction = new Function('i', 'data', 'stopLossPrice', 'logAction', updateStopLossFunctionText);
     const updateTriggerPriceFunction = new Function('i', 'data', 'triggerPrice', 'logAction', updateTriggerPriceFunctionText);
     const updateTargetPriceFunction = new Function('i', 'data', 'targetPrice', 'logAction', updateTargetPriceFunctionText);
-    const simulator = new ShortSellingSimulator({
-      stockSymbol,
-      triggerPrice: isMarketOrder ? 'MKT' : triggerPrice,
-      stopLossPrice,
-      targetPrice,
-      quantity,
-      updateStopLossFunction,
-      updateTriggerPriceFunction,
-      updateTargetPriceFunction,
-      startTime,
-      endTime,
-      yahooData
-    });
 
-    try {
-      await simulator.run();
-      setSimulationResult(simulator);
-    } catch (err) {
-      toast.error(err?.message || err || 'Failed to run simulation');
+    const timeDifference = endTime.getTime() - startTime.getTime();
+    const daysDifference = timeDifference / (1000 * 3600 * 24);
+
+    if (daysDifference > 1) {
+      const dailyResults = [];
+      let currentDate = new Date(startTime);
+
+      while (currentDate < endTime) {
+        const nextDate = new Date(currentDate);
+        nextDate.setDate(nextDate.getDate() + 1);
+
+        currentDate.setHours(1, 59, 59, 999);
+        nextDate.setHours(11, 59, 59, 999);
+
+        // Skip weekends
+        if (currentDate.getDay() === 0 || currentDate.getDay() === 6) {
+          currentDate.setDate(currentDate.getDate() + 1);
+          continue;
+        }
+
+        const dailyEndTime = nextDate < endTime ? nextDate : endTime;
+
+        try {
+          // Fetch data for each day
+          const dailyYahooData = await fetchAuthorizedData(`/data/yahoo?symbol=${stockSymbol}&interval=1m&startDate=${currentDate.toISOString()}&endDate=${dailyEndTime.toISOString()}`);
+
+          if (!dailyYahooData || dailyYahooData.length === 0) {
+            throw new Error('No data found for the given time range');
+          }
+
+          const simulator = new ShortSellingSimulator({
+            stockSymbol,
+            triggerPrice: isMarketOrder ? 'MKT' : triggerPrice,
+            stopLossPrice,
+            targetPrice,
+            quantity,
+            updateStopLossFunction,
+            updateTriggerPriceFunction,
+            updateTargetPriceFunction,
+            startTime: currentDate,
+            endTime: dailyEndTime,
+            yahooData: dailyYahooData
+          });
+
+          await simulator.run();
+          dailyResults.push({
+            date: currentDate.toISOString().split('T')[0],
+            pnl: simulator.pnl
+          });
+        } catch (err) {
+          toast.error(`Failed to run simulation for ${currentDate.toISOString().split('T')[0]}: ${err.message}`);
+        }
+
+        currentDate = new Date(nextDate);
+      }
+
+      setDailyPnL(dailyResults);
+      setSimulationResult(null);
+    } else {
+      const simulator = new ShortSellingSimulator({
+        stockSymbol,
+        triggerPrice: isMarketOrder ? 'MKT' : triggerPrice,
+        stopLossPrice,
+        targetPrice,
+        quantity,
+        updateStopLossFunction,
+        updateTriggerPriceFunction,
+        updateTargetPriceFunction,
+        startTime,
+        endTime,
+        yahooData
+      });
+
+      try {
+        await simulator.run();
+        setSimulationResult(simulator);
+        setDailyPnL([]);
+      } catch (err) {
+        toast.error(err?.message || err || 'Failed to run simulation');
+      }
     }
   };
 
@@ -606,6 +669,36 @@ const ShortSellingSimulatorPage = () => {
                 </li>
               ))}
             </ul>
+          </div>
+        )}
+
+        {dailyPnL.length > 0 && (
+          <div className="bg-white p-6 rounded-lg shadow mb-8">
+            <h2 className="text-xl font-semibold mb-4">Daily P&L Results</h2>
+            <table className="w-full">
+              <thead>
+                <tr>
+                  <th className="text-left">Date</th>
+                  <th className="text-right">P&L</th>
+                </tr>
+              </thead>
+              <tbody>
+                {dailyPnL.map((day, index) => (
+                  <tr key={index} className={index % 2 === 0 ? 'bg-gray-100' : ''}>
+                    <td className="py-2">{day.date}</td>
+                    <td className={`text-right ${day.pnl >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      {day.pnl.toFixed(2)}
+                    </td>
+                  </tr>
+                ))}
+                <tr className="font-bold">
+                  <td className="py-2">Total</td>
+                  <td className={`text-right ${dailyPnL.reduce((sum, day) => sum + day.pnl, 0) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    {dailyPnL.reduce((sum, day) => sum + day.pnl, 0).toFixed(2)}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         )}
       </div>
