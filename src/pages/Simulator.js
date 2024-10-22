@@ -35,26 +35,48 @@ ChartJS.register(
 // const updateStopLossFunction = (timestamps, i, high, low, open, close, stopLossPrice) => {
     // console.log(i, i % 15 , i > 15)
 const updateStopLossFunction_text = `
-    if (isNaN(i) || !timestamps.length || !high.length || !low.length || !stopLossPrice) {
-        throw new Error("Incomplete params in updated SL function" + \`\${i} || \${timestamps.length} || \${high.length} || \${low.length} || \${stopLossPrice}\`)
-    }
-    console.debug(i)
-    if (i % 15 === 0 && i > 15) {
-        const thirtyMinutesAgo = timestamps[i] - 30 * 60;
-        const now = timestamps[i];
-        const last30MinData = high.filter((_, index) => {
-            if (timestamps[index] <= now && timestamps[index] >= thirtyMinutesAgo) {
-                return true;
-            }
-            return false;
-        });
-        // console.log('last30MinData', last30MinData.length)
-        const highestPrice = Math.max(...last30MinData);
-        console.debug(highestPrice)
-        if (highestPrice < stopLossPrice)
-            return highestPrice;
-    }
-    return stopLossPrice;
+if (isNaN(i) || !data.length || !stopLossPrice ||!logAction) {
+    throw new Error("Incomplete params in updated SL function" + \`\${i} || \${data.length} || \${stopLossPrice}\ || \${logAction}\`)
+}
+//logAction(data[i].time, "Running updateStopLossFunction")
+if (i % 15 === 0 && i > 15) {
+    const thirtyMinutesAgo = data[i].time - (1800 * 1000);
+    const now = data[i].time;
+    const last30MinData = data.filter((_, index) => {
+        if (data[index].time <= now && data[index].time >= thirtyMinutesAgo) {
+            return true;
+        }
+        return false;
+    });
+    // console.log('last30MinData', last30MinData.length)
+    const highestPrice = Math.max(...last30MinData);
+    if (highestPrice < stopLossPrice)
+        return highestPrice;
+}
+return stopLossPrice;
+`;
+
+const updateTriggerPriceFunction_text = `
+if (isNaN(i) || !data.length || !triggerPrice ||!logAction) {
+    throw new Error("Incomplete params in updated Trigger Price function" + \`\${i} || \${data.length} || \${triggerPrice}\ || \${logAction}\`)
+}
+//logAction(data[i].time, "Running updateStopLossFunction")
+if (i % 15 === 0 && i > 15) {
+    const thirtyMinutesAgo = data[i].time - (1800 * 1000);
+    const now = data[i].time;
+    const last30MinData = data.filter((_, index) => {
+        if (data[index].time <= now && data[index].time >= thirtyMinutesAgo) {
+            return true;
+        }
+        return false;
+    });
+    // console.log('last30MinData', last30MinData.length)
+    const highestPrice = Math.max(...last30MinData.map(d => d.high));
+    // logAction(data[i].time, "Running trig " + highestPrice, triggerPrice)
+    if (!(triggerPrice) || (highestPrice > triggerPrice))
+        return highestPrice;
+}
+return triggerPrice;
 `;
 // }
 
@@ -75,7 +97,7 @@ const ShortSellingSimulatorPage = () => {
   const [editorHeight, setEditorHeight] = useState('200px');
   const [savedFunctions, setSavedFunctions] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [updateTargetPriceFunctionText, setUpdateTargetPriceFunctionText] = useState('');
+  const [updateTargetPriceFunctionText, setUpdateTargetPriceFunctionText] = useState(updateTriggerPriceFunction_text);
   const [updateSellPriceFunctionText, setUpdateSellPriceFunctionText] = useState('');
   const [activeTab, setActiveTab] = useState('stopLoss');
 
@@ -97,12 +119,12 @@ const ShortSellingSimulatorPage = () => {
         const [yahooResponse] = await Promise.all([
           fetchAuthorizedData(`/data/yahoo?symbol=${stockSymbol}&interval=1m&startDate=${startTime.toISOString()}&endDate=${endTime.toISOString()}`)
         ]);
-        if (!yahooResponse?.chart) 
+        if (!yahooResponse) 
             throw new Error('No data found for the given time range');
         setYahooData(yahooResponse);
         // setLoading(false);
       } catch (err) {
-        toast.error('Failed to fetch data');
+        toast.error(err?.message || err || 'Failed to fetch data');
         // setLoading(false);
       }
     };
@@ -112,7 +134,8 @@ const ShortSellingSimulatorPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const updateStopLossFunction = new Function('timestamps', 'i', 'high', 'low', 'open', 'close', 'stopLossPrice', updateStopLossFunctionText);
+    const updateStopLossFunction = new Function('i', 'data', 'stopLossPrice', 'logAction', updateStopLossFunctionText);
+    const updateTriggerPriceFunction = new Function('i', 'data', 'triggerPrice', 'logAction', updateTargetPriceFunctionText);
     const simulator = new ShortSellingSimulator({
       stockSymbol,
       sellPrice: isMarketOrder ? 'MKT' : sellPrice,
@@ -120,24 +143,29 @@ const ShortSellingSimulatorPage = () => {
       targetPrice,
       quantity,
       updateStopLossFunction,
+      updateTriggerPriceFunction,
       startTime,
       endTime,
       yahooData
     });
 
-    await simulator.run();
-    setSimulationResult(simulator);
+    try {
+      await simulator.run();
+      setSimulationResult(simulator);
+    } catch (err) {
+      toast.error(err?.message || err || 'Failed to run simulation');
+    }
   };
 
   const chartData = {
     datasets: [{
         label: 'Stock Price',
-        data: simulationResult?.timestamps.map((timestamp, i) => ({
-            x: timestamp * 1000,
-            o: simulationResult.indicators.open[i],
-            h: simulationResult.indicators.high[i],
-            l: simulationResult.indicators.low[i],
-            c: simulationResult.indicators.close[i]
+        data: simulationResult?.data.map((d, i) => ({
+            x: d.time,
+            o: d.open,
+            h: d.high,
+            l: d.low,
+            c: d.close
         })) || [],
     }]
   };
@@ -190,8 +218,8 @@ const ShortSellingSimulatorPage = () => {
         annotation: {
             annotations: simulationResult?.tradeActions.map(action => ({
                 type: 'line',
-                xMin: action.time * 1000,
-                xMax: action.time * 1000,
+                xMin: action.time,
+                xMax: action.time,
                 borderColor: 
                     action.action.includes('Short') ? 'red' : 
                     action.action === 'Stop Loss Hit' ? 'orange' :
@@ -527,7 +555,7 @@ const ShortSellingSimulatorPage = () => {
                   action.action === 'Auto Square-off' ? 'text-blue-600' :
                   'text-gray-600'
                 }`}>
-                  {new Date(action.time * 1000).toLocaleString()}: {action.action} at {action.price.toFixed(2)}
+                  {new Date(action.time).toLocaleString()}: {action.action} at {action.price.toFixed(2)}
                 </li>
               ))}
             </ul>
