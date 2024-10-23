@@ -1,4 +1,4 @@
-class ShortSellingSimulator {
+class BuySimulator {
     constructor(simulationParams) {
         const {
             stockSymbol, 
@@ -13,8 +13,6 @@ class ShortSellingSimulator {
             endTime,
             yahooData
         } = simulationParams;
-
-        console.log('simulationParams', simulationParams);
 
         this.stockSymbol = stockSymbol;
         this.triggerPrice = triggerPrice;
@@ -32,28 +30,11 @@ class ShortSellingSimulator {
         this.yahooData = yahooData;
         this.isPositionOpen = false;
         this.logAction = this.logAction.bind(this);
+
     }
 
-    // fetchData(data) {
-    //     // try {
-    //         // const data = await getDataFromYahoo(this.stockSymbol, 1, '1m', this.startTime, this.endTime);
-    //         if (!data.chart.result[0].timestamp) {
-    //             throw new Error('No data found for the given time range');
-    //         }
-    //         return {
-    //             indicators: data.chart.result[0].indicators.quote[0],
-    //             timestamps: data.chart.result[0].timestamp
-    //         };
-    //     // } catch (error) {
-    //     //     console.error('Error fetching data:', error);
-    //     //     throw error;
-    //     // }
-    // }
-
     logAction(time, action, price=0) {
-        console.log(action);
-        
-        this.tradeActions.push({ time, action: String(action), price });
+        this.tradeActions.push({ time, action, price });
     }
 
     simulateTrading(data) {
@@ -84,42 +65,39 @@ class ShortSellingSimulator {
                 if (this.triggerPrice === 'MKT' && i === 0) {
                     this.position = open;
                     this.isPositionOpen = true;
-                    this.tradeActions.push({ time, action: 'Short at Market', price: open });
+                    this.tradeActions.push({ time, action: 'Buy at Market', price: open });
                 }
-                else if (!this.isPositionOpen && Number(this.triggerPrice) && low <= this.triggerPrice) {
+                else if (!this.isPositionOpen && Number(this.triggerPrice) && high >= this.triggerPrice) {
                     this.position = this.triggerPrice;
                     this.isPositionOpen = true;
-                    this.tradeActions.push({ time, action: 'Short at Limit', price: this.triggerPrice });
+                    this.tradeActions.push({ time, action: 'Buy at Limit', price: this.triggerPrice });
                 }
                 else if (this.updateTriggerPriceFunction) {
-                    const newTP = this.updateTriggerPriceFunction(i, data, this.triggerPrice, this.logAction);
-                    console.log('newTP', newTP, this.triggerPrice);
-                    if (newTP && newTP !== this.triggerPrice) {
-                        this.tradeActions.push({ time, action: 'Trigger price updated', price: newTP });
-                        this.triggerPrice = newTP;
+                    const newTriggerPrice = this.updateTriggerPriceFunction(i, data, this.triggerPrice, this.logAction);
+                    if (newTriggerPrice !== this.triggerPrice) {
+                        this.tradeActions.push({ time, action: 'Trigger price updated', price: newTriggerPrice });
+                        this.triggerPrice = newTriggerPrice;
                     }
                 }
             }
             else {
-                if (high >= this.stopLossPrice) {
-                    this.pnl -= (this.stopLossPrice - this.position) * this.quantity * 1.1;
+                if (low <= this.stopLossPrice) {
+                    this.pnl += (this.stopLossPrice - this.position) * this.quantity * 0.9;
                     this.tradeActions.push({ time, action: 'Stop Loss Hit', price: this.stopLossPrice });
                     this.isPositionOpen = false;
-                    // break;
                 }
 
-                if (low <= this.targetPrice) {
-                    this.pnl += (this.position - this.targetPrice) * this.quantity + 0.9;
+                if (high >= this.targetPrice) {
+                    this.pnl += (this.targetPrice - this.position) * this.quantity * 0.9;
                     this.tradeActions.push({ time, action: 'Target Hit', price: this.targetPrice });
                     this.isPositionOpen = false;
-                    // break;
                 }
             }
         }
 
         if (this.isPositionOpen) {
             const lastCandle = data[data.length - 1];
-            this.pnl += (this.position - lastCandle.close) * this.quantity;
+            this.pnl += (lastCandle.close - this.position) * this.quantity * 0.9;
             this.tradeActions.push({ time: lastCandle.time, action: 'Auto Square-off', price: lastCandle.close });
             this.isPositionOpen = false;
         }
@@ -128,11 +106,9 @@ class ShortSellingSimulator {
     }
 
     async run() {
-        // console.log('this.yahooData', this.yahooData);
-        // const data = this.fetchData(this.yahooData);
         const data = this.yahooData;
         this.simulateTrading(data);
     }
 }
 
-export { ShortSellingSimulator };
+export { BuySimulator };

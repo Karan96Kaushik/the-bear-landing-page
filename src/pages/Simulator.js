@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 // import { Line } from 'react-chartjs-2';
 import { ShortSellingSimulator } from '../simulator/ShortSellingSimulator'; // Adjust the import path as needed
+import { BuySimulator } from '../simulator/BuySimulator'; // Add this import
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { fetchAuthorizedData, postAuthorizedData } from '../api/api';
@@ -14,7 +15,7 @@ import zoomPlugin from 'chartjs-plugin-zoom';
 import AceEditor from 'react-ace';
 import Modal from 'react-modal'; // Add this import
 import { Tab } from '@headlessui/react'
-import { X, FileCode, Trash2, Loader2 } from 'lucide-react'; // Add this import
+import { X, FileCode, Trash2, Loader2, ChevronRight, ChevronLeft } from 'lucide-react'; // Add this import
 
 import 'ace-builds/src-noconflict/theme-monokai';
 import 'ace-builds/webpack-resolver';
@@ -39,50 +40,13 @@ ChartJS.register(
 // const updateStopLossFunction = (timestamps, i, high, low, open, close, stopLossPrice) => {
     // console.log(i, i % 15 , i > 15)
 const updateStopLossFunction_text = `
-if (isNaN(i) || !data.length || !stopLossPrice ||!logAction) {
-    throw new Error("Incomplete params in updated SL function" + \`\${i} || \${data.length} || \${stopLossPrice}\ || \${logAction}\`)
-}
-//logAction(data[i].time, "Running updateStopLossFunction")
-if (i % 15 === 0 && i > 15) {
-    const thirtyMinutesAgo = data[i].time - (1800 * 1000);
-    const now = data[i].time;
-    const last30MinData = data.filter((_, index) => {
-        if (data[index].time <= now && data[index].time >= thirtyMinutesAgo) {
-            return true;
-        }
-        return false;
-    });
-    // console.log('last30MinData', last30MinData.length)
-    const highestPrice = Math.max(...last30MinData);
-    if (highestPrice < stopLossPrice)
-        return highestPrice;
-}
-return stopLossPrice;
 `;
 
 const updateTriggerPriceFunction_text = `
-if (isNaN(i) || !data.length || !triggerPrice ||!logAction) {
-    throw new Error("Incomplete params in updated Trigger Price function" + \`\${i} || \${data.length} || \${triggerPrice}\ || \${logAction}\`)
-}
-//logAction(data[i].time, "Running updateStopLossFunction")
-if (i % 15 === 0 && i > 15) {
-    const thirtyMinutesAgo = data[i].time - (1800 * 1000);
-    const now = data[i].time;
-    const last30MinData = data.filter((_, index) => {
-        if (data[index].time <= now && data[index].time >= thirtyMinutesAgo) {
-            return true;
-        }
-        return false;
-    });
-    // console.log('last30MinData', last30MinData.length)
-    const highestPrice = Math.max(...last30MinData.map(d => d.high));
-    // logAction(data[i].time, "Running trig " + highestPrice, triggerPrice)
-    if (!(triggerPrice) || (highestPrice > triggerPrice))
-        return highestPrice;
-}
-return triggerPrice;
 `;
-// }
+
+const updateTargetPriceFunction_text = `
+`;
 
 const ShortSellingSimulatorPage = () => {
   const [stockSymbol, setStockSymbol] = useState('MOIL');
@@ -94,21 +58,23 @@ const ShortSellingSimulatorPage = () => {
   const [endTime, setEndTime] = useState(new Date('2024-10-19'));
   const [simulationResult, setSimulationResult] = useState(null);
   const [yahooData, setYahooData] = useState(null);
-//   const [loading, setLoading] = useState(true);
-  const [isMarketOrder, setIsMarketOrder] = useState(false);
-  const [updateStopLossFunctionText, setUpdateStopLossFunctionText] = useState(updateStopLossFunction_text);
+  const [isMarketOrder, setIsMarketOrder] = useState(true);
   const [functionName, setFunctionName] = useState('');
   const [editorHeight, setEditorHeight] = useState('400px');
   const [savedFunctions, setSavedFunctions] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [updateTargetPriceFunctionText, setUpdateTargetPriceFunctionText] = useState('');
+
+  const [updateStopLossFunctionText, setUpdateStopLossFunctionText] = useState(updateStopLossFunction_text);
+  const [updateTargetPriceFunctionText, setUpdateTargetPriceFunctionText] = useState(updateTargetPriceFunction_text);
   const [updateTriggerPriceFunctionText, setUpdateTriggerPriceFunctionText] = useState(updateTriggerPriceFunction_text);
+
   const [activeTab, setActiveTab] = useState('stopLoss');
   const [stopLossFunctionName, setStopLossFunctionName] = useState('');
   const [targetPriceFunctionName, setTargetPriceFunctionName] = useState('');
   const [triggerPriceFunctionName, setTriggerPriceFunctionName] = useState('');
   const [dailyPnL, setDailyPnL] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [simulationType, setSimulationType] = useState('short'); // Add this state
 
   useEffect(() => {
     // Dynamically import the JavaScript mode
@@ -124,6 +90,11 @@ const ShortSellingSimulatorPage = () => {
   useEffect(() => {
     if (stockSymbol.length < 2) return;
     const fetchYahooData = async () => {
+      const timeDifference = endTime.getTime() - startTime.getTime();
+      const daysDifference = timeDifference / (1000 * 3600 * 24);
+      
+      if (daysDifference > 1) return;
+
       setIsLoading(true);
       try {
         const [yahooResponse] = await Promise.all([
@@ -132,10 +103,8 @@ const ShortSellingSimulatorPage = () => {
         if (!yahooResponse) 
             throw new Error('No data found for the given time range');
         setYahooData(yahooResponse);
-        // setLoading(false);
       } catch (err) {
         toast.error(err?.message || err || 'Failed to fetch data');
-        // setLoading(false);
       } finally {
         setIsLoading(false);
       }
@@ -181,7 +150,8 @@ const ShortSellingSimulatorPage = () => {
             throw new Error('No data found for the given time range');
           }
 
-          const simulator = new ShortSellingSimulator({
+          const SimulatorClass = simulationType === 'short' ? ShortSellingSimulator : BuySimulator;
+          const simulator = new SimulatorClass({
             stockSymbol,
             triggerPrice: isMarketOrder ? 'MKT' : triggerPrice,
             stopLossPrice,
@@ -210,7 +180,8 @@ const ShortSellingSimulatorPage = () => {
       setDailyPnL(dailyResults);
       setSimulationResult(null);
     } else {
-      const simulator = new ShortSellingSimulator({
+      const SimulatorClass = simulationType === 'short' ? ShortSellingSimulator : BuySimulator;
+      const simulator = new SimulatorClass({
         stockSymbol,
         triggerPrice: isMarketOrder ? 'MKT' : triggerPrice,
         stopLossPrice,
@@ -421,6 +392,40 @@ const ShortSellingSimulatorPage = () => {
     document.addEventListener('mouseup', stopDrag);
   };
 
+  const handleNextDay = () => {
+    const newStartTime = new Date(startTime);
+    newStartTime.setDate(newStartTime.getDate() + 1);
+    setStartTime(newStartTime);
+
+    const newEndTime = new Date(endTime);
+    newEndTime.setDate(newEndTime.getDate() + 1);
+    setEndTime(newEndTime);
+  };
+
+  const handlePreviousDay = () => {
+    const newStartTime = new Date(startTime);
+    newStartTime.setDate(newStartTime.getDate() - 1);
+    setStartTime(newStartTime);
+
+    const newEndTime = new Date(endTime);
+    newEndTime.setDate(newEndTime.getDate() - 1);
+    setEndTime(newEndTime);
+  };
+
+  const handleLastDay = () => {
+    const now = new Date();
+    setEndTime(new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59));
+    setStartTime(new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0));
+  };
+
+  const handleLast30Days = () => {
+    const now = new Date();
+    setEndTime(new Date(now.getFullYear(), now.getMonth(), now.getDate()-1, 23, 59, 59));
+    const thirtyDaysAgo = new Date(now);
+    thirtyDaysAgo.setDate(now.getDate() - 30);
+    setStartTime(new Date(thirtyDaysAgo.getFullYear(), thirtyDaysAgo.getMonth(), thirtyDaysAgo.getDate(), 0, 0, 0));
+  };
+
   function classNames(...classes) {
     return classes.filter(Boolean).join(' ')
   }
@@ -436,7 +441,7 @@ const ShortSellingSimulatorPage = () => {
         </div>
       )}
       <div className="container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-6 text-white">Short Selling Simulator</h1>
+        <h1 className="text-3xl font-bold mb-6 text-white">Stock Trading Simulator</h1>
         <form onSubmit={handleSubmit} className="bg-white p-6 rounded-lg shadow mb-8">
           <div className="flex flex-wrap -mx-2">
             <div className="w-full md:w-1/2 px-2 mb-4">
@@ -510,25 +515,76 @@ const ShortSellingSimulatorPage = () => {
                 className="w-full px-3 py-2 text-base border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
               />
             </div>
-            <div className="w-full md:w-1/2 px-2 mb-4">
+            <div className="w-full md:w-1/2 px-2 mb-4 z-[5]">
               <label className="block text-sm font-medium text-gray-700 mb-1">Start Date & Time</label>
-              <DatePicker
-                selected={startTime}
-                onChange={(date) => setStartTime(date)}
-                showTimeSelect
-                dateFormat="MMMM d, yyyy h:mm aa"
-                className="w-full px-3 py-2 text-base border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-              />
+              <div className="flex items-center">
+                <DatePicker
+                  selected={startTime}
+                  onChange={(date) => setStartTime(date)}
+                  showTimeSelect
+                  dateFormat="MMMM d, yyyy h:mm aa"
+                  className="w-full px-3 py-2 text-base z-[6] border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                />
+              </div>
             </div>
-            <div className="w-full md:w-1/2 px-2 mb-4">
+            <div className="w-full md:w-1/2 px-2 mb-4 z-[5]">
               <label className="block text-sm font-medium text-gray-700 mb-1">End Date & Time</label>
               <DatePicker
                 selected={endTime}
                 onChange={(date) => setEndTime(date)}
                 showTimeSelect
                 dateFormat="MMMM d, yyyy h:mm aa"
-                className="w-full px-3 py-2 text-base border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                className="w-full px-3 py-2 text-base z-[6] border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
               />
+            </div>
+            <div className="w-full md:w-1/2 px-2 mb-4 z-[1]">
+              <div className="flex items-center space-x-2">
+                <button
+                  type="button"
+                  onClick={handlePreviousDay}
+                  className="flex items-center bg-blue-500 text-white px-3 py-2 rounded-md hover:bg-blue-600 transition-colors text-sm font-medium"
+                  title="Previous Day"
+                >
+                  <ChevronLeft className="h-4 w-4 mr-1" />
+                  Previous
+                </button>
+                <button
+                  type="button"
+                  onClick={handleNextDay}
+                  className="flex items-center bg-blue-500 text-white px-3 py-2 rounded-md hover:bg-blue-600 transition-colors text-sm font-medium"
+                  title="Next Day"
+                >
+                  Next
+                  <ChevronRight className="h-4 w-4 ml-1" />
+                </button>
+                <button
+                  type="button"
+                  onClick={handleLastDay}
+                  className="flex items-center bg-green-500 text-white px-3 py-2 rounded-md hover:bg-green-600 transition-colors text-sm font-medium"
+                  title="Last 1 Day"
+                >
+                  Last 1 Day
+                </button>
+                <button
+                  type="button"
+                  onClick={handleLast30Days}
+                  className="flex items-center bg-purple-500 text-white px-3 py-2 rounded-md hover:bg-purple-600 transition-colors text-sm font-medium"
+                  title="Last 30 Days"
+                >
+                  Last 30 Days
+                </button>
+              </div>
+            </div>
+            <div className="w-full md:w-1/2 px-2 mb-4"> 
+              <label className="block text-sm font-medium text-gray-700 mb-1">Simulation Type</label>
+              <select
+                value={simulationType}
+                onChange={(e) => setSimulationType(e.target.value)}
+                className="w-full px-3 py-2 text-base border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+              >
+                <option value="short">Short Selling</option>
+                <option value="buy">Buy</option>
+              </select>
             </div>
           </div>
           <div className="w-full px-2 mb-4">
@@ -723,8 +779,8 @@ const ShortSellingSimulatorPage = () => {
         isOpen={isModalOpen}
         onRequestClose={() => setIsModalOpen(false)}
         contentLabel="Saved Functions"
-        className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
-        overlayClassName="fixed inset-0 bg-black bg-opacity-50"
+        className="fixed inset-0 flex items-center justify-center z-[1000]"
+        overlayClassName="fixed inset-0 bg-black bg-opacity-50 z-[999]"
       >
         <div className="bg-white rounded-lg shadow-xl w-full max-w-md mx-4">
           <div className="flex justify-between items-center border-b border-gray-200 px-6 py-4">
