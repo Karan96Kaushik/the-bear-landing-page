@@ -14,7 +14,7 @@ import zoomPlugin from 'chartjs-plugin-zoom';
 import AceEditor from 'react-ace';
 import Modal from 'react-modal'; // Add this import
 import { Tab } from '@headlessui/react'
-import { X, FileCode, Trash2 } from 'lucide-react'; // Add this import
+import { X, FileCode, Trash2, Loader2 } from 'lucide-react'; // Add this import
 
 import 'ace-builds/src-noconflict/theme-monokai';
 import 'ace-builds/webpack-resolver';
@@ -87,15 +87,15 @@ return triggerPrice;
 const ShortSellingSimulatorPage = () => {
   const [stockSymbol, setStockSymbol] = useState('MOIL');
   const [triggerPrice, setTriggerPrice] = useState();
-  const [stopLossPrice, setStopLossPrice] = useState(389);
-  const [targetPrice, setTargetPrice] = useState(347.2);
-  const [quantity, setQuantity] = useState(239);
+  const [stopLossPrice, setStopLossPrice] = useState(10000);
+  const [targetPrice, setTargetPrice] = useState(0);
+  const [quantity, setQuantity] = useState(100);
   const [startTime, setStartTime] = useState(new Date('2024-10-18'));
   const [endTime, setEndTime] = useState(new Date('2024-10-19'));
   const [simulationResult, setSimulationResult] = useState(null);
   const [yahooData, setYahooData] = useState(null);
 //   const [loading, setLoading] = useState(true);
-  const [isMarketOrder, setIsMarketOrder] = useState(true);
+  const [isMarketOrder, setIsMarketOrder] = useState(false);
   const [updateStopLossFunctionText, setUpdateStopLossFunctionText] = useState(updateStopLossFunction_text);
   const [functionName, setFunctionName] = useState('');
   const [editorHeight, setEditorHeight] = useState('400px');
@@ -108,6 +108,7 @@ const ShortSellingSimulatorPage = () => {
   const [targetPriceFunctionName, setTargetPriceFunctionName] = useState('');
   const [triggerPriceFunctionName, setTriggerPriceFunctionName] = useState('');
   const [dailyPnL, setDailyPnL] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     // Dynamically import the JavaScript mode
@@ -123,6 +124,7 @@ const ShortSellingSimulatorPage = () => {
   useEffect(() => {
     if (stockSymbol.length < 2) return;
     const fetchYahooData = async () => {
+      setIsLoading(true);
       try {
         const [yahooResponse] = await Promise.all([
           fetchAuthorizedData(`/data/yahoo?symbol=${stockSymbol}&interval=1m&startDate=${startTime.toISOString()}&endDate=${endTime.toISOString()}`)
@@ -134,6 +136,8 @@ const ShortSellingSimulatorPage = () => {
       } catch (err) {
         toast.error(err?.message || err || 'Failed to fetch data');
         // setLoading(false);
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -142,6 +146,7 @@ const ShortSellingSimulatorPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsLoading(true);
     const updateStopLossFunction = new Function('i', 'data', 'stopLossPrice', 'logAction', updateStopLossFunctionText);
     const updateTriggerPriceFunction = new Function('i', 'data', 'triggerPrice', 'logAction', updateTriggerPriceFunctionText);
     const updateTargetPriceFunction = new Function('i', 'data', 'targetPrice', 'logAction', updateTargetPriceFunctionText);
@@ -225,8 +230,11 @@ const ShortSellingSimulatorPage = () => {
         setDailyPnL([]);
       } catch (err) {
         toast.error(err?.message || err || 'Failed to run simulation');
+      } finally {
+        setIsLoading(false);
       }
     }
+    setIsLoading(false);
   };
 
   const chartData = {
@@ -418,7 +426,15 @@ const ShortSellingSimulatorPage = () => {
   }
 
   return (
-    <div className="bg-gray-900 min-h-screen">
+    <div className="bg-gray-900 min-h-screen relative">
+      {isLoading && (
+        <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 flex items-center space-x-4">
+            <Loader2 className="h-8 w-8 text-blue-500 animate-spin" />
+            <span className="text-lg font-semibold text-gray-700">Loading...</span>
+          </div>
+        </div>
+      )}
       <div className="container mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold mb-6 text-white">Short Selling Simulator</h1>
         <form onSubmit={handleSubmit} className="bg-white p-6 rounded-lg shadow mb-8">

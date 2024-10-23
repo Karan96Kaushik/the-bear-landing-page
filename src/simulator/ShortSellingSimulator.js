@@ -85,24 +85,24 @@ class ShortSellingSimulator {
                     const newTP = this.updateTriggerPriceFunction(i, data, this.triggerPrice, this.logAction);
                     console.log('newTP', newTP, this.triggerPrice);
                     if (newTP && newTP !== this.triggerPrice) {
-                        this.tradeActions.push({ time, action: 'Target price updated', price: newTP });
+                        this.tradeActions.push({ time, action: 'Trigger price updated', price: newTP });
                         this.triggerPrice = newTP;
                     }
                 }
             }
             else {
                 if (high >= this.stopLossPrice) {
-                    this.pnl -= (this.stopLossPrice - this.position) * this.quantity;
+                    this.pnl -= (this.stopLossPrice - this.position) * this.quantity * 1.1;
                     this.tradeActions.push({ time, action: 'Stop Loss Hit', price: this.stopLossPrice });
                     this.isPositionOpen = false;
-                    break;
+                    // break;
                 }
 
                 if (low <= this.targetPrice) {
-                    this.pnl += (this.position - this.targetPrice) * this.quantity;
+                    this.pnl += (this.position - this.targetPrice) * this.quantity + 0.9;
                     this.tradeActions.push({ time, action: 'Target Hit', price: this.targetPrice });
                     this.isPositionOpen = false;
-                    break;
+                    // break;
                 }
             }
         }
