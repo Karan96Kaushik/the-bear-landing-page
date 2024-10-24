@@ -499,6 +499,11 @@ const ShortSellingSimulatorPage = () => {
     return classes.filter(Boolean).join(' ')
   }
 
+  // Add this function to calculate the grand total
+  const calculateGrandTotal = (results) => {
+    return results.reduce((sum, result) => sum + (result.totalPnl || 0), 0);
+  };
+
   return (
     <div className="bg-gray-900 min-h-screen relative">
       {isLoading && (
@@ -864,7 +869,7 @@ const ShortSellingSimulatorPage = () => {
                         <td className="py-2 px-4">{day.date}</td>
                         <td className="text-right py-2 px-4">{stockResult.quantity}</td>
                         <td className={`text-right py-2 px-4 ${day.pnl >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                          {day.pnl.toFixed(2)}
+                          {day.pnl?.toFixed(2)}
                         </td>
                       </tr>
                     ))}
@@ -896,12 +901,18 @@ const ShortSellingSimulatorPage = () => {
                       </td>
                     </tr>
                   ))}
-                  <tr className="font-bold bg-gray-100">
-                    <td className="py-2 px-4">Grand Total</td>
-                    <td className={`text-right py-2 px-4 ${simulationResult.results.reduce((sum, result) => sum + result.totalPnl, 0) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                      {simulationResult.results.reduce((sum, result) => sum + result.totalPnl, 0).toFixed(2)}
-                    </td>
-                  </tr>
+                  {/* Updated Grand Total row */}
+                  {(() => {
+                    const grandTotal = calculateGrandTotal(simulationResult.results);
+                    return (
+                      <tr className="font-bold bg-gray-100">
+                        <td className="py-2 px-4">Grand Total</td>
+                        <td className={`text-right py-2 px-4 ${grandTotal >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                          {grandTotal.toFixed(2)}
+                        </td>
+                      </tr>
+                    );
+                  })()}
                 </tbody>
               </table>
             </div>
@@ -923,7 +934,7 @@ const ShortSellingSimulatorPage = () => {
                   <tr key={index} className={index % 2 === 0 ? 'bg-gray-100' : ''}>
                     <td className="py-2">{day.date}</td>
                     <td className={`text-right ${day.pnl >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                      {day.pnl.toFixed(2)}
+                      {day.pnl?.toFixed(2)}
                     </td>
                   </tr>
                 ))}
