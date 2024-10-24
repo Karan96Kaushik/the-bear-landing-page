@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Bar, Line, Chart } from 'react-chartjs-2';
+import { Chart } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -39,7 +39,7 @@ ChartJS.register(
   zoomPlugin
 );
 
-const stocks = [''];
+const stocks = ['', 'ONGC', 'SBIN', 'RALLIS','INFY', 'ZOMATO', 'BAJFINANCE' ];
 const intervals = ['1m', '5m', '15m', '1d'];
 
 const ordersFields = [

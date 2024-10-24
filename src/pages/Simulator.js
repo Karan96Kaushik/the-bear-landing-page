@@ -15,7 +15,7 @@ import zoomPlugin from 'chartjs-plugin-zoom';
 import AceEditor from 'react-ace';
 import Modal from 'react-modal'; // Add this import
 import { Tab } from '@headlessui/react'
-import { X, FileCode, Trash2, Loader2, ChevronRight, ChevronLeft } from 'lucide-react'; // Add this import
+import { X, FileCode, Trash2, Loader2, ChevronRight, ChevronLeft, Plus, Minus } from 'lucide-react'; // Add this import
 
 import 'ace-builds/src-noconflict/theme-monokai';
 import 'ace-builds/webpack-resolver';
@@ -43,19 +43,21 @@ const updateStopLossFunction_text = `
 `;
 
 const updateTriggerPriceFunction_text = `
+// 'i', 'data', 'triggerPrice', 'position', 'logAction'
 `;
 
 const updateTargetPriceFunction_text = `
+// 'i', 'data', 'targetPrice', 'position', 'logAction'
 `;
 
 const ShortSellingSimulatorPage = () => {
-  const [stockSymbol, setStockSymbol] = useState('MOIL');
+  const [stockSymbol, setStockSymbol] = useState('KNRCON');
   const [triggerPrice, setTriggerPrice] = useState();
   const [stopLossPrice, setStopLossPrice] = useState(10000);
   const [targetPrice, setTargetPrice] = useState(0);
   const [quantity, setQuantity] = useState(100);
-  const [startTime, setStartTime] = useState(new Date('2024-10-18'));
-  const [endTime, setEndTime] = useState(new Date('2024-10-19'));
+  const [startTime, setStartTime] = useState(new Date('2024-10-23'));
+  const [endTime, setEndTime] = useState(new Date('2024-10-24'));
   const [simulationResult, setSimulationResult] = useState(null);
   const [yahooData, setYahooData] = useState(null);
   const [isMarketOrder, setIsMarketOrder] = useState(true);
@@ -75,6 +77,7 @@ const ShortSellingSimulatorPage = () => {
   const [dailyPnL, setDailyPnL] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [simulationType, setSimulationType] = useState('short'); // Add this state
+  const [stocks, setStocks] = useState([{ symbol: 'KNRCON', quantity: 100 }]);
 
   useEffect(() => {
     // Dynamically import the JavaScript mode
@@ -116,103 +119,153 @@ const ShortSellingSimulatorPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    const updateStopLossFunction = new Function('i', 'data', 'stopLossPrice', 'logAction', updateStopLossFunctionText);
-    const updateTriggerPriceFunction = new Function('i', 'data', 'triggerPrice', 'logAction', updateTriggerPriceFunctionText);
-    const updateTargetPriceFunction = new Function('i', 'data', 'targetPrice', 'logAction', updateTargetPriceFunctionText);
+    const updateStopLossFunction = new Function('i', 'data', 'stopLossPrice', 'position', 'logAction', updateStopLossFunctionText);
+    const updateTriggerPriceFunction = new Function('i', 'data', 'triggerPrice', 'position', 'logAction', updateTriggerPriceFunctionText);
+    const updateTargetPriceFunction = new Function('i', 'data', 'targetPrice', 'position', 'logAction', updateTargetPriceFunctionText);
 
     const timeDifference = endTime.getTime() - startTime.getTime();
     const daysDifference = timeDifference / (1000 * 3600 * 24);
 
-    if (daysDifference > 1) {
-      const dailyResults = [];
-      let currentDate = new Date(startTime);
+    const simulateStock = async (stock) => {
+      if (daysDifference > 1) {
+        const dailyResults = [];
+        let currentDate = new Date(startTime);
 
-      while (currentDate < endTime) {
-        const nextDate = new Date(currentDate);
-        nextDate.setDate(nextDate.getDate() + 1);
+        while (currentDate < endTime) {
+          const nextDate = new Date(currentDate);
+          nextDate.setDate(nextDate.getDate() + 1);
 
-        currentDate.setHours(1, 59, 59, 999);
-        nextDate.setHours(11, 59, 59, 999);
+          currentDate.setHours(1, 59, 59, 999);
+          nextDate.setHours(11, 59, 59, 999);
 
-        // Skip weekends
-        if (currentDate.getDay() === 0 || currentDate.getDay() === 6) {
-          currentDate.setDate(currentDate.getDate() + 1);
-          continue;
+          // Skip weekends
+          if (currentDate.getDay() === 0 || currentDate.getDay() === 6) {
+            currentDate.setDate(currentDate.getDate() + 1);
+            continue;
+          }
+
+          const dailyEndTime = nextDate < endTime ? nextDate : endTime;
+
+          try {
+            // Fetch data for each day
+            const dailyYahooData = await fetchAuthorizedData(`/data/yahoo?symbol=${stock.symbol}&interval=1m&startDate=${currentDate.toISOString()}&endDate=${dailyEndTime.toISOString()}`);
+
+            if (!dailyYahooData || dailyYahooData.length === 0) {
+              throw new Error('No data found for the given time range');
+            }
+
+            const SimulatorClass = simulationType === 'short' ? ShortSellingSimulator : BuySimulator;
+            const simulator = new SimulatorClass({
+              stockSymbol: stock.symbol,
+              triggerPrice: isMarketOrder ? 'MKT' : triggerPrice,
+              stopLossPrice,
+              targetPrice,
+              quantity: stock.quantity,
+              updateStopLossFunction,
+              updateTriggerPriceFunction,
+              updateTargetPriceFunction,
+              startTime: currentDate,
+              endTime: dailyEndTime,
+              yahooData: dailyYahooData
+            });
+
+            await simulator.run();
+            dailyResults.push({
+              date: currentDate.toISOString().split('T')[0],
+              pnl: simulator.pnl,
+              tradeActions: simulator.tradeActions,
+              data: simulator.data
+            });
+          } catch (err) {
+            toast.error(`Failed to run simulation for ${currentDate.toISOString().split('T')[0]}: ${err.message}`);
+          }
+
+          currentDate = new Date(nextDate);
         }
 
-        const dailyEndTime = nextDate < endTime ? nextDate : endTime;
-
+        return {
+          symbol: stock.symbol,
+          quantity: stock.quantity,
+          dailyResults,
+          totalPnl: dailyResults.reduce((sum, day) => sum + day.pnl, 0),
+          tradeActions: dailyResults.flatMap(day => day.tradeActions),
+          data: dailyResults.flatMap(day => day.data)
+        };
+      } else {
         try {
-          // Fetch data for each day
-          const dailyYahooData = await fetchAuthorizedData(`/data/yahoo?symbol=${stockSymbol}&interval=1m&startDate=${currentDate.toISOString()}&endDate=${dailyEndTime.toISOString()}`);
+          // Fetch data for the stock
+          const stockYahooData = await fetchAuthorizedData(`/data/yahoo?symbol=${stock.symbol}&interval=1m&startDate=${startTime.toISOString()}&endDate=${endTime.toISOString()}`);
 
-          if (!dailyYahooData || dailyYahooData.length === 0) {
-            throw new Error('No data found for the given time range');
+          if (!stockYahooData || stockYahooData.length === 0) {
+            throw new Error(`No data found for ${stock.symbol}`);
           }
 
           const SimulatorClass = simulationType === 'short' ? ShortSellingSimulator : BuySimulator;
           const simulator = new SimulatorClass({
-            stockSymbol,
+            stockSymbol: stock.symbol,
             triggerPrice: isMarketOrder ? 'MKT' : triggerPrice,
             stopLossPrice,
             targetPrice,
-            quantity,
+            quantity: stock.quantity,
             updateStopLossFunction,
             updateTriggerPriceFunction,
             updateTargetPriceFunction,
-            startTime: currentDate,
-            endTime: dailyEndTime,
-            yahooData: dailyYahooData
+            startTime,
+            endTime,
+            yahooData: stockYahooData
           });
 
           await simulator.run();
-          dailyResults.push({
-            date: currentDate.toISOString().split('T')[0],
-            pnl: simulator.pnl
-          });
+          return {
+            symbol: stock.symbol,
+            quantity: stock.quantity,
+            pnl: simulator.pnl,
+            tradeActions: simulator.tradeActions,
+            data: simulator.data
+          };
         } catch (err) {
-          toast.error(`Failed to run simulation for ${currentDate.toISOString().split('T')[0]}: ${err.message}`);
+          console.error(`Error simulating ${stock.symbol}:`, err);
+          return { symbol: stock.symbol, quantity: stock.quantity, error: err.message };
         }
+      }
+    };
 
-        currentDate = new Date(nextDate);
+    try {
+      const results = await Promise.all(stocks.map(simulateStock));
+      const multipleStocks = stocks.length > 1;
+
+      if (multipleStocks) {
+        setSimulationResult({
+          multipleStocks: true,
+          results: results.map(result => ({
+            ...result,
+            dailyResults: result.dailyResults || [{ date: startTime.toISOString().split('T')[0], pnl: result.pnl }]
+          }))
+        });
+      } else {
+        const singleResult = results[0];
+        setSimulationResult({
+          multipleStocks: false,
+          ...singleResult,
+          pnl: singleResult.totalPnl || singleResult.pnl,
+          tradeActions: singleResult.tradeActions,
+          data: singleResult.data
+        });
       }
 
-      setDailyPnL(dailyResults);
-      setSimulationResult(null);
-    } else {
-      const SimulatorClass = simulationType === 'short' ? ShortSellingSimulator : BuySimulator;
-      const simulator = new SimulatorClass({
-        stockSymbol,
-        triggerPrice: isMarketOrder ? 'MKT' : triggerPrice,
-        stopLossPrice,
-        targetPrice,
-        quantity,
-        updateStopLossFunction,
-        updateTriggerPriceFunction,
-        updateTargetPriceFunction,
-        startTime,
-        endTime,
-        yahooData
-      });
-
-      try {
-        await simulator.run();
-        setSimulationResult(simulator);
-        setDailyPnL([]);
-      } catch (err) {
-        toast.error(err?.message || err || 'Failed to run simulation');
-      } finally {
-        setIsLoading(false);
-      }
+      setDailyPnL(multipleStocks ? [] : results[0].dailyResults || []);
+    } catch (err) {
+      toast.error(err?.message || err || 'Failed to run simulation');
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
   };
 
   const chartData = {
     datasets: [
       {
         label: 'Stock Price',
-        data: simulationResult?.data.map((d, i) => ({
+        data: simulationResult?.data?.map((d, i) => ({
           x: d.time,
           o: d.open,
           h: d.high,
@@ -222,7 +275,7 @@ const ShortSellingSimulatorPage = () => {
       },
       {
         label: 'SMA44',
-        data: simulationResult?.data.map((d) => ({
+        data: simulationResult?.data?.map((d) => ({
           x: d.time,
           y: d.sma44
         })) || [],
@@ -281,7 +334,7 @@ const ShortSellingSimulatorPage = () => {
             },
           },
         annotation: {
-            annotations: simulationResult?.tradeActions.map(action => ({
+            annotations: simulationResult?.tradeActions?.map(action => ({
                 type: 'line',
                 xMin: action.time,
                 xMax: action.time,
@@ -328,7 +381,7 @@ const ShortSellingSimulatorPage = () => {
       toast.success('Function saved successfully');
     } catch (error) {
       console.error('Error saving function:', error);
-      toast.error('Failed to save function');
+      toast.error('Failed to save function: ' + error?.response?.data?.message || error?.message || error);
     }
   };
 
@@ -426,6 +479,22 @@ const ShortSellingSimulatorPage = () => {
     setStartTime(new Date(thirtyDaysAgo.getFullYear(), thirtyDaysAgo.getMonth(), thirtyDaysAgo.getDate(), 0, 0, 0));
   };
 
+  const addStock = () => {
+    setStocks([...stocks, { symbol: '', quantity: 100 }]);
+  };
+
+  const removeStock = (index) => {
+    const newStocks = [...stocks];
+    newStocks.splice(index, 1);
+    setStocks(newStocks);
+  };
+
+  const updateStock = (index, field, value) => {
+    const newStocks = [...stocks];
+    newStocks[index][field] = value;
+    setStocks(newStocks);
+  };
+
   function classNames(...classes) {
     return classes.filter(Boolean).join(' ')
   }
@@ -443,26 +512,62 @@ const ShortSellingSimulatorPage = () => {
       <div className="container mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold mb-6 text-white">Stock Trading Simulator</h1>
         <form onSubmit={handleSubmit} className="bg-white p-6 rounded-lg shadow mb-8">
+          <div className="mb-6 bg-gray-50 p-6 rounded-lg shadow-inner">
+            <h3 className="text-lg font-semibold mb-4 text-gray-700">Stocks</h3>
+            {stocks.map((stock, index) => (
+              <div key={index} className="flex flex-wrap items-center mb-4 pb-4 border-b border-gray-200 last:border-b-0 last:mb-0 last:pb-0">
+                <div className="w-full sm:w-2/5 pr-2 mb-2 sm:mb-0">
+                  <label className="block text-sm font-medium text-gray-600 mb-1">
+                    Symbol
+                  </label>
+                  <input
+                    type="text"
+                    value={stock.symbol}
+                    onChange={(e) => updateStock(index, 'symbol', e.target.value)}
+                    className="w-full px-3 py-2 text-base border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                    placeholder="e.g., AAPL"
+                  />
+                </div>
+                <div className="w-full sm:w-2/5 px-2 mb-2 sm:mb-0">
+                  <label className="block text-sm font-medium text-gray-600 mb-1">
+                    Quantity
+                  </label>
+                  <input
+                    type="number"
+                    value={stock.quantity}
+                    onChange={(e) => updateStock(index, 'quantity', Number(e.target.value))}
+                    className="w-full px-3 py-2 text-base border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                    placeholder="Enter quantity"
+                  />
+                </div>
+                <div className="w-full sm:w-1/5 pl-2 flex justify-end items-end">
+                  <button 
+                    type="button" 
+                    onClick={index === 0 ? addStock : () => removeStock(index)} 
+                    className={`${
+                      index === 0 
+                        ? 'bg-green-500 hover:bg-green-600 focus:ring-green-400' 
+                        : 'bg-red-500 hover:bg-red-600 focus:ring-red-400'
+                    } text-white px-4 py-2 rounded-md transition-all duration-200 ease-in-out flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-offset-2`}
+                  >
+                    {index === 0 ? (
+                      <>
+                        <Plus className="h-5 w-5 mr-1" />
+                        <span className="hidden sm:inline">Add Stock</span>
+                      </>
+                    ) : (
+                      <>
+                        <Minus className="h-5 w-5 mr-1" />
+                        <span className="hidden sm:inline">Remove</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
           <div className="flex flex-wrap -mx-2">
             <div className="w-full md:w-1/2 px-2 mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Stock Symbol</label>
-              <input
-                type="text"
-                value={stockSymbol}
-                onChange={(e) => setStockSymbol(e.target.value)}
-                className="w-full px-3 py-2 text-base border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-              />
-            </div>
-            <div className="w-full md:w-1/2 px-2 mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Quantity</label>
-              <input
-                type="number"
-                value={quantity}
-                onChange={(e) => setQuantity(Number(e.target.value))}
-                className="w-full px-3 py-2 text-base border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-              />
-            </div>
-            <div className="w-full md:w-1/3 px-2 mb-4">
               <label className="block text-sm font-medium text-gray-700 mb-1">Trigger Price</label>
               <div className="flex items-center">
                 {!isMarketOrder && (
@@ -582,8 +687,8 @@ const ShortSellingSimulatorPage = () => {
                 onChange={(e) => setSimulationType(e.target.value)}
                 className="w-full px-3 py-2 text-base border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
               >
-                <option value="short">Short Selling</option>
-                <option value="buy">Buy</option>
+                <option value="short">Bear</option>
+                <option value="buy">Bull</option>
               </select>
             </div>
           </div>
@@ -718,7 +823,7 @@ const ShortSellingSimulatorPage = () => {
           </div>
         </form>
 
-        {simulationResult && (
+        {simulationResult && !simulationResult.multipleStocks && (
           <div className="bg-white p-6 rounded-lg shadow mb-8">
             <h2 className="text-xl font-semibold mb-4">Simulation Results</h2>
             <Chart
@@ -726,10 +831,10 @@ const ShortSellingSimulatorPage = () => {
               data={chartData}
               options={candlestickOptions}
             />
-            <p className="mt-4">Final P&L: {simulationResult.pnl.toFixed(2)}</p>
+            <p className="mt-4">Final P&L: {simulationResult.pnl?.toFixed(2)}</p>
             <h3 className="text-lg font-semibold mt-4 mb-2">Trade Actions:</h3>
             <ul className="list-disc pl-5">
-              {simulationResult.tradeActions.map((action, index) => (
+              {simulationResult.tradeActions?.map((action, index) => (
                 <li key={index} className={`mb-1 ${
                   action?.action.includes('Short') ? 'text-red-600' :
                   action?.action === 'Stop Loss Hit' ? 'text-orange-600' :
@@ -741,6 +846,70 @@ const ShortSellingSimulatorPage = () => {
                 </li>
               ))}
             </ul>
+          </div>
+        )}
+
+        {simulationResult && simulationResult.multipleStocks && (
+          <div className="bg-white p-6 rounded-lg shadow mb-8">
+            <h2 className="text-xl font-semibold mb-4">Simulation Results</h2>
+            {simulationResult.results.map((stockResult, stockIndex) => (
+              <div key={stockIndex} className="mb-8">
+                <h3 className="text-lg font-semibold mb-2">{stockResult.symbol}</h3>
+                <table className="w-full mb-4">
+                  <thead>
+                    <tr className="bg-gray-100">
+                      <th className="text-left py-2 px-4">Date</th>
+                      <th className="text-right py-2 px-4">Quantity</th>
+                      <th className="text-right py-2 px-4">P&L</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {stockResult.dailyResults?.map((day, dayIndex) => (
+                      <tr key={dayIndex} className={dayIndex % 2 === 0 ? 'bg-gray-50' : ''}>
+                        <td className="py-2 px-4">{day.date}</td>
+                        <td className="text-right py-2 px-4">{stockResult.quantity}</td>
+                        <td className={`text-right py-2 px-4 ${day.pnl >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                          {day.pnl.toFixed(2)}
+                        </td>
+                      </tr>
+                    ))}
+                    <tr className="font-bold bg-gray-100">
+                      <td className="py-2 px-4" colSpan="2">Total for {stockResult.symbol}</td>
+                      <td className={`text-right py-2 px-4 ${stockResult.totalPnl >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                        {stockResult.totalPnl?.toFixed(2)}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            ))}
+            <div className="mt-6 pt-4 border-t border-gray-200">
+              <h3 className="text-lg font-semibold mb-2">Overall Results</h3>
+              <table className="w-full">
+                <thead>
+                  <tr className="bg-gray-100">
+                    <th className="text-left py-2 px-4">Stock Symbol</th>
+                    <th className="text-right py-2 px-4">Total P&L</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {simulationResult.results.map((result, index) => (
+                    <tr key={index} className={index % 2 === 0 ? 'bg-gray-50' : ''}>
+                      <td className="py-2 px-4">{result.symbol}</td>
+                      <td className={`text-right py-2 px-4 ${result.totalPnl >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                        {result.totalPnl?.toFixed(2)}
+                      </td>
+                    </tr>
+                  ))}
+                  <tr className="font-bold bg-gray-100">
+                    <td className="py-2 px-4">Grand Total</td>
+                    <td className={`text-right py-2 px-4 ${simulationResult.results.reduce((sum, result) => sum + result.totalPnl, 0) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      {simulationResult.results.reduce((sum, result) => sum + result.totalPnl, 0).toFixed(2)}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
 

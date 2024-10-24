@@ -45,56 +45,68 @@ class BuySimulator {
                 continue;
             }
 
-            if (this.updateStopLossFunction && this.isPositionOpen) {
-                const newSL = this.updateStopLossFunction(i, data, this.stopLossPrice, this.logAction);
-                if (newSL !== this.stopLossPrice) {
-                    this.tradeActions.push({ time, action: 'Stop loss updated', price: newSL });
-                    this.stopLossPrice = newSL;
-                }
-            }
-
-            if (this.updateTargetPriceFunction) {
-                const newTP = this.updateTargetPriceFunction(i, data, this.targetPrice, this.logAction);
-                if (newTP !== this.targetPrice) {
-                    this.tradeActions.push({ time, action: 'Target price updated', price: newTP });
-                    this.targetPrice = newTP;
-                }
-            }
-
+            // Open Position
             if (!this.isPositionOpen) {
-                if (this.triggerPrice === 'MKT' && i === 0) {
-                    this.position = open;
+                // Buy at Market
+                if (this.triggerPrice === 'MKT' && i === 1) {
+                    this.position = low + Math.random() * (high - low);
                     this.isPositionOpen = true;
                     this.tradeActions.push({ time, action: 'Buy at Market', price: open });
                 }
+                // Buy at Limit
                 else if (!this.isPositionOpen && Number(this.triggerPrice) && high >= this.triggerPrice) {
                     this.position = this.triggerPrice;
                     this.isPositionOpen = true;
                     this.tradeActions.push({ time, action: 'Buy at Limit', price: this.triggerPrice });
                 }
-                else if (this.updateTriggerPriceFunction) {
-                    const newTriggerPrice = this.updateTriggerPriceFunction(i, data, this.triggerPrice, this.logAction);
-                    if (newTriggerPrice !== this.triggerPrice) {
-                        this.tradeActions.push({ time, action: 'Trigger price updated', price: newTriggerPrice });
-                        this.triggerPrice = newTriggerPrice;
-                    }
-                }
+
             }
             else {
+                // Stop Loss Hit
                 if (low <= this.stopLossPrice) {
                     this.pnl += (this.stopLossPrice - this.position) * this.quantity * 0.9;
                     this.tradeActions.push({ time, action: 'Stop Loss Hit', price: this.stopLossPrice });
                     this.isPositionOpen = false;
                 }
 
+                // Target Hit
                 if (high >= this.targetPrice) {
                     this.pnl += (this.targetPrice - this.position) * this.quantity * 0.9;
                     this.tradeActions.push({ time, action: 'Target Hit', price: this.targetPrice });
                     this.isPositionOpen = false;
                 }
             }
+
+
+            // Update Trigger Price
+            if (this.updateTriggerPriceFunction && !this.isPositionOpen) {
+                const newTriggerPrice = this.updateTriggerPriceFunction(i, data, this.triggerPrice, this.position, this.logAction);
+                if (newTriggerPrice !== this.triggerPrice) {
+                    this.tradeActions.push({ time, action: 'Trigger price updated', price: newTriggerPrice });
+                    this.triggerPrice = newTriggerPrice;
+                }
+            }
+
+            // Update Stop Loss Price
+            if (this.updateStopLossFunction && this.isPositionOpen) {
+                const newSL = this.updateStopLossFunction(i, data, this.stopLossPrice, this.position, this.logAction);
+                if (newSL !== this.stopLossPrice) {
+                    this.tradeActions.push({ time, action: 'Stop loss updated', price: newSL });
+                    this.stopLossPrice = newSL;
+                }
+            }
+
+            // Update Target Price
+            if (this.updateTargetPriceFunction) {
+                const newTP = this.updateTargetPriceFunction(i, data, this.targetPrice, this.position, this.logAction);
+                if (newTP !== this.targetPrice) {
+                    this.tradeActions.push({ time, action: 'Target price updated', price: newTP });
+                    this.targetPrice = newTP;
+                }
+            }
         }
 
+        // Auto Square-off
         if (this.isPositionOpen) {
             const lastCandle = data[data.length - 1];
             this.pnl += (lastCandle.close - this.position) * this.quantity * 0.9;

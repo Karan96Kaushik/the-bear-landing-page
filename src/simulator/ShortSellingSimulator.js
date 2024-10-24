@@ -57,7 +57,7 @@ class ShortSellingSimulator {
     }
 
     simulateTrading(data) {
-        for (let i = 0; i < data.length; i++) {
+        for (let i = 1; i < data.length; i++) {
             const { time, open, high, low, close } = data[i];
             
             if (!high || !low || !open || !close) {
@@ -81,7 +81,7 @@ class ShortSellingSimulator {
             }
 
             if (!this.isPositionOpen) {
-                if (this.triggerPrice === 'MKT' && i === 0) {
+                if (this.triggerPrice === 'MKT' && i === 1) {
                     this.position = open;
                     this.isPositionOpen = true;
                     this.tradeActions.push({ time, action: 'Short at Market', price: open });
