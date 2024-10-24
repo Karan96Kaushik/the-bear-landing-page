@@ -543,28 +543,23 @@ const ShortSellingSimulatorPage = () => {
                 <div className="w-full sm:w-1/5 pl-2 flex justify-end items-end">
                   <button 
                     type="button" 
-                    onClick={index === 0 ? addStock : () => removeStock(index)} 
-                    className={`${
-                      index === 0 
-                        ? 'bg-green-500 hover:bg-green-600 focus:ring-green-400' 
-                        : 'bg-red-500 hover:bg-red-600 focus:ring-red-400'
-                    } text-white px-4 py-2 rounded-md transition-all duration-200 ease-in-out flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-offset-2`}
+                    onClick={() => removeStock(index)} 
+                    className="bg-red-500 hover:bg-red-600 focus:ring-red-400 text-white p-2 rounded-md transition-all duration-200 ease-in-out flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-offset-2"
                   >
-                    {index === 0 ? (
-                      <>
-                        <Plus className="h-5 w-5 mr-1" />
-                        <span className="hidden sm:inline">Add Stock</span>
-                      </>
-                    ) : (
-                      <>
-                        <Minus className="h-5 w-5 mr-1" />
-                        <span className="hidden sm:inline">Remove</span>
-                      </>
-                    )}
+                    <Minus className="h-5 w-5" />
                   </button>
                 </div>
               </div>
             ))}
+            <div className="flex justify-end mt-4">
+              <button 
+                type="button" 
+                onClick={addStock} 
+                className="bg-green-500 hover:bg-green-600 focus:ring-green-400 text-white p-2 rounded-md transition-all duration-200 ease-in-out flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-offset-2"
+              >
+                <Plus className="h-5 w-5" />
+              </button>
+            </div>
           </div>
           <div className="flex flex-wrap -mx-2">
             <div className="w-full md:w-1/2 px-2 mb-4">
