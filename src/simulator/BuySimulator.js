@@ -11,7 +11,8 @@ class BuySimulator {
             updateTargetPriceFunction,
             startTime,
             endTime,
-            yahooData
+            yahooData,
+            reEnterPosition
         } = simulationParams;
 
         this.stockSymbol = stockSymbol;
@@ -30,6 +31,7 @@ class BuySimulator {
         this.yahooData = yahooData;
         this.isPositionOpen = false;
         this.logAction = this.logAction.bind(this);
+        this.reEnterPosition = reEnterPosition;
 
     }
 
@@ -67,6 +69,10 @@ class BuySimulator {
                     this.pnl += (this.stopLossPrice - this.position) * this.quantity * 0.9;
                     this.tradeActions.push({ time, action: 'Stop Loss Hit', price: this.stopLossPrice });
                     this.isPositionOpen = false;
+                    if (!this.reEnterPosition) {
+                        break;
+                    } 
+
                 }
 
                 // Target Hit
@@ -74,6 +80,9 @@ class BuySimulator {
                     this.pnl += (this.targetPrice - this.position) * this.quantity * 0.9;
                     this.tradeActions.push({ time, action: 'Target Hit', price: this.targetPrice });
                     this.isPositionOpen = false;
+                    if (!this.reEnterPosition) {
+                        break;
+                    }
                 }
             }
 

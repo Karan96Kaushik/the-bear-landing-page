@@ -78,6 +78,7 @@ const ShortSellingSimulatorPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [simulationType, setSimulationType] = useState('short'); // Add this state
   const [stocks, setStocks] = useState([{ symbol: 'KNRCON', quantity: 100 }]);
+  const [reEnterPosition, setReEnterPosition] = useState(false);
 
   useEffect(() => {
     // Dynamically import the JavaScript mode
@@ -501,7 +502,8 @@ const ShortSellingSimulatorPage = () => {
 
   // Add this function to calculate the grand total
   const calculateGrandTotal = (results) => {
-    return results.reduce((sum, result) => sum + (result.totalPnl || 0), 0);
+    console.debug(results);
+    return results.reduce((sum, result) => sum + (result.totalPnl || result.pnl || 0), 0);
   };
 
   return (
@@ -566,6 +568,7 @@ const ShortSellingSimulatorPage = () => {
               </button>
             </div>
           </div>
+
           <div className="flex flex-wrap -mx-2">
             <div className="w-full md:w-1/2 px-2 mb-4">
               <label className="block text-sm font-medium text-gray-700 mb-1">Trigger Price</label>
@@ -602,6 +605,13 @@ const ShortSellingSimulatorPage = () => {
                 </div>
               </div>
             </div>
+            <div className="w-full md:w-1/2 px-2 mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-1">Re-enter Position</label>
+                <Switch
+                  onChange={() => setReEnterPosition(!reEnterPosition)}
+                  checked={reEnterPosition}
+                />
+              </div>
             <div className="w-full md:w-1/3 px-2 mb-4">
               <label className="block text-sm font-medium text-gray-700 mb-1">Stop Loss Price</label>
               <input

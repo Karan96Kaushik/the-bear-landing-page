@@ -39,7 +39,7 @@ ChartJS.register(
   zoomPlugin
 );
 
-const stocks = ['', 'ONGC', 'SBIN', 'RALLIS','INFY', 'ZOMATO', 'BAJFINANCE' ];
+const stocks = ['ONGC', 'SBIN', 'RALLIS','INFY', 'ZOMATO', 'BAJFINANCE' ];
 const intervals = ['1m', '5m', '15m', '1d'];
 
 const ordersFields = [
@@ -74,8 +74,10 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [selectedStock, setSelectedStock] = useState('');
   const [selectedInterval, setSelectedInterval] = useState('15m');
-  const [startDate, setStartDate] = useState(new Date(Date.now() - 30 * 24 * 60 * 60 * 1000));
-  const [endDate, setEndDate] = useState(new Date());
+  const [startDate, setStartDate] = useState(new Date('2024-10-30'));
+  // const [startDate, setStartDate] = useState(new Date(Date.now() - 30 * 24 * 60 * 60 * 1000));
+  const [endDate, setEndDate] = useState(new Date('2024-10-31'));
+  // const [endDate, setEndDate] = useState(new Date());
 
   const runSchedule = async () => {
     try {
@@ -95,10 +97,13 @@ const Dashboard = () => {
     if (selectedStock.length < 2) return;
     const fetchYahooData = async () => {
       try {
+        let _startDate = new Date(startDate);
+        _startDate.setDate(_startDate.getDate() - 5);
         const [yahooResponse] = await Promise.all([
-          fetchAuthorizedData(`/data/yahoo?symbol=${selectedStock}&interval=${selectedInterval}&startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}`)
+          fetchAuthorizedData(`/data/yahoo?symbol=${selectedStock}&interval=${selectedInterval}&startDate=${_startDate.toISOString()}&endDate=${endDate.toISOString()}`)
         ]);
-        setYahooData(yahooResponse);
+        yahooResponse.filter(d => d.time > startDate);
+        setYahooData(yahooResponse.filter(d => d.time > startDate));
         setLoading(false);
       } catch (err) {
         toast.error('Failed to fetch data');
@@ -193,6 +198,9 @@ const Dashboard = () => {
           },
           tooltipFormat: 'MMM d, yyyy HH:mm',
           timezone: 'Asia/Kolkata' 
+        },
+        ticks: {
+          source: 'data'
         }
       },
       y: {
@@ -248,9 +256,13 @@ const Dashboard = () => {
           .filter(Boolean) // Remove any null entries
       },
       zoom: {
+        limits: {
+          x: {min: 'original', max: 'original'},
+        },
         pan: {
           enabled: true,
           mode: 'x',
+          modifierKey: 'ctrl',  // Optional: require ctrl key for panning
         },
         zoom: {
           wheel: {
@@ -260,9 +272,20 @@ const Dashboard = () => {
             enabled: true,
           },
           mode: 'x',
+          drag: {
+            enabled: true,
+            backgroundColor: 'rgba(127,127,127,0.2)',
+          },
         },
       },
-    }
+    },
+    responsive: true,
+    maintainAspectRatio: false,
+    // Add interaction configuration
+    interaction: {
+      mode: 'x',
+      intersect: false,
+    },
   };
 
   const handleChartUpdate = (chart) => {
@@ -280,16 +303,19 @@ const Dashboard = () => {
         <div className="flex flex-wrap items-center justify-between mb-4">
           <div className="w-full md:w-auto mb-4 md:mb-0">
             <label htmlFor="stock-select" className="block text-sm font-medium text-gray-700 mb-1">Select Stock</label>
-            <select
+            <input
+              list="stocks-list"
               id="stock-select"
               value={selectedStock}
               onChange={(e) => setSelectedStock(e.target.value)}
-              className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
-            >
+              className="mt-1 border border-gray-300 block w-full pl-3 pr-10 py-2 text-base focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+              placeholder="Select or type a stock symbol"
+            />
+            <datalist id="stocks-list" className="bg-gray-600">
               {[...stocks, ...new Set(ordersData?.map(o => o.tradingsymbol)), ...new Set(sheetData?.map(o => o.stockSymbol))].map((stock) => (
-                <option key={stock} value={stock}>{stock}</option>
+                <option key={stock} value={stock} />
               ))}
-            </select>
+            </datalist>
           </div>
           <div className="w-full md:w-auto mb-4 md:mb-0">
             <label htmlFor="stock-select" className="block text-sm font-medium text-gray-700 mb-1">Select Stock</label>
@@ -342,17 +368,19 @@ const Dashboard = () => {
         </div>
         <h2 className="text-xl font-semibold mb-4">{selectedStock} Stock Price</h2>
         {selectedStock && (
-          <Chart
-            type='candlestick'
-            data={yahooChartData}
-            options={candlestickOptions}
-            plugins={[
-              {
-                id: 'chartUpdateHandler',
-                afterUpdate: (chart) => handleChartUpdate(chart),
-              },
-            ]}
-          />
+          <div style={{ height: '600px' }}>
+            <Chart
+              type='candlestick'
+              data={yahooChartData}
+              options={candlestickOptions}
+              // plugins={[
+              //   {
+              //     id: 'chartUpdateHandler',
+              //     afterUpdate: (chart) => handleChartUpdate(chart),
+              //   },
+              // ]}
+            />
+          </div>
         )}
         {!selectedStock && <p className="text-gray-500">Please select a stock</p>}
       </div>
