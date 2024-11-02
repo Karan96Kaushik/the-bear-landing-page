@@ -56,7 +56,7 @@ class BuySimulator {
                     this.tradeActions.push({ time, action: 'Buy at Market', price: open });
                 }
                 // Buy at Limit
-                else if (!this.isPositionOpen && Number(this.triggerPrice) && high >= this.triggerPrice) {
+                else if (!this.isPositionOpen && this.triggerPrice && Number(this.triggerPrice) && high >= this.triggerPrice) {
                     this.position = this.triggerPrice;
                     this.isPositionOpen = true;
                     this.tradeActions.push({ time, action: 'Buy at Limit', price: this.triggerPrice });
@@ -65,7 +65,7 @@ class BuySimulator {
             }
             else {
                 // Stop Loss Hit
-                if (low <= this.stopLossPrice) {
+                if (this.stopLossPrice && low <= this.stopLossPrice) {
                     this.pnl += (this.stopLossPrice - this.position) * this.quantity * 0.9;
                     this.tradeActions.push({ time, action: 'Stop Loss Hit', price: this.stopLossPrice });
                     this.isPositionOpen = false;
@@ -76,7 +76,7 @@ class BuySimulator {
                 }
 
                 // Target Hit
-                if (high >= this.targetPrice) {
+                if (this.targetPrice && high >= this.targetPrice) {
                     this.pnl += (this.targetPrice - this.position) * this.quantity * 0.9;
                     this.tradeActions.push({ time, action: 'Target Hit', price: this.targetPrice });
                     this.isPositionOpen = false;

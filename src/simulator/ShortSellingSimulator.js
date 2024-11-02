@@ -88,7 +88,7 @@ class ShortSellingSimulator {
                     this.isPositionOpen = true;
                     this.tradeActions.push({ time, action: 'Short at Market', price: open });
                 }
-                else if (!this.isPositionOpen && Number(this.triggerPrice) && low <= this.triggerPrice) {
+                else if (!this.isPositionOpen && this.triggerPrice && Number(this.triggerPrice) && low <= this.triggerPrice) {
                     this.position = this.triggerPrice;
                     this.isPositionOpen = true;
                     this.tradeActions.push({ time, action: 'Short at Limit', price: this.triggerPrice });
@@ -103,7 +103,7 @@ class ShortSellingSimulator {
                 }
             }
             else {
-                if (high >= this.stopLossPrice) {
+                if (this.stopLossPrice && high >= this.stopLossPrice) {
                     this.pnl -= (this.stopLossPrice - this.position) * this.quantity * 1.1;
                     this.tradeActions.push({ time, action: 'Stop Loss Hit', price: this.stopLossPrice });
                     this.isPositionOpen = false;
@@ -113,7 +113,7 @@ class ShortSellingSimulator {
                     // break;
                 }
 
-                if (low <= this.targetPrice) {
+                if (this.targetPrice && low <= this.targetPrice) {
                     this.pnl += (this.position - this.targetPrice) * this.quantity + 0.9;
                     this.tradeActions.push({ time, action: 'Target Hit', price: this.targetPrice });
                     this.isPositionOpen = false;

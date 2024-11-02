@@ -41,14 +41,52 @@ ChartJS.register(
 // const updateStopLossFunction = (timestamps, i, high, low, open, close, stopLossPrice) => {
     // console.log(i, i % 15 , i > 15)
 const updateStopLossFunction_text = `
+// 'i', 'data', 'stopLossPrice', 'position', 'logAction'
+// Stop Loss Bearish
+// console.log(i, "SL")
+if (i === 16) {
+  let sl = Math.max(...data.slice(0, 15).map(d => d.high))
+  return sl
+}
+
+if (false)
+    if (i>16 && i%15 === 0) {
+        let sl = Math.max(...data.slice(i-30, i).map(d => d.high))
+        console.log(i, i>16 , i%15)
+        return sl
+    }
+return stopLossPrice;
 `;
 
 const updateTriggerPriceFunction_text = `
 // 'i', 'data', 'triggerPrice', 'position', 'logAction'
+// Trigger Bearish
+if (i === 16) {
+  // high of prev 15 min candle
+  let trigger = Math.min(...data.slice(0, 15).map(d => d.low))
+  
+  return trigger - 1
+}
+
+if (i === 30 && !position) {
+  return 0.1
+}
+
+return triggerPrice
 `;
 
 const updateTargetPriceFunction_text = `
 // 'i', 'data', 'targetPrice', 'position', 'logAction'
+// Target Bearish
+
+if (position && targetPrice === 0) {
+    let max = Math.max(...data.slice(0, 15).map(d => d.high))
+    let min = Math.min(...data.slice(0, 15).map(d => d.low))
+
+    let target = (min - 1) -  (max-min)*2 
+    return target
+}
+return targetPrice
 `;
 
 const initialState = {
@@ -92,7 +130,7 @@ const ShortSellingSimulatorPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [dailyPnL, setDailyPnL] = useState([]);
   const [activeTab, setActiveTab] = useState('stopLoss');
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(true);
   const [selectedResult, setSelectedResult] = useState(null);
   const [selectedResultData, setSelectedResultData] = useState(null);
 
@@ -123,6 +161,8 @@ const ShortSellingSimulatorPage = () => {
       .catch(err => {
         console.error('Failed to load JavaScript mode:', err);
       });
+      loadSavedFunctions();
+
   }, []);
 
   // useEffect(() => {
@@ -413,8 +453,13 @@ const ShortSellingSimulatorPage = () => {
   };
 
   const viewSavedFunctions = async () => {
-    await loadSavedFunctions();
-    setIsModalOpen(true);
+    try {
+    //   await loadSavedFunctions();
+      setIsModalOpen(true);
+    } catch (error) {
+      console.error('Error loading saved functions:', error);
+      toast.error('Failed to load saved functions');
+    }
   };
 
   const loadSavedFunctions = async () => {
