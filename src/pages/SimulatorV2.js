@@ -57,7 +57,7 @@ const initialState = {
   },
   simulation: {
     result: null,
-    type: 'short',
+    type: 'BEARISH',
     isMarketOrder: true,
     reEnterPosition: false
   },
@@ -169,34 +169,38 @@ const ShortSellingSimulatorPage = () => {
           continue;
         }
 
+        currentDate.setUTCHours(0, 0, 0, 999)
+
         // Fetch stocks for current date
         const selectedStocks = await fetchAuthorizedData(`/zaire/selected-stocks?date=${currentDate.toISOString()}`);
-        
+        const runStocks = selectedStocks.stocks.filter(stock => stock.direction == (state.simulation.type))
+
+        console.debug({runStocks})
         // For each stock on this date
-        for (const stock of selectedStocks) {
+        for (const stock of runStocks) {
           const startOfDay = new Date(currentDate);
-          startOfDay.setHours(1, 59, 59, 999);
+          startOfDay.setUTCHours(0, 0, 0, 999);
           const endOfDay = new Date(currentDate);
-          endOfDay.setHours(19, 59, 59, 999);
+          endOfDay.setUTCHours(23, 59, 59, 999);
 
           try {
             // Fetch data for the stock
             const yahooData = await fetchAuthorizedData(
-              `/data/yahoo?symbol=${stock.symbol}&interval=1m&startDate=${startOfDay.toISOString()}&endDate=${endOfDay.toISOString()}`
+              `/data/yahoo?symbol=${stock.sym}&interval=1m&startDate=${startOfDay.toISOString()}&endDate=${endOfDay.toISOString()}`
             );
 
             if (!yahooData || yahooData.length === 0) {
-              console.warn(`No data found for ${stock.symbol} on ${currentDate.toISOString().split('T')[0]}`);
+              console.warn(`No data found for ${stock.sym} on ${currentDate.toISOString().split('T')[0]}`);
               continue;
             }
 
-            const SimulatorClass = state.simulation.type === 'short' ? ShortSellingSimulator : BuySimulator;
+            const SimulatorClass = state.simulation.type === 'BEARISH' ? ShortSellingSimulator : BuySimulator;
             const simulator = new SimulatorClass({
-              stockSymbol: stock.symbol,
+              stockSymbol: stock.sym,
               triggerPrice: state.simulation.isMarketOrder ? 'MKT' : state.prices.trigger,
               stopLossPrice: state.prices.stopLoss,
               targetPrice: state.prices.target,
-              quantity: stock.quantity,
+              quantity: stock.qty,
               updateStopLossFunction,
               updateTriggerPriceFunction,
               updateTargetPriceFunction,
@@ -208,15 +212,15 @@ const ShortSellingSimulatorPage = () => {
             await simulator.run();
 
             allResults.push({
-              symbol: stock.symbol,
+              symbol: stock.sym,
               date: currentDate.toISOString().split('T')[0],
               pnl: simulator.pnl,
-              quantity: stock.quantity
+              quantity: stock.qty
             });
 
           } catch (err) {
-            console.error(`Error simulating ${stock.symbol} on ${currentDate.toISOString().split('T')[0]}:`, err);
-            toast.error(`Failed to simulate ${stock.symbol} on ${currentDate.toISOString().split('T')[0]}`);
+            console.error(`Error simulating ${stock.sym} on ${currentDate.toISOString().split('T')[0]}:`, err);
+            toast.error(`Failed to simulate ${stock.sym} on ${currentDate.toISOString().split('T')[0]}`);
           }
         }
 
@@ -242,25 +246,25 @@ const ShortSellingSimulatorPage = () => {
     }
   };
 
-  const fetchSelectedStocks = async (date) => {
-    try {
-      const response = await fetchAuthorizedData(`/zaire/selected-stocks?date=${date.toISOString()}`);
-      setState(prev => ({
-        ...prev,
-        stocks: response.stocks.map(stock => ({
-          symbol: stock.sym,
-          quantity: stock.qty
-        }))
-      }));
-    } catch (error) {
-      toast.error('Failed to fetch selected stocks');
-      console.error('Error fetching selected stocks:', error);
-    }
-  };
+//   const fetchSelectedStocks = async (date) => {
+//     try {
+//       const response = await fetchAuthorizedData(`/zaire/selected-stocks?date=${date.toISOString()}`);
+//       setState(prev => ({
+//         ...prev,
+//         stocks: response.stocks.map(stock => ({
+//           symbol: stock.sym,
+//           quantity: stock.qty
+//         }))
+//       }));
+//     } catch (error) {
+//       toast.error('Failed to fetch selected stocks');
+//       console.error('Error fetching selected stocks:', error);
+//     }
+//   };
 
-  useEffect(() => {
-    fetchSelectedStocks(state.timeRange.start);
-  }, [state.timeRange.start]);
+//   useEffect(() => {
+//     fetchSelectedStocks(state.timeRange.start);
+//   }, [state.timeRange.start]);
 
   const handleResize = (e) => {
     const startY = e.clientY;
@@ -288,6 +292,7 @@ const ShortSellingSimulatorPage = () => {
   const handleNextDay = () => {
     const newStartTime = new Date(state.timeRange.start);
     newStartTime.setDate(newStartTime.getDate() + 1);
+    newStartTime.setUTCHours(0, 0, 0, 0);
     setState(prev => ({
       ...prev,
       timeRange: {
@@ -298,6 +303,7 @@ const ShortSellingSimulatorPage = () => {
 
     const newEndTime = new Date(state.timeRange.end);
     newEndTime.setDate(newEndTime.getDate() + 1);
+    newEndTime.setUTCHours(23, 59, 59, 999);
     setState(prev => ({
       ...prev,
       timeRange: {
@@ -310,6 +316,7 @@ const ShortSellingSimulatorPage = () => {
   const handlePreviousDay = () => {
     const newStartTime = new Date(state.timeRange.start);
     newStartTime.setDate(newStartTime.getDate() - 1);
+    newStartTime.setUTCHours(0, 0, 0, 0);
     setState(prev => ({
       ...prev,
       timeRange: {
@@ -320,6 +327,7 @@ const ShortSellingSimulatorPage = () => {
 
     const newEndTime = new Date(state.timeRange.end);
     newEndTime.setDate(newEndTime.getDate() - 1);
+    newEndTime.setUTCHours(23, 59, 59, 999);
     setState(prev => ({
       ...prev,
       timeRange: {
@@ -367,31 +375,6 @@ const ShortSellingSimulatorPage = () => {
     }));
   };
 
-  const addStock = () => {
-    setState(prev => ({
-      ...prev,
-      stocks: [...prev.stocks, { symbol: '', quantity: 100 }]
-    }));
-  };
-
-  const removeStock = (index) => {
-    const newStocks = [...state.stocks];
-    newStocks.splice(index, 1);
-    setState(prev => ({
-      ...prev,
-      stocks: newStocks
-    }));
-  };
-
-  const updateStock = (index, field, value) => {
-    const newStocks = [...state.stocks];
-    newStocks[index][field] = value;
-    setState(prev => ({
-      ...prev,
-      stocks: newStocks
-    }));
-  };
-
   function classNames(...classes) {
     return classes.filter(Boolean).join(' ')
   }
@@ -413,15 +396,16 @@ const ShortSellingSimulatorPage = () => {
     }
 
     try {
-      await postAuthorizedData('/functions', {
+      await postAuthorizedData('/data/save-function', {
         name: activeFunction.name,
         code: activeFunction.text,
         type: state.editor.activeTab
       });
       toast.success('Function saved successfully');
-      await loadSavedFunctions(); // Refresh the list of saved functions
-    } catch (err) {
-      toast.error('Failed to save function');
+      await loadSavedFunctions(); // Refresh the list
+    } catch (error) {
+      console.error('Error saving function:', error);
+      toast.error('Failed to save function: ' + error?.response?.data?.message || error?.message || error);
     }
   };
 
@@ -432,10 +416,11 @@ const ShortSellingSimulatorPage = () => {
 
   const loadSavedFunctions = async () => {
     try {
-      const functions = await fetchAuthorizedData('/functions');
+      const functions = await fetchAuthorizedData('/data/functions');
       updateState('editor.savedFunctions', functions);
-    } catch (err) {
-      toast.error('Failed to load saved functions');
+    } catch (error) {
+      console.error('Error fetching saved functions:', error);
+      toast.error('Failed to fetch saved functions');
     }
   };
 
@@ -451,13 +436,16 @@ const ShortSellingSimulatorPage = () => {
     toast.success('Function loaded successfully');
   };
 
-  const deleteFunction = async (id) => {
-    try {
-      await postAuthorizedData(`/functions/${id}`, {}, 'DELETE');
-      await loadSavedFunctions(); // Refresh the list
-      toast.success('Function deleted successfully');
-    } catch (err) {
-      toast.error('Failed to delete function');
+  const deleteFunction = async (functionId) => {
+    if (window.confirm('Are you sure you want to delete this function?')) {
+      try {
+        await postAuthorizedData('/data/delete-function', { _id: functionId });
+        toast.success('Function deleted successfully');
+        await loadSavedFunctions(); // Refresh the list
+      } catch (error) {
+        console.error('Error deleting function:', error);
+        toast.error('Failed to delete function');
+      }
     }
   };
 
@@ -473,17 +461,19 @@ const ShortSellingSimulatorPage = () => {
       )}
       <div className="container mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold mb-6 text-white">Stock Trading Simulator</h1>
-        <form onSubmit={handleSubmit} className="bg-white p-6 rounded-lg shadow mb-8">
+        <form onSubmit={() => {}} className="bg-white p-6 rounded-lg shadow mb-8">
           <div className="flex flex-wrap -mx-2">
             <div className="w-full md:w-1/2 px-2 mb-4 z-[5]">
               <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
               <DatePicker
                 selected={state.timeRange.start}
                 onChange={(date) => {
-                  updateState('timeRange.start', date);
-                  updateState('timeRange.end', new Date(date.getTime() + 24 * 60 * 60 * 1000));
+                  const roundedDate = new Date(date);
+                  roundedDate.setUTCHours(0, 0, 0, 0);
+                  updateState('timeRange.start', roundedDate);
+                  updateState('timeRange.end', new Date(roundedDate.getTime() + 24 * 60 * 60 * 1000));
                 }}
-                dateFormat="MMMM d, yyyy"
+                dateFormat="MMM d, yyyy"
                 className="w-full px-3 py-2 text-base z-[6] border border-gray-300 rounded-md"
               />
             </div>
@@ -492,9 +482,13 @@ const ShortSellingSimulatorPage = () => {
               <div className="flex items-center">
                 <DatePicker
                   selected={state.timeRange.start}
-                  onChange={(date) => updateState('timeRange.start', date)}
+                  onChange={(date) => {
+                    const roundedDate = new Date(date);
+                    roundedDate.setUTCHours(0, 0, 0, 0);
+                    updateState('timeRange.start', roundedDate);
+                  }}
                   showTimeSelect
-                  dateFormat="MMMM d, yyyy h:mm aa"
+                  dateFormat="MMM d, yyyy h:mm aa"
                   className="w-full px-3 py-2 text-base z-[6] border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                 />
               </div>
@@ -503,9 +497,13 @@ const ShortSellingSimulatorPage = () => {
               <label className="block text-sm font-medium text-gray-700 mb-1">End Date & Time</label>
               <DatePicker
                 selected={state.timeRange.end}
-                onChange={(date) => updateState('timeRange.end', date)}
+                onChange={(date) => {
+                  const roundedDate = new Date(date);
+                  roundedDate.setUTCHours(23, 59, 59, 999);
+                  updateState('timeRange.end', roundedDate);
+                }}
                 showTimeSelect
-                dateFormat="MMMM d, yyyy h:mm aa"
+                dateFormat="MMM d, yyyy h:mm aa"
                 className="w-full px-3 py-2 text-base z-[6] border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
               />
             </div>
@@ -554,8 +552,8 @@ const ShortSellingSimulatorPage = () => {
                 onChange={(e) => updateState('simulation.type', e.target.value)}
                 className="w-full px-3 py-2 text-base border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
               >
-                <option value="short">Bear</option>
-                <option value="buy">Bull</option>
+                <option value="BEARISH">Bearish</option>
+                <option value="BULLISH">Bullish</option>
               </select>
             </div>
           </div>
@@ -684,7 +682,7 @@ const ShortSellingSimulatorPage = () => {
             <div className="absolute bottom-0 right-0 w-4 h-4 cursor-se-resize" onMouseDown={handleResize}></div>
           </div>
           <div className="mt-4">
-            <button type="submit" className="w-full bg-indigo-500 text-white px-4 py-2 rounded-md hover:bg-indigo-600">
+            <button onClick={handleSubmit} className="w-full bg-indigo-500 text-white px-4 py-2 rounded-md hover:bg-indigo-600">
               Run Simulation
             </button>
           </div>
