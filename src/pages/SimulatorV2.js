@@ -17,6 +17,7 @@ import Modal from 'react-modal'; // Add this import
 import { Tab } from '@headlessui/react'
 import { X, FileCode, Trash2, Loader2, ChevronRight, ChevronLeft, Plus, Minus } from 'lucide-react'; // Add this import
 
+import SimulationResults from '../components/SimulationResults';
 import 'ace-builds/src-noconflict/theme-monokai';
 import 'ace-builds/webpack-resolver';
 import 'ace-builds/src-noconflict/mode-javascript';
@@ -92,6 +93,8 @@ const ShortSellingSimulatorPage = () => {
   const [dailyPnL, setDailyPnL] = useState([]);
   const [activeTab, setActiveTab] = useState('stopLoss');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedResult, setSelectedResult] = useState(null);
+  const [selectedResultData, setSelectedResultData] = useState(null);
 
   // Helper function to update nested state
   const updateState = (path, value) => {
@@ -449,6 +452,54 @@ const ShortSellingSimulatorPage = () => {
     }
   };
 
+  const handleRowClick = async (result) => {
+    setIsLoading(true);
+    try {
+      const startOfDay = new Date(result.date);
+      startOfDay.setUTCHours(0, 0, 0, 999);
+      const endOfDay = new Date(result.date);
+      endOfDay.setUTCHours(23, 59, 59, 999);
+
+      // Fetch data for the selected stock
+      const yahooData = await fetchAuthorizedData(
+        `/data/yahoo?symbol=${result.symbol}&interval=1m&startDate=${startOfDay.toISOString()}&endDate=${endOfDay.toISOString()}`
+      );
+
+      if (!yahooData || yahooData.length === 0) {
+        throw new Error('No data found for selected stock');
+      }
+
+      // Run simulation for this specific stock
+      const SimulatorClass = state.simulation.type === 'BEARISH' ? ShortSellingSimulator : BuySimulator;
+      const simulator = new SimulatorClass({
+        stockSymbol: result.symbol,
+        triggerPrice: state.simulation.isMarketOrder ? 'MKT' : state.prices.trigger,
+        stopLossPrice: state.prices.stopLoss,
+        targetPrice: state.prices.target,
+        quantity: result.quantity,
+        updateStopLossFunction: new Function('i', 'data', 'stopLossPrice', 'position', 'logAction', state.editor.functions.stopLoss.text),
+        updateTriggerPriceFunction: new Function('i', 'data', 'triggerPrice', 'position', 'logAction', state.editor.functions.trigger.text),
+        updateTargetPriceFunction: new Function('i', 'data', 'targetPrice', 'position', 'logAction', state.editor.functions.target.text),
+        startTime: startOfDay,
+        endTime: endOfDay,
+        yahooData: yahooData
+      });
+
+      await simulator.run();
+      
+      setSelectedResult(result);
+      setSelectedResultData({
+        data: yahooData,
+        tradeActions: simulator.tradeActions,
+        pnl: simulator.pnl
+      });
+    } catch (err) {
+      toast.error(err?.message || 'Failed to load chart data');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="bg-gray-900 min-h-screen relative">
       {isLoading && (
@@ -702,7 +753,11 @@ const ShortSellingSimulatorPage = () => {
               </thead>
               <tbody>
                 {state.simulation.result.results.map((result, index) => (
-                  <tr key={`${result.symbol}-${result.date}`} className={index % 2 === 0 ? 'bg-gray-50' : ''}>
+                  <tr 
+                    key={`${result.symbol}-${result.date}`} 
+                    className={`${index % 2 === 0 ? 'bg-gray-50' : ''} cursor-pointer hover:bg-gray-100`}
+                    onClick={() => handleRowClick(result)}
+                  >
                     <td className="py-2 px-4">{result.symbol}</td>
                     <td className="py-2 px-4">{result.date}</td>
                     <td className="text-right py-2 px-4">{result.quantity}</td>
@@ -719,6 +774,19 @@ const ShortSellingSimulatorPage = () => {
                 </tr>
               </tbody>
             </table>
+
+            {selectedResultData && (
+              <div className="mt-8">
+                <h3 className="text-lg font-semibold mb-4">
+                  Chart for {selectedResult.symbol} on {selectedResult.date}
+                </h3>
+                <SimulationResults
+                  data={selectedResultData.data}
+                  tradeActions={selectedResultData.tradeActions}
+                  pnl={selectedResultData.pnl}
+                />
+              </div>
+            )}
           </div>
         )}
       </div>
