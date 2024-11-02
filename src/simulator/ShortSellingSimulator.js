@@ -11,7 +11,8 @@ class ShortSellingSimulator {
             updateTargetPriceFunction,
             startTime,
             endTime,
-            yahooData
+            yahooData,
+            reEnterPosition
         } = simulationParams;
 
         console.log('simulationParams', simulationParams);
@@ -32,6 +33,7 @@ class ShortSellingSimulator {
         this.yahooData = yahooData;
         this.isPositionOpen = false;
         this.logAction = this.logAction.bind(this);
+        this.reEnterPosition = reEnterPosition;
     }
 
     // fetchData(data) {
@@ -92,7 +94,7 @@ class ShortSellingSimulator {
                     this.tradeActions.push({ time, action: 'Short at Limit', price: this.triggerPrice });
                 }
                 else if (this.updateTriggerPriceFunction) {
-                    const newTP = this.updateTriggerPriceFunction(i, data, this.triggerPrice, this.logAction);
+                    const newTP = this.updateTriggerPriceFunction(i, data, this.triggerPrice, this.position, this.logAction);
                     console.log('newTP', newTP, this.triggerPrice);
                     if (newTP && newTP !== this.triggerPrice) {
                         this.tradeActions.push({ time, action: 'Trigger price updated', price: newTP });
@@ -105,6 +107,9 @@ class ShortSellingSimulator {
                     this.pnl -= (this.stopLossPrice - this.position) * this.quantity * 1.1;
                     this.tradeActions.push({ time, action: 'Stop Loss Hit', price: this.stopLossPrice });
                     this.isPositionOpen = false;
+                    if (!this.reEnterPosition) {
+                        break;
+                    }
                     // break;
                 }
 
@@ -112,6 +117,9 @@ class ShortSellingSimulator {
                     this.pnl += (this.position - this.targetPrice) * this.quantity + 0.9;
                     this.tradeActions.push({ time, action: 'Target Hit', price: this.targetPrice });
                     this.isPositionOpen = false;
+                    if (!this.reEnterPosition) {
+                        break;
+                    }
                     // break;
                 }
             }

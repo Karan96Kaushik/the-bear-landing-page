@@ -51,12 +51,6 @@ const updateTargetPriceFunction_text = `
 `;
 
 const initialState = {
-  stocks: [{ symbol: 'KNRCON', quantity: 100 }],
-  prices: {
-    trigger: undefined,
-    stopLoss: 10000,
-    target: 0
-  },
   timeRange: {
     start: new Date('2024-10-23'),
     end: new Date('2024-10-24')
@@ -66,6 +60,11 @@ const initialState = {
     type: 'short',
     isMarketOrder: true,
     reEnterPosition: false
+  },
+  prices: {
+    trigger: 0,
+    stopLoss: 0,
+    target: 0
   },
   editor: {
     height: '400px',
@@ -158,33 +157,37 @@ const ShortSellingSimulatorPage = () => {
 
     const timeDifference = state.timeRange.end.getTime() - state.timeRange.start.getTime();
     const daysDifference = timeDifference / (1000 * 3600 * 24);
+    
+    try {
+      const allResults = [];
+      let currentDate = new Date(state.timeRange.start);
+      
+      while (currentDate <= state.timeRange.end) {
+        // Skip weekends
+        if (currentDate.getDay() === 0 || currentDate.getDay() === 6) {
+          currentDate.setDate(currentDate.getDate() + 1);
+          continue;
+        }
 
-    const simulateStock = async (stock) => {
-      if (daysDifference > 1) {
-        const dailyResults = [];
-        let currentDate = new Date(state.timeRange.start);
-
-        while (currentDate < state.timeRange.end) {
-          const nextDate = new Date(currentDate);
-          nextDate.setDate(nextDate.getDate() + 1);
-
-          currentDate.setHours(1, 59, 59, 999);
-          nextDate.setHours(11, 59, 59, 999);
-
-          // Skip weekends
-          if (currentDate.getDay() === 0 || currentDate.getDay() === 6) {
-            currentDate.setDate(currentDate.getDate() + 1);
-            continue;
-          }
-
-          const dailyEndTime = nextDate < state.timeRange.end ? nextDate : state.timeRange.end;
+        // Fetch stocks for current date
+        const selectedStocks = await fetchAuthorizedData(`/zaire/selected-stocks?date=${currentDate.toISOString()}`);
+        
+        // For each stock on this date
+        for (const stock of selectedStocks) {
+          const startOfDay = new Date(currentDate);
+          startOfDay.setHours(1, 59, 59, 999);
+          const endOfDay = new Date(currentDate);
+          endOfDay.setHours(19, 59, 59, 999);
 
           try {
-            // Fetch data for each day
-            const dailyYahooData = await fetchAuthorizedData(`/data/yahoo?symbol=${stock.symbol}&interval=1m&startDate=${currentDate.toISOString()}&endDate=${dailyEndTime.toISOString()}`);
+            // Fetch data for the stock
+            const yahooData = await fetchAuthorizedData(
+              `/data/yahoo?symbol=${stock.symbol}&interval=1m&startDate=${startOfDay.toISOString()}&endDate=${endOfDay.toISOString()}`
+            );
 
-            if (!dailyYahooData || dailyYahooData.length === 0) {
-              throw new Error('No data found for the given time range');
+            if (!yahooData || yahooData.length === 0) {
+              console.warn(`No data found for ${stock.symbol} on ${currentDate.toISOString().split('T')[0]}`);
+              continue;
             }
 
             const SimulatorClass = state.simulation.type === 'short' ? ShortSellingSimulator : BuySimulator;
@@ -197,108 +200,41 @@ const ShortSellingSimulatorPage = () => {
               updateStopLossFunction,
               updateTriggerPriceFunction,
               updateTargetPriceFunction,
-              startTime: currentDate,
-              endTime: dailyEndTime,
-              yahooData: dailyYahooData
+              startTime: startOfDay,
+              endTime: endOfDay,
+              yahooData: yahooData
             });
 
             await simulator.run();
-            dailyResults.push({
+
+            allResults.push({
+              symbol: stock.symbol,
               date: currentDate.toISOString().split('T')[0],
               pnl: simulator.pnl,
-              tradeActions: simulator.tradeActions,
-              data: simulator.data
+              quantity: stock.quantity
             });
+
           } catch (err) {
-            toast.error(`Failed to run simulation for ${currentDate.toISOString().split('T')[0]}: ${err.message}`);
+            console.error(`Error simulating ${stock.symbol} on ${currentDate.toISOString().split('T')[0]}:`, err);
+            toast.error(`Failed to simulate ${stock.symbol} on ${currentDate.toISOString().split('T')[0]}`);
           }
-
-          currentDate = new Date(nextDate);
         }
 
-        return {
-          symbol: stock.symbol,
-          quantity: stock.quantity,
-          dailyResults,
-          totalPnl: dailyResults.reduce((sum, day) => sum + day.pnl, 0),
-          tradeActions: dailyResults.flatMap(day => day.tradeActions),
-          data: dailyResults.flatMap(day => day.data)
-        };
-      } else {
-        try {
-          // Fetch data for the stock
-          const stockYahooData = await fetchAuthorizedData(`/data/yahoo?symbol=${stock.symbol}&interval=1m&startDate=${state.timeRange.start.toISOString()}&endDate=${state.timeRange.end.toISOString()}`);
+        // Move to next day
+        currentDate.setDate(currentDate.getDate() + 1);
+      }
 
-          if (!stockYahooData || stockYahooData.length === 0) {
-            throw new Error(`No data found for ${stock.symbol}`);
+      // Update state with results
+      setState(prev => ({
+        ...prev,
+        simulation: {
+          ...prev.simulation,
+          result: {
+            results: allResults
           }
-
-          const SimulatorClass = state.simulation.type === 'short' ? ShortSellingSimulator : BuySimulator;
-          const simulator = new SimulatorClass({
-            stockSymbol: stock.symbol,
-            triggerPrice: state.simulation.isMarketOrder ? 'MKT' : state.prices.trigger,
-            stopLossPrice: state.prices.stopLoss,
-            targetPrice: state.prices.target,
-            quantity: stock.quantity,
-            updateStopLossFunction,
-            updateTriggerPriceFunction,
-            updateTargetPriceFunction,
-            startTime: state.timeRange.start,
-            endTime: state.timeRange.end,
-            yahooData: stockYahooData
-          });
-
-          await simulator.run();
-          return {
-            symbol: stock.symbol,
-            quantity: stock.quantity,
-            pnl: simulator.pnl,
-            tradeActions: simulator.tradeActions,
-            data: simulator.data
-          };
-        } catch (err) {
-          console.error(`Error simulating ${stock.symbol}:`, err);
-          return { symbol: stock.symbol, quantity: stock.quantity, error: err.message };
         }
-      }
-    };
+      }));
 
-    try {
-      const results = await Promise.all(state.stocks.map(simulateStock));
-      const multipleStocks = state.stocks.length > 1;
-
-      if (multipleStocks) {
-        setState(prev => ({
-          ...prev,
-          simulation: {
-            ...prev.simulation,
-            result: {
-              multipleStocks: true,
-              results: results.map(result => ({
-                ...result,
-                dailyResults: result.dailyResults || [{ date: state.timeRange.start.toISOString().split('T')[0], pnl: result.pnl }]
-              }))
-            }
-          }
-        }));
-      } else {
-        const singleResult = results[0];
-        setState(prev => ({
-          ...prev,
-          simulation: {
-            ...prev.simulation,
-            result: {
-              multipleStocks: false,
-              ...singleResult,
-              pnl: singleResult.totalPnl || singleResult.pnl,
-              tradeActions: singleResult.tradeActions,
-              data: singleResult.data
-            }
-          }
-        }));
-      }
-
-      setDailyPnL(multipleStocks ? [] : results[0].dailyResults || []);
     } catch (err) {
       toast.error(err?.message || err || 'Failed to run simulation');
     } finally {
@@ -306,235 +242,25 @@ const ShortSellingSimulatorPage = () => {
     }
   };
 
-  const chartData = {
-    datasets: [
-      {
-        label: 'Stock Price',
-        data: state.simulation.result?.data?.map((d, i) => ({
-          x: d.time,
-          o: d.open,
-          h: d.high,
-          l: d.low,
-          c: d.close
-        })) || [],
-      },
-      {
-        label: 'SMA44',
-        data: state.simulation.result?.data?.map((d) => ({
-          x: d.time,
-          y: d.sma44
-        })) || [],
-        type: 'line',
-        borderColor: 'rgba(255, 99, 132, 1)',
-        borderWidth: 1,
-        pointRadius: 0,
-        yAxisID: 'y',
-      }
-    ]
-  };
-
-  const candlestickOptions = {
-    scales: {
-        x: {
-            type: 'time',
-            time: {
-                unit: 'minute',
-                displayFormats: {
-                    minute: 'HH:mm',
-                },
-                tooltipFormat: 'MMM d, yyyy HH:mm',
-                timezone: 'Asia/Kolkata'
-            }
-        },
-        y: {
-            beginAtZero: false,
-            min: (context) => {
-                const data = context.chart.data?.datasets[0].data;
-                if (!data) return 0;
-                const validLows = data.map(d => d.l).filter(val => val !== null && val !== 0);
-                return Math.min(...validLows) * 0.998; // 0.5% below the lowest point
-              },
-              max: (context) => {
-                const data = context.chart.data?.datasets[0].data;
-                if (!data) return 0;
-                const validHighs = data.map(d => d.h).filter(val => val !== null && val !== 0);
-                return Math.max(...validHighs) * 1.002; // 0.5% above the highest point
-              }
-        }
-    },
-    plugins: {
-      zoom: {
-        limits: {
-          x: {min: 'original', max: 'original'},
-        },
-        pan: {
-          enabled: true,
-          mode: 'x',
-          modifierKey: 'ctrl',  // Optional: require ctrl key for panning
-        },
-        zoom: {
-          wheel: {
-            enabled: true,
-          },
-          pinch: {
-            enabled: true,
-          },
-          mode: 'x',
-          drag: {
-            enabled: true,
-            backgroundColor: 'rgba(127,127,127,0.2)',
-          },
-        },
-      },
-      annotation: {
-          annotations: state.simulation.result?.tradeActions?.map(action => ({
-              type: 'line',
-              xMin: action.time,
-              xMax: action.time,
-              borderColor: 
-                  action?.action.includes('Short') ? 'red' : 
-                  action?.action === 'Stop Loss Hit' ? 'orange' :
-                  action?.action === 'Target Hit' ? 'green' :
-                  action?.action === 'Auto Square-off' ? 'blue' :
-                  'gray',
-              borderWidth: 2,
-              label: {
-                  content: `${action?.action} at ${action?.price?.toFixed(2)}`,
-                  display: true,
-                  position: 'start',
-                  backgroundColor: 
-                      action?.action.includes('Short') ? 'red' : 
-                      action?.action === 'Stop Loss Hit' ? 'orange' :
-                      action?.action === 'Target Hit' ? 'green' :
-                      action?.action === 'Auto Square-off' ? 'blue' :
-                      'gray',
-                  font: {
-                      size: 12
-                  },
-                  padding: 4
-              }
-          })) || []
-      },
-      responsive: true,
-      maintainAspectRatio: false,
-      // Add interaction configuration
-      interaction: {
-        mode: 'x',
-        intersect: false,
-      },
-    }
-  };
-
-  const saveFunction = async () => {
+  const fetchSelectedStocks = async (date) => {
     try {
-      const functionType = state.editor.activeTab;
-      const functionText = functionType === 'stopLoss' ? state.editor.functions.stopLoss.text :
-                           functionType === 'targetPrice' ? state.editor.functions.target.text : state.editor.functions.trigger.text;
-      const functionName = functionType === 'stopLoss' ? state.editor.functions.stopLoss.name :
-                           functionType === 'targetPrice' ? state.editor.functions.target.name : state.editor.functions.trigger.name;
-
-      await postAuthorizedData('/data/save-function', {
-        name: functionName,
-        code: functionText,
-        type: functionType,
-      });
-      toast.success('Function saved successfully');
+      const response = await fetchAuthorizedData(`/zaire/selected-stocks?date=${date.toISOString()}`);
+      setState(prev => ({
+        ...prev,
+        stocks: response.stocks.map(stock => ({
+          symbol: stock.sym,
+          quantity: stock.qty
+        }))
+      }));
     } catch (error) {
-      console.error('Error saving function:', error);
-      toast.error('Failed to save function: ' + error?.response?.data?.message || error?.message || error);
+      toast.error('Failed to fetch selected stocks');
+      console.error('Error fetching selected stocks:', error);
     }
   };
 
-  const viewSavedFunctions = async () => {
-    try {
-      const response = await fetchAuthorizedData('/data/functions');
-      setState(prev => ({
-        ...prev,
-        editor: {
-          ...prev.editor,
-          savedFunctions: response
-        }
-      }));
-      setIsModalOpen(true);
-    } catch (error) {
-      console.error('Error fetching saved functions:', error);
-      toast.error('Failed to fetch saved functions');
-    }
-  };
-
-  const loadFunction = (functionCode, functionType, functionName) => {
-    if (functionType === 'stopLoss') {
-      setState(prev => ({
-        ...prev,
-        editor: {
-          ...prev.editor,
-          functions: {
-            ...prev.editor.functions,
-            stopLoss: {
-              ...prev.editor.functions.stopLoss,
-              text: functionCode,
-              name: functionName
-            }
-          }
-        }
-      }));
-      setActiveTab('stopLoss');
-    } else if (functionType === 'targetPrice') {
-      setState(prev => ({
-        ...prev,
-        editor: {
-          ...prev.editor,
-          functions: {
-            ...prev.editor.functions,
-            target: {
-              ...prev.editor.functions.target,
-              text: functionCode,
-              name: functionName
-            }
-          }
-        }
-      }));
-      setActiveTab('targetPrice');
-    } else if (functionType === 'triggerPrice') {
-      setState(prev => ({
-        ...prev,
-        editor: {
-          ...prev.editor,
-          functions: {
-            ...prev.editor.functions,
-            trigger: {
-              ...prev.editor.functions.trigger,
-              text: functionCode,
-              name: functionName
-            }
-          }
-        }
-      }));
-      setActiveTab('triggerPrice');
-    }
-    setIsModalOpen(false);
-  };
-
-  const deleteFunction = async (functionId) => {
-    if (window.confirm('Are you sure you want to delete this function?')) {
-      try {
-        await postAuthorizedData('/data/delete-function', { _id: functionId });
-        toast.success('Function deleted successfully');
-        // Refresh the list of saved functions
-        const response = await fetchAuthorizedData('/data/functions');
-        setState(prev => ({
-          ...prev,
-          editor: {
-            ...prev.editor,
-            savedFunctions: response
-          }
-        }));
-      } catch (error) {
-        console.error('Error deleting function:', error);
-        toast.error('Failed to delete function');
-      }
-    }
-  };
+  useEffect(() => {
+    fetchSelectedStocks(state.timeRange.start);
+  }, [state.timeRange.start]);
 
   const handleResize = (e) => {
     const startY = e.clientY;
@@ -676,6 +402,65 @@ const ShortSellingSimulatorPage = () => {
     return results.reduce((sum, result) => sum + (result.totalPnl || result.pnl || 0), 0);
   };
 
+  const saveFunction = async () => {
+    const activeFunction = state.editor.activeTab === 'stopLoss' ? state.editor.functions.stopLoss :
+                          state.editor.activeTab === 'targetPrice' ? state.editor.functions.target :
+                          state.editor.functions.trigger;
+
+    if (!activeFunction.name) {
+      toast.error('Please provide a function name');
+      return;
+    }
+
+    try {
+      await postAuthorizedData('/functions', {
+        name: activeFunction.name,
+        code: activeFunction.text,
+        type: state.editor.activeTab
+      });
+      toast.success('Function saved successfully');
+      await loadSavedFunctions(); // Refresh the list of saved functions
+    } catch (err) {
+      toast.error('Failed to save function');
+    }
+  };
+
+  const viewSavedFunctions = async () => {
+    await loadSavedFunctions();
+    setIsModalOpen(true);
+  };
+
+  const loadSavedFunctions = async () => {
+    try {
+      const functions = await fetchAuthorizedData('/functions');
+      updateState('editor.savedFunctions', functions);
+    } catch (err) {
+      toast.error('Failed to load saved functions');
+    }
+  };
+
+  const loadFunction = (code, type, name) => {
+    const functionPath = type === 'stopLoss' ? 'editor.functions.stopLoss' :
+                        type === 'targetPrice' ? 'editor.functions.target' :
+                        'editor.functions.trigger';
+
+    updateState(`${functionPath}.text`, code);
+    updateState(`${functionPath}.name`, name);
+    updateState('editor.activeTab', type);
+    setIsModalOpen(false);
+    toast.success('Function loaded successfully');
+  };
+
+  const deleteFunction = async (id) => {
+    try {
+      await postAuthorizedData(`/functions/${id}`, {}, 'DELETE');
+      await loadSavedFunctions(); // Refresh the list
+      toast.success('Function deleted successfully');
+    } catch (err) {
+      toast.error('Failed to delete function');
+    }
+  };
+
   return (
     <div className="bg-gray-900 min-h-screen relative">
       {isLoading && (
@@ -689,115 +474,17 @@ const ShortSellingSimulatorPage = () => {
       <div className="container mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold mb-6 text-white">Stock Trading Simulator</h1>
         <form onSubmit={handleSubmit} className="bg-white p-6 rounded-lg shadow mb-8">
-          <div className="mb-6 bg-gray-50 p-6 rounded-lg shadow-inner">
-            <h3 className="text-lg font-semibold mb-4 text-gray-700">Stocks</h3>
-            {state.stocks.map((stock, index) => (
-              <div key={index} className="flex flex-wrap items-center mb-4 pb-4 border-b border-gray-200 last:border-b-0 last:mb-0 last:pb-0">
-                <div className="w-full sm:w-2/5 pr-2 mb-2 sm:mb-0">
-                  <label className="block text-sm font-medium text-gray-600 mb-1">
-                    Symbol
-                  </label>
-                  <input
-                    type="text"
-                    value={stock.symbol}
-                    onChange={(e) => updateStock(index, 'symbol', e.target.value)}
-                    className="w-full px-3 py-2 text-base border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
-                    placeholder="e.g., AAPL"
-                  />
-                </div>
-                <div className="w-full sm:w-2/5 px-2 mb-2 sm:mb-0">
-                  <label className="block text-sm font-medium text-gray-600 mb-1">
-                    Quantity
-                  </label>
-                  <input
-                    type="number"
-                    value={stock.quantity}
-                    onChange={(e) => updateStock(index, 'quantity', Number(e.target.value))}
-                    className="w-full px-3 py-2 text-base border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
-                    placeholder="Enter quantity"
-                  />
-                </div>
-                <div className="w-full sm:w-1/5 pl-2 flex justify-end items-end">
-                  <button 
-                    type="button" 
-                    onClick={() => removeStock(index)} 
-                    className="bg-red-500 hover:bg-red-600 focus:ring-red-400 text-white p-2 rounded-md transition-all duration-200 ease-in-out flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-offset-2"
-                  >
-                    <Minus className="h-5 w-5" />
-                  </button>
-                </div>
-              </div>
-            ))}
-            <div className="flex justify-end mt-4">
-              <button 
-                type="button" 
-                onClick={addStock} 
-                className="bg-green-500 hover:bg-green-600 focus:ring-green-400 text-white p-2 rounded-md transition-all duration-200 ease-in-out flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-offset-2"
-              >
-                <Plus className="h-5 w-5" />
-              </button>
-            </div>
-          </div>
-
           <div className="flex flex-wrap -mx-2">
-            <div className="w-full md:w-1/2 px-2 mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Trigger Price</label>
-              <div className="flex items-center">
-                {!state.simulation.isMarketOrder && (
-                  <input
-                    type="number"
-                    value={state.prices.trigger}
-                    onChange={(e) => updateState('prices.trigger', Number(e.target.value))}
-                    className="w-full px-3 py-2 text-base border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                  />
-                )}
-                {state.simulation.isMarketOrder && (
-                  <span className="w-full px-3 py-2 text-base border border-gray-300 rounded-md bg-gray-100">
-                    MKT
-                  </span>
-                )}
-                <div className="ml-2 flex items-center">
-                  <Switch
-                    onChange={() => updateState('simulation.isMarketOrder', !state.simulation.isMarketOrder)}
-                    checked={state.simulation.isMarketOrder}
-                    onColor="#86d3ff"
-                    onHandleColor="#2693e6"
-                    handleDiameter={24}
-                    uncheckedIcon={false}
-                    checkedIcon={false}
-                    boxShadow="0px 1px 5px rgba(0, 0, 0, 0.6)"
-                    activeBoxShadow="0px 0px 1px 10px rgba(0, 0, 0, 0.2)"
-                    height={20}
-                    width={48}
-                    className="react-switch"
-                  />
-                  <span className="ml-2 text-sm text-gray-600">Market Order</span>
-                </div>
-              </div>
-            </div>
-            <div className="w-full md:w-1/2 px-2 mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Re-enter Position</label>
-                <Switch
-                  onChange={() => updateState('simulation.reEnterPosition', !state.simulation.reEnterPosition)}
-                  checked={state.simulation.reEnterPosition}
-                />
-              </div>
-            <div className="w-full md:w-1/3 px-2 mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Stop Loss Price</label>
-              <input
-                type="number"
-                value={state.prices.stopLoss}
-                onChange={(e) => updateState('prices.stopLoss', Number(e.target.value))}
-                className="w-full px-3 py-2 text-base border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-              />
-            </div>
-            <div className="w-full md:w-1/3 px-2 mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Target Price</label>
-              <input
-                type="number"
-                value={state.prices.target}
-                onChange={(e) => updateState('prices.target', Number(e.target.value))}
-                className="w-full px-3 py-2 text-base border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+            <div className="w-full md:w-1/2 px-2 mb-4 z-[5]">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
+              <DatePicker
+                selected={state.timeRange.start}
+                onChange={(date) => {
+                  updateState('timeRange.start', date);
+                  updateState('timeRange.end', new Date(date.getTime() + 24 * 60 * 60 * 1000));
+                }}
+                dateFormat="MMMM d, yyyy"
+                className="w-full px-3 py-2 text-base z-[6] border border-gray-300 rounded-md"
               />
             </div>
             <div className="w-full md:w-1/2 px-2 mb-4 z-[5]">
@@ -997,131 +684,39 @@ const ShortSellingSimulatorPage = () => {
             <div className="absolute bottom-0 right-0 w-4 h-4 cursor-se-resize" onMouseDown={handleResize}></div>
           </div>
           <div className="mt-4">
-            <button type="submit" className="w-full bg-indigo-500 text-white px-4 py-2 rounded-md hover:bg-indigo-600 transition-colors">
+            <button type="submit" className="w-full bg-indigo-500 text-white px-4 py-2 rounded-md hover:bg-indigo-600">
               Run Simulation
             </button>
           </div>
         </form>
 
-        {state.simulation.result && !state.simulation.result.multipleStocks && (
+        {state.simulation.result && (
           <div className="bg-white p-6 rounded-lg shadow mb-8">
             <h2 className="text-xl font-semibold mb-4">Simulation Results</h2>
-            <Chart
-              type='candlestick'
-              data={chartData}
-              options={candlestickOptions}
-            />
-            <p className="mt-4">Final P&L: {state.simulation.result.pnl?.toFixed(2)}</p>
-            <h3 className="text-lg font-semibold mt-4 mb-2">Trade Actions:</h3>
-            <ul className="list-disc pl-5">
-              {state.simulation.result.tradeActions?.map((action, index) => (
-                <li key={index} className={`mb-1 ${
-                  action?.action.includes('Short') ? 'text-red-600' :
-                  action?.action === 'Stop Loss Hit' ? 'text-orange-600' :
-                  action?.action === 'Target Hit' ? 'text-green-600' :
-                  action?.action === 'Auto Square-off' ? 'text-blue-600' :
-                  'text-gray-600'
-                }`}>
-                  {new Date(action.time).toLocaleString()}: {action?.action} at {action?.price?.toFixed(2)}
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-
-        {state.simulation.result && state.simulation.result.multipleStocks && (
-          <div className="bg-white p-6 rounded-lg shadow mb-8">
-            <h2 className="text-xl font-semibold mb-4">Simulation Results</h2>
-            {state.simulation.result.results.map((stockResult, stockIndex) => (
-              <div key={stockIndex} className="mb-8">
-                <h3 className="text-lg font-semibold mb-2">{stockResult.symbol}</h3>
-                <table className="w-full mb-4">
-                  <thead>
-                    <tr className="bg-gray-100">
-                      <th className="text-left py-2 px-4">Date</th>
-                      <th className="text-right py-2 px-4">Quantity</th>
-                      <th className="text-right py-2 px-4">P&L</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {stockResult.dailyResults?.map((day, dayIndex) => (
-                      <tr key={dayIndex} className={dayIndex % 2 === 0 ? 'bg-gray-50' : ''}>
-                        <td className="py-2 px-4">{day.date}</td>
-                        <td className="text-right py-2 px-4">{stockResult.quantity}</td>
-                        <td className={`text-right py-2 px-4 ${day.pnl >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                          {day.pnl?.toFixed(2)}
-                        </td>
-                      </tr>
-                    ))}
-                    <tr className="font-bold bg-gray-100">
-                      <td className="py-2 px-4" colSpan="2">Total for {stockResult.symbol}</td>
-                      <td className={`text-right py-2 px-4 ${stockResult.totalPnl >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                        {stockResult.totalPnl?.toFixed(2)}
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            ))}
-            <div className="mt-6 pt-4 border-t border-gray-200">
-              <h3 className="text-lg font-semibold mb-2">Overall Results</h3>
-              <table className="w-full">
-                <thead>
-                  <tr className="bg-gray-100">
-                    <th className="text-left py-2 px-4">Stock Symbol</th>
-                    <th className="text-right py-2 px-4">Total P&L</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {state.simulation.result.results.map((result, index) => (
-                    <tr key={index} className={index % 2 === 0 ? 'bg-gray-50' : ''}>
-                      <td className="py-2 px-4">{result.symbol}</td>
-                      <td className={`text-right py-2 px-4 ${result.totalPnl >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                        {result.totalPnl?.toFixed(2)}
-                      </td>
-                    </tr>
-                  ))}
-                  {/* Updated Grand Total row */}
-                  {(() => {
-                    const grandTotal = calculateGrandTotal(state.simulation.result.results);
-                    return (
-                      <tr className="font-bold bg-gray-100">
-                        <td className="py-2 px-4">Grand Total</td>
-                        <td className={`text-right py-2 px-4 ${grandTotal >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                          {grandTotal.toFixed(2)}
-                        </td>
-                      </tr>
-                    );
-                  })()}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
-
-        {dailyPnL.length > 0 && (
-          <div className="bg-white p-6 rounded-lg shadow mb-8">
-            <h2 className="text-xl font-semibold mb-4">Daily P&L Results</h2>
             <table className="w-full">
               <thead>
-                <tr>
-                  <th className="text-left">Date</th>
-                  <th className="text-right">P&L</th>
+                <tr className="bg-gray-100">
+                  <th className="text-left py-2 px-4">Stock</th>
+                  <th className="text-left py-2 px-4">Date</th>
+                  <th className="text-right py-2 px-4">Quantity</th>
+                  <th className="text-right py-2 px-4">P&L</th>
                 </tr>
               </thead>
               <tbody>
-                {dailyPnL.map((day, index) => (
-                  <tr key={index} className={index % 2 === 0 ? 'bg-gray-100' : ''}>
-                    <td className="py-2">{day.date}</td>
-                    <td className={`text-right ${day.pnl >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                      {day.pnl?.toFixed(2)}
+                {state.simulation.result.results.map((result, index) => (
+                  <tr key={`${result.symbol}-${result.date}`} className={index % 2 === 0 ? 'bg-gray-50' : ''}>
+                    <td className="py-2 px-4">{result.symbol}</td>
+                    <td className="py-2 px-4">{result.date}</td>
+                    <td className="text-right py-2 px-4">{result.quantity}</td>
+                    <td className={`text-right py-2 px-4 ${result.pnl >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      {result.pnl?.toFixed(2)}
                     </td>
                   </tr>
                 ))}
-                <tr className="font-bold">
-                  <td className="py-2">Total</td>
-                  <td className={`text-right ${dailyPnL.reduce((sum, day) => sum + day.pnl, 0) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                    {dailyPnL.reduce((sum, day) => sum + day.pnl, 0).toFixed(2)}
+                <tr className="font-bold bg-gray-100">
+                  <td className="py-2 px-4" colSpan="3">Grand Total</td>
+                  <td className={`text-right py-2 px-4 ${calculateGrandTotal(state.simulation.result.results) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    {calculateGrandTotal(state.simulation.result.results).toFixed(2)}
                   </td>
                 </tr>
               </tbody>

@@ -97,7 +97,7 @@ class BuySimulator {
             }
 
             // Update Stop Loss Price
-            if (this.updateStopLossFunction && this.isPositionOpen) {
+            if (this.updateStopLossFunction) {
                 const newSL = this.updateStopLossFunction(i, data, this.stopLossPrice, this.position, this.logAction);
                 if (newSL !== this.stopLossPrice) {
                     this.tradeActions.push({ time, action: 'Stop loss updated', price: newSL });
