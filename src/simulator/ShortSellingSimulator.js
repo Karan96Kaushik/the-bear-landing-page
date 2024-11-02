@@ -18,7 +18,7 @@ class ShortSellingSimulator {
         console.log('simulationParams', simulationParams);
 
         this.stockSymbol = stockSymbol;
-        this.triggerPrice = triggerPrice;
+        // this.triggerPrice = triggerPrice;
         this.stopLossPrice = stopLossPrice;
         this.targetPrice = targetPrice;
         this.quantity = quantity;
@@ -66,8 +66,8 @@ class ShortSellingSimulator {
                 continue;
             }
 
-            if (this.updateStopLossFunction && this.isPositionOpen) {
-                const newSL = this.updateStopLossFunction(i, data, this.stopLossPrice, this.logAction);
+            if (this.updateStopLossFunction) {
+                const newSL = this.updateStopLossFunction(i, data, this.stopLossPrice, this.position, this.logAction);
                 if (newSL !== this.stopLossPrice) {
                     this.tradeActions.push({ time, action: 'Stop loss updated', price: newSL });
                     this.stopLossPrice = newSL;
@@ -75,7 +75,7 @@ class ShortSellingSimulator {
             }
 
             if (this.updateTargetPriceFunction) {
-                const newTP = this.updateTargetPriceFunction(i, data, this.targetPrice, this.logAction);
+                const newTP = this.updateTargetPriceFunction(i, data, this.targetPrice, this.position, this.logAction);
                 if (newTP !== this.targetPrice) {
                     this.tradeActions.push({ time, action: 'Target price updated', price: newTP });
                     this.targetPrice = newTP;
@@ -88,7 +88,7 @@ class ShortSellingSimulator {
                     this.isPositionOpen = true;
                     this.tradeActions.push({ time, action: 'Short at Market', price: open });
                 }
-                else if (!this.isPositionOpen && this.triggerPrice && Number(this.triggerPrice) && low <= this.triggerPrice) {
+                else if (!this.isPositionOpen && this.triggerPrice && Number(this.triggerPrice) && low <= Number(this.triggerPrice)) {
                     this.position = this.triggerPrice;
                     this.isPositionOpen = true;
                     this.tradeActions.push({ time, action: 'Short at Limit', price: this.triggerPrice });

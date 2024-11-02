@@ -41,29 +41,36 @@ ChartJS.register(
 // const updateStopLossFunction = (timestamps, i, high, low, open, close, stopLossPrice) => {
     // console.log(i, i % 15 , i > 15)
 const updateStopLossFunction_text = `
+
 // 'i', 'data', 'stopLossPrice', 'position', 'logAction'
 // Stop Loss Bearish
-// console.log(i, "SL")
 if (i === 16) {
-  let sl = Math.max(...data.slice(0, 15).map(d => d.high))
+  console.log(i, "SL", position)
+  let sl = Math.max(...data.slice(0, 15).map(d => d.high).filter(d => d))
+  console.log(sl)
   return sl
 }
 
 if (false)
     if (i>16 && i%15 === 0) {
-        let sl = Math.max(...data.slice(i-30, i).map(d => d.high))
+        let sl = Math.max(...data.slice(i-30, i).map(d => d.high).filter(d => d))
         console.log(i, i>16 , i%15)
         return sl
     }
 return stopLossPrice;
+
 `;
 
 const updateTriggerPriceFunction_text = `
 // 'i', 'data', 'triggerPrice', 'position', 'logAction'
 // Trigger Bearish
+
+// 'i', 'data', 'triggerPrice', 'position', 'logAction'
+// Trigger Bearish
 if (i === 16) {
   // high of prev 15 min candle
-  let trigger = Math.min(...data.slice(0, 15).map(d => d.low))
+  let trigger = Math.min(...data.slice(0, 15).map(d => d.low).filter(d => d))
+  console.log("D Low", data.slice(0, 15).map(d => d.low))
   
   return trigger - 1
 }
@@ -73,6 +80,7 @@ if (i === 30 && !position) {
 }
 
 return triggerPrice
+
 `;
 
 const updateTargetPriceFunction_text = `
@@ -80,8 +88,8 @@ const updateTargetPriceFunction_text = `
 // Target Bearish
 
 if (position && targetPrice === 0) {
-    let max = Math.max(...data.slice(0, 15).map(d => d.high))
-    let min = Math.min(...data.slice(0, 15).map(d => d.low))
+    let max = Math.max(...data.slice(0, 15).map(d => d.high).filter(d => d))
+    let min = Math.min(...data.slice(0, 15).map(d => d.low).filter(d => d))
 
     let target = (min - 1) -  (max-min)*2 
     return target
@@ -240,9 +248,9 @@ const ShortSellingSimulatorPage = () => {
             const SimulatorClass = state.simulation.type === 'BEARISH' ? ShortSellingSimulator : BuySimulator;
             const simulator = new SimulatorClass({
               stockSymbol: stock.sym,
-              triggerPrice: state.simulation.isMarketOrder ? 'MKT' : state.prices.trigger,
-              stopLossPrice: state.prices.stopLoss,
-              targetPrice: state.prices.target,
+              triggerPrice: null,
+              stopLossPrice: null,
+              targetPrice: null,
               quantity: stock.qty,
               updateStopLossFunction,
               updateTriggerPriceFunction,
@@ -454,7 +462,7 @@ const ShortSellingSimulatorPage = () => {
 
   const viewSavedFunctions = async () => {
     try {
-    //   await loadSavedFunctions();
+      await loadSavedFunctions();
       setIsModalOpen(true);
     } catch (error) {
       console.error('Error loading saved functions:', error);
@@ -557,7 +565,7 @@ const ShortSellingSimulatorPage = () => {
       )}
       <div className="container mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold mb-6 text-white">Stock Trading Simulator</h1>
-        <form onSubmit={() => {}} className="bg-white p-6 rounded-lg shadow mb-8">
+        <div className="bg-white p-6 rounded-lg shadow mb-8">
           <div className="flex flex-wrap -mx-2">
             <div className="w-full md:w-1/2 px-2 mb-4 z-[5]">
               <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
@@ -782,7 +790,7 @@ const ShortSellingSimulatorPage = () => {
               Run Simulation
             </button>
           </div>
-        </form>
+        </div>
 
         {state.simulation.result && (
           <div className="bg-white p-6 rounded-lg shadow mb-8">
