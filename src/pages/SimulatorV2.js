@@ -526,9 +526,9 @@ const ShortSellingSimulatorPage = () => {
       const SimulatorClass = state.simulation.type === 'BEARISH' ? ShortSellingSimulator : BuySimulator;
       const simulator = new SimulatorClass({
         stockSymbol: result.symbol,
-        triggerPrice: state.simulation.isMarketOrder ? 'MKT' : state.prices.trigger,
-        stopLossPrice: state.prices.stopLoss,
-        targetPrice: state.prices.target,
+        triggerPrice: null,
+        stopLossPrice: null,
+        targetPrice: null,
         quantity: result.quantity,
         updateStopLossFunction: new Function('i', 'data', 'stopLossPrice', 'position', 'logAction', state.editor.functions.stopLoss.text),
         updateTriggerPriceFunction: new Function('i', 'data', 'triggerPrice', 'position', 'logAction', state.editor.functions.trigger.text),
