@@ -15,7 +15,7 @@ class ShortSellingSimulator {
             reEnterPosition
         } = simulationParams;
 
-        console.log('simulationParams', simulationParams);
+        // console.log('simulationParams', simulationParams);
 
         this.stockSymbol = stockSymbol;
         // this.triggerPrice = triggerPrice;
@@ -95,7 +95,6 @@ class ShortSellingSimulator {
                 }
                 else if (this.updateTriggerPriceFunction) {
                     const newTP = this.updateTriggerPriceFunction(i, data, this.triggerPrice, this.position, this.logAction);
-                    console.log('newTP', newTP, this.triggerPrice);
                     if (newTP && newTP !== this.triggerPrice) {
                         this.tradeActions.push({ time, action: 'Trigger price updated', price: newTP });
                         this.triggerPrice = newTP;

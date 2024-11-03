@@ -226,7 +226,6 @@ const ShortSellingSimulatorPage = () => {
         const selectedStocks = await fetchAuthorizedData(`/zaire/selected-stocks?date=${currentDate.toISOString()}`);
         const runStocks = selectedStocks.stocks.filter(stock => stock.direction == (state.simulation.type))
 
-        console.debug({runStocks})
         // For each stock on this date
         for (const stock of runStocks) {
           const startOfDay = new Date(currentDate);

@@ -1,5 +1,26 @@
 import React from 'react';
 import { Chart } from 'react-chartjs-2';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  TimeScale,
+  CandlestickController,
+  LineController,
+} from 'chart.js';
+
+// Register the controllers and elements
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  TimeScale,
+  CandlestickController,
+  LineController,
+);
 
 /**
  * @typedef {Object} TradeAction
