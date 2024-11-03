@@ -7,9 +7,9 @@ import {
   PointElement,
   LineElement,
   TimeScale,
-  CandlestickController,
   LineController,
 } from 'chart.js';
+import { CandlestickController, CandlestickElement } from 'chartjs-chart-financial';
 
 // Register the controllers and elements
 ChartJS.register(
