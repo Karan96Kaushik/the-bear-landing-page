@@ -2,6 +2,27 @@ import React from 'react';
 import { Chart } from 'react-chartjs-2';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
+import {
+    Chart as ChartJS,
+    CategoryScale,
+    LinearScale,
+    PointElement,
+    LineElement,
+    TimeScale,
+    LineController,
+} from 'chart.js';
+import { CandlestickController, CandlestickElement } from 'chartjs-chart-financial';
+  
+// Register the controllers and elements
+ChartJS.register(
+    CategoryScale,
+    LinearScale,
+    PointElement,
+    LineElement,
+    TimeScale,
+    CandlestickController,
+    LineController,
+);
 
 const intervals = ['1m', '5m', '15m', '1d'];
 
