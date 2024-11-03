@@ -161,6 +161,28 @@ const ShortSellingSimulatorPage = () => {
     });
   };
 
+  const loadNseiData = async (result) => {
+    try {
+
+        const startOfDay = new Date(result.date);
+        startOfDay.setUTCHours(0, 0, 0, 999);
+        const endOfDay = new Date(result.date);
+        endOfDay.setUTCHours(23, 59, 59, 999);
+  
+        // Fetch data for the selected stock
+        let nseiData = await fetchAuthorizedData(
+          `/data/yahoo?symbol=${'^NSEI'}&interval=1m&startDate=${startOfDay.toISOString()}&endDate=${endOfDay.toISOString()}`
+        );
+
+        nseiData = nseiData.filter(d => d.close && d.high && d.sma44);
+
+      updateState('nseiData', nseiData);
+    } catch (err) {
+      console.error('Error fetching NSEI data:', err);
+      toast.error('Failed to fetch NSEI data');
+    }
+  }
+
   useEffect(() => {
     // Dynamically import the JavaScript mode
     import('ace-builds/src-noconflict/mode-javascript')
@@ -274,7 +296,7 @@ const ShortSellingSimulatorPage = () => {
             toast.error(`Failed to simulate ${stock.sym} on ${currentDate.toISOString().split('T')[0]}`);
           }
         }
-
+        toast.success(`Data fetched till ${currentDate.toISOString().split('T')[0]}`);
         // Move to next day
         currentDate.setDate(currentDate.getDate() + 1);
       }
@@ -522,6 +544,8 @@ const ShortSellingSimulatorPage = () => {
       const yahooData = await fetchAuthorizedData(
         `/data/yahoo?symbol=${result.symbol}&interval=1m&startDate=${startOfDay.toISOString()}&endDate=${endOfDay.toISOString()}`
       );
+
+      await loadNseiData(result);
 
       if (!yahooData || yahooData.length === 0) {
         throw new Error('No data found for selected stock');
@@ -842,6 +866,7 @@ const ShortSellingSimulatorPage = () => {
                   data={selectedResultData.data}
                   tradeActions={selectedResultData.tradeActions}
                   pnl={selectedResultData.pnl}
+                  nseiData={state.nseiData}
                 />
               </div>
             )}

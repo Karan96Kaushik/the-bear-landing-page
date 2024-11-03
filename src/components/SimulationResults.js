@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Chart } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
@@ -47,33 +47,61 @@ ChartJS.register(
  * @param {number} props.pnl - Final Profit/Loss value
  * @returns {JSX.Element}
  */
-const SimulationResults = ({ data, tradeActions, pnl }) => {
-  const chartData = {
-    datasets: [
-      {
-        label: 'Stock Price',
-        data: data?.map((d) => ({
+const SimulationResults = ({ data, tradeActions, pnl, nseiData }) => {
+console.log({nseiData});
+  // Add theme detection
+  const isDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+  const chartData = useMemo(() => {
+    let chartData = {
+      datasets: [
+        {
+          label: 'Stock Price',
+          data: data?.map((d) => ({
+            x: d.time,
+            o: d.open,
+            h: d.high,
+            l: d.low,
+            c: d.close
+          })) || [],
+          color: {
+            up: isDarkMode ? '#26a69a' : '#26a69a',    // Green for up candles
+            down: isDarkMode ? '#ef5350' : '#ef5350',   // Red for down candles
+          },
+        },
+        {
+          label: 'SMA44',
+          data: data?.map((d) => ({
+            x: d.time,
+            y: d.sma44
+          })) || [],
+          type: 'line',
+          borderColor: 'rgba(255, 99, 132, 1)',
+          borderWidth: 1,
+          pointRadius: 0,
+          yAxisID: 'y',
+        }
+      ]
+    };
+
+    if (nseiData) {
+      chartData.datasets.push({
+        label: 'NSEI ',
+        data: nseiData?.map((d) => ({
           x: d.time,
-          o: d.open,
-          h: d.high,
-          l: d.low,
-          c: d.close
-        })) || [],
-      },
-      {
-        label: 'SMA44',
-        data: data?.map((d) => ({
-          x: d.time,
-          y: d.sma44
+        //   y: d.close * (data[0].sma44 / nseiData[0].sma44)
+          y: (d.close+d.open)/2 * (data[0].close / nseiData[0].close)
         })) || [],
         type: 'line',
-        borderColor: 'rgba(255, 99, 132, 1)',
+        borderColor: 'rgba(25, 199, 132, 1)',
         borderWidth: 1,
         pointRadius: 0,
         yAxisID: 'y',
-      }
-    ]
-  };
+      });
+    }
+
+    return chartData;
+  }, [data, nseiData, isDarkMode]);
 
   const candlestickOptions = {
     scales: {
@@ -84,8 +112,14 @@ const SimulationResults = ({ data, tradeActions, pnl }) => {
           displayFormats: {
             minute: 'HH:mm',
           },
-          tooltipFormat: 'MMM d, yyyy HH:mm',
+          tooltipFormat: 'MMM d, HH:mm',
           timezone: 'Asia/Kolkata'
+        },
+        grid: {
+          color: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
+        },
+        ticks: {
+          color: isDarkMode ? '#ffffff' : '#666666',
         }
       },
       y: {
@@ -94,16 +128,25 @@ const SimulationResults = ({ data, tradeActions, pnl }) => {
           const data = context.chart.data?.datasets[0].data;
           if (!data) return 0;
           const validLows = data.map(d => d.l).filter(val => val !== null && val !== 0);
-          return Math.min(...validLows) * 0.998;
+          const validNsei = nseiData?.map(d => d.l).filter(val => val !== null && val !== 0) || [];
+          return Math.min(...validLows, ...validNsei) * 0.99;
         },
         max: (context) => {
           const data = context.chart.data?.datasets[0].data;
           if (!data) return 0;
           const validHighs = data.map(d => d.h).filter(val => val !== null && val !== 0);
-          return Math.max(...validHighs) * 1.002;
+          const validNsei = nseiData?.map(d => d.h).filter(val => val !== null && val !== 0) || [];
+          return Math.max(...validHighs, ...validNsei) * 1.05;
+        },
+        grid: {
+          color: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
+        },
+        ticks: {
+          color: isDarkMode ? '#ffffff' : '#666666',
         }
       }
     },
+    
     plugins: {
       zoom: {
         limits: {
@@ -167,14 +210,28 @@ const SimulationResults = ({ data, tradeActions, pnl }) => {
       responsive: true,
       maintainAspectRatio: false,
       interaction: {
-        mode: 'x',
-        intersect: false,
+        mode: 'index',
+        intersect: true,
       },
+      legend: {
+        labels: {
+          color: isDarkMode ? '#ffffff' : '#666666',
+        }
+      }
     }
   };
 
+  const getActionColor = (action) => {
+    return action?.action.includes('Short') ? 'text-red-600' :
+    action?.action === 'Stop Loss Hit' ? 'text-orange-600' :
+    action?.action === 'Target Hit' ? 'text-green-600' :
+    action?.action === 'Buy at Limit' ? 'text-purple-600' :
+    action?.action === 'Auto Square-off' ? 'text-blue-600' :
+    'text-gray-600';
+  }
+
   return (
-    <div className="bg-white p-6 rounded-lg shadow mb-8">
+    <div className={`${isDarkMode ? 'bg-gray-800 text-white' : 'bg-white'} p-6 rounded-lg shadow mb-8`}>
       <h2 className="text-xl font-semibold mb-4">Simulation Results</h2>
       <Chart
         type='candlestick'
@@ -185,14 +242,7 @@ const SimulationResults = ({ data, tradeActions, pnl }) => {
       <h3 className="text-lg font-semibold mt-4 mb-2">Trade Actions:</h3>
       <ul className="list-disc pl-5">
         {tradeActions?.map((action, index) => (
-          <li key={index} className={`mb-1 ${
-            action?.action.includes('Short') ? 'text-red-600' :
-            action?.action === 'Stop Loss Hit' ? 'text-orange-600' :
-            action?.action === 'Target Hit' ? 'text-green-600' :
-            action?.action === 'Buy at Limit' ? 'text-purple-600' :
-            action?.action === 'Auto Square-off' ? 'text-blue-600' :
-            'text-gray-600'
-          }`}>
+          <li key={index} className={`mb-1 ${getActionColor(action)}`}>
             {new Date(action.time).toLocaleString()}: {action?.action} at {action?.price?.toFixed(2)}
           </li>
         ))}

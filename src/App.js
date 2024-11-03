@@ -55,6 +55,11 @@ function App() {
               background: '#e15549',
             },
           },
+          loading: {
+            style: {
+              background: 'yellow',
+            },
+          },
         }}
       />
       <Router>
