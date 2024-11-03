@@ -106,7 +106,7 @@ const initialState = {
     result: null,
     type: 'BEARISH',
     data_source: 'nifty',
-    candle: '2',
+    candle: '1',
     isMarketOrder: true,
     reEnterPosition: false
   },
