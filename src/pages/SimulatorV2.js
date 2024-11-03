@@ -141,6 +141,7 @@ const ShortSellingSimulatorPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(true);
   const [selectedResult, setSelectedResult] = useState(null);
   const [selectedResultData, setSelectedResultData] = useState(null);
+  const [selectedFunctions, setSelectedFunctions] = useState([]);
 
   // Helper function to update nested state
   const updateState = (path, value) => {
@@ -479,16 +480,21 @@ const ShortSellingSimulatorPage = () => {
     }
   };
 
-  const loadFunction = (code, type, name) => {
-    const functionPath = type === 'stopLoss' ? 'editor.functions.stopLoss' :
-                        type === 'targetPrice' ? 'editor.functions.target' :
-                        'editor.functions.trigger';
+  const loadSelectedFunctions = () => {
+    selectedFunctions.forEach(functionId => {
+      const functionCode = state.editor.savedFunctions.find(f => f._id === functionId);
+      if (functionCode) {
+        const functionPath = functionCode.type === 'stopLoss' ? 'editor.functions.stopLoss' :
+                            functionCode.type === 'targetPrice' ? 'editor.functions.target' :
+                            'editor.functions.trigger';
 
-    updateState(`${functionPath}.text`, code);
-    updateState(`${functionPath}.name`, name);
-    updateState('editor.activeTab', type);
+        updateState(`${functionPath}.text`, functionCode.code);
+        updateState(`${functionPath}.name`, functionCode.name);
+      }
+    });
+    setSelectedFunctions([]); // Clear selections
     setIsModalOpen(false);
-    toast.success('Function loaded successfully');
+    toast.success('Selected functions loaded successfully');
   };
 
   const deleteFunction = async (functionId) => {
@@ -862,32 +868,80 @@ const ShortSellingSimulatorPage = () => {
           </div>
           <div className="px-6 py-4 max-h-[60vh] overflow-y-auto">
             {state.editor.savedFunctions.length > 0 ? (
-              <ul className="space-y-3">
-                {state.editor.savedFunctions.map((functionCode) => (
-                  <li key={functionCode.id} className="flex items-center justify-between bg-gray-50 rounded-lg p-3">
-                    <div className="flex items-center space-x-3">
-                      <FileCode className="h-5 w-5 text-gray-400" />
-                      <span className="text-sm font-medium text-gray-900">
-                        {functionCode.name} <span className="text-gray-500">({functionCode.type})</span>
-                      </span>
-                    </div>
-                    <div className="flex space-x-2">
+              <div>
+                <ul className="space-y-3 mb-4">
+                  {state.editor.savedFunctions.map((functionCode) => (
+                    <li 
+                      key={functionCode._id} 
+                      className={`flex items-center justify-between rounded-lg p-3 ${
+                        selectedFunctions.includes(functionCode._id) 
+                          ? 'bg-blue-50 border-2 border-blue-200' 
+                          : 'bg-gray-50'
+                      }`}
+                      onClick={() => {
+                        setSelectedFunctions(prev => {
+                          if (prev.includes(functionCode._id)) {
+                            return prev.filter(id => id !== functionCode._id);
+                          } else {
+                            // Only allow one function of each type to be selected
+                            const existingTypeFunction = prev.find(id => 
+                              state.editor.savedFunctions.find(f => 
+                                f._id === id && f.type === functionCode.type
+                              )
+                            );
+                            if (existingTypeFunction) {
+                              return [...prev.filter(id => id !== existingTypeFunction), functionCode._id];
+                            }
+                            return [...prev, functionCode._id];
+                          }
+                        });
+                      }}
+                      style={{ cursor: 'pointer' }}
+                    >
+                      <div className="flex items-center space-x-3">
+                        <input
+                          type="checkbox"
+                          checked={selectedFunctions.includes(functionCode._id)}
+                          onChange={() => {}} // Handle change through li click
+                          className="h-4 w-4 text-blue-600 rounded border-gray-300"
+                        />
+                        <FileCode className="h-5 w-5 text-gray-400" />
+                        <span className="text-sm font-medium text-gray-900">
+                          {functionCode.name} <span className="text-gray-500">({functionCode.type})</span>
+                        </span>
+                      </div>
                       <button
-                        onClick={() => loadFunction(functionCode.code, functionCode.type, functionCode.name)}
-                        className="bg-blue-500 text-white text-sm px-3 py-1 rounded-md hover:bg-blue-600 transition-colors"
-                      >
-                        Load
-                      </button>
-                      <button
-                        onClick={() => deleteFunction(functionCode._id)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          deleteFunction(functionCode._id);
+                        }}
                         className="bg-red-500 text-white text-sm px-3 py-1 rounded-md hover:bg-red-600 transition-colors"
                       >
                         <Trash2 className="h-4 w-4" />
                       </button>
-                    </div>
-                  </li>
-                ))}
-              </ul>
+                    </li>
+                  ))}
+                </ul>
+                <div className="flex justify-end space-x-2 pt-4 border-t">
+                  <button
+                    onClick={() => setIsModalOpen(false)}
+                    className="bg-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-400 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={loadSelectedFunctions}
+                    disabled={selectedFunctions.length === 0}
+                    className={`px-4 py-2 rounded-md transition-colors ${
+                      selectedFunctions.length === 0
+                        ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                        : 'bg-blue-500 text-white hover:bg-blue-600'
+                    }`}
+                  >
+                    Load Selected ({selectedFunctions.length})
+                  </button>
+                </div>
+              </div>
             ) : (
               <p className="text-gray-500 text-center py-4">No saved functions found.</p>
             )}
