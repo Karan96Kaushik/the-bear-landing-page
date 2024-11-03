@@ -114,7 +114,7 @@ const initialState = {
     target: 0
   },
   editor: {
-    height: '400px',
+    height: '250px',
     functions: {
       stopLoss: {
         text: updateStopLossFunction_text,

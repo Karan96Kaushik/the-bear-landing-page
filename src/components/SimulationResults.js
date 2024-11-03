@@ -123,9 +123,16 @@ const SimulationResults = ({ data, tradeActions, pnl }) => {
             content: `${action?.action} at ${action?.price?.toFixed(2)}`,
             display: true,
             position: 'start',
+            yAdjust: action?.action.includes('Short') ? -40 : 
+                action?.action === 'Stop Loss Hit' ? -50 :
+                action?.action === 'Buy at Limit' ? -40 :
+                action?.action === 'Target Hit' ? -50 :
+                action?.action === 'Auto Square-off' ? -20 :
+                -20, // Random value between -50 and 50
             backgroundColor: 
               action?.action.includes('Short') ? 'red' : 
               action?.action === 'Stop Loss Hit' ? 'orange' :
+              action?.action === 'Buy at Limit' ? 'purple' :
               action?.action === 'Target Hit' ? 'green' :
               action?.action === 'Auto Square-off' ? 'blue' :
               'gray',
@@ -161,6 +168,7 @@ const SimulationResults = ({ data, tradeActions, pnl }) => {
             action?.action.includes('Short') ? 'text-red-600' :
             action?.action === 'Stop Loss Hit' ? 'text-orange-600' :
             action?.action === 'Target Hit' ? 'text-green-600' :
+            action?.action === 'Buy at Limit' ? 'text-purple-600' :
             action?.action === 'Auto Square-off' ? 'text-blue-600' :
             'text-gray-600'
           }`}>
