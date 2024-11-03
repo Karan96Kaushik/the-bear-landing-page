@@ -105,6 +105,8 @@ const initialState = {
   simulation: {
     result: null,
     type: 'BEARISH',
+    data_source: 'nifty',
+    candle: '2',
     isMarketOrder: true,
     reEnterPosition: false
   },
@@ -245,8 +247,14 @@ const ShortSellingSimulatorPage = () => {
 
         currentDate.setUTCHours(0, 0, 0, 999)
 
+        if (state.simulation.candle === '1') {
+          currentDate.setUTCHours(4, 1, 10, 0);
+        } else if (state.simulation.candle === '2') {
+          currentDate.setUTCHours(4, 16, 10, 0);
+        }
+
         // Fetch stocks for current date
-        const selectedStocks = await fetchAuthorizedData(`/zaire/selected-stocks?date=${currentDate.toISOString()}`);
+        const selectedStocks = await fetchAuthorizedData(`/zaire/selected-stocks?date=${currentDate.toISOString()}&source=${state.simulation.data_source}`);
         const runStocks = selectedStocks.stocks.filter(stock => stock.direction == (state.simulation.type))
 
         // For each stock on this date
@@ -687,6 +695,30 @@ const ShortSellingSimulatorPage = () => {
               >
                 <option value="BEARISH">Bearish</option>
                 <option value="BULLISH">Bullish</option>
+              </select>
+            </div>
+            <div className="w-full md:w-1/2 px-2 mb-4"> 
+              <label className="block text-sm font-medium text-gray-700 mb-1">Data Source</label>
+              <select
+                value={state.simulation.data_source}
+                onChange={(e) => updateState('simulation.data_source', e.target.value)}
+                className="w-full px-3 py-2 text-base border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+              >
+                <option value="nifty">Nifty</option>
+                <option value="roce">ROCE</option>
+                <option value="roe">ROE</option>
+              </select>
+            </div>
+            <div className="w-full md:w-1/2 px-2 mb-4"> 
+              <label className="block text-sm font-medium text-gray-700 mb-1">Candle</label>
+              <select
+                value={state.simulation.candle}
+                onChange={(e) => updateState('simulation.candle', e.target.value)}
+                className="w-full px-3 py-2 text-base border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+              >
+                <option value="1">1st Candle</option>
+                <option value="2">2nd Candle</option>
+                <option value="3">3rd Candle</option>
               </select>
             </div>
           </div>
