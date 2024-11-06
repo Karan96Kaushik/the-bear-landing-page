@@ -41,60 +41,15 @@ ChartJS.register(
 // const updateStopLossFunction = (timestamps, i, high, low, open, close, stopLossPrice) => {
     // console.log(i, i % 15 , i > 15)
 const updateStopLossFunction_text = `
-
 // 'i', 'data', 'stopLossPrice', 'position', 'logAction'
-// Stop Loss Bearish
-if (i === 16) {
-  console.log(i, "SL", position)
-  let sl = Math.max(...data.slice(0, 15).map(d => d.high).filter(d => d))
-  console.log(sl)
-  return sl
-}
-
-if (false)
-    if (i>16 && i%15 === 0) {
-        let sl = Math.max(...data.slice(i-30, i).map(d => d.high).filter(d => d))
-        console.log(i, i>16 , i%15)
-        return sl
-    }
-return stopLossPrice;
-
 `;
 
 const updateTriggerPriceFunction_text = `
 // 'i', 'data', 'triggerPrice', 'position', 'logAction'
-// Trigger Bearish
-
-// 'i', 'data', 'triggerPrice', 'position', 'logAction'
-// Trigger Bearish
-if (i === 16) {
-  // high of prev 15 min candle
-  let trigger = Math.min(...data.slice(0, 15).map(d => d.low).filter(d => d))
-  console.log("D Low", data.slice(0, 15).map(d => d.low))
-  
-  return trigger - 1
-}
-
-if (i === 30 && !position) {
-  return 0.1
-}
-
-return triggerPrice
-
 `;
 
 const updateTargetPriceFunction_text = `
 // 'i', 'data', 'targetPrice', 'position', 'logAction'
-// Target Bearish
-
-if (position && targetPrice === 0) {
-    let max = Math.max(...data.slice(0, 15).map(d => d.high).filter(d => d))
-    let min = Math.min(...data.slice(0, 15).map(d => d.low).filter(d => d))
-
-    let target = (min - 1) -  (max-min)*2 
-    return target
-}
-return targetPrice
 `;
 
 const initialState = {
@@ -251,6 +206,8 @@ const ShortSellingSimulatorPage = () => {
           currentDate.setUTCHours(4, 1, 10, 0);
         } else if (state.simulation.candle === '2') {
           currentDate.setUTCHours(4, 16, 10, 0);
+        } else if (state.simulation.candle === '3') {
+          currentDate.setUTCHours(4, 31, 10, 0);
         }
 
         // Fetch stocks for current date

@@ -7,6 +7,7 @@ import Orders from '../pages/Orders';
 import Simulator from '../pages/Simulator';
 import SimulatorV2 from '../pages/SimulatorV2';
 import StockChartPage from '../pages/StockChartPage';
+import MyOrdersPage from '../pages/MyOrdersPage';
 
 const routes = [
   { path: '/profile', Component: Profile, name: 'Profile' },
@@ -14,7 +15,8 @@ const routes = [
   { path: '/orders', Component: Orders, name: 'Orders' },
   { path: '/simulator', Component: Simulator, name: 'Simulator' },
   { path: '/simulator-v2', Component: SimulatorV2, name: 'Simulator V2' },
-  { path: '/stock-chart', Component: StockChartPage, name: 'Stock Chart' }
+  { path: '/stock-chart', Component: StockChartPage, name: 'Stock Chart' },
+  { path: '/my-orders', Component: MyOrdersPage, name: 'My Orders' }
 ];
 
 const PrivateRoutes = () => {

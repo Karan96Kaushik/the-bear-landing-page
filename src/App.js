@@ -44,6 +44,7 @@ function App() {
     <Provider store={store}>
       <Toaster
         position="bottom-left"
+        duration={10000}
         toastOptions={{
           success: {
             style: {
