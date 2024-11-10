@@ -66,7 +66,8 @@ class BuySimulator {
             else {
                 // Stop Loss Hit
                 if (this.stopLossPrice && low <= this.stopLossPrice) {
-                    this.pnl += (this.stopLossPrice - this.position) * this.quantity * 0.9;
+                    let exitPrice = low + Math.random() * (high - low);
+                    this.pnl += (exitPrice - this.position) * this.quantity * 0.9;
                     this.tradeActions.push({ time, action: 'Stop Loss Hit', price: this.stopLossPrice });
                     this.isPositionOpen = false;
                     if (!this.reEnterPosition) {
@@ -77,7 +78,8 @@ class BuySimulator {
 
                 // Target Hit
                 if (this.targetPrice && high >= this.targetPrice) {
-                    this.pnl += (this.targetPrice - this.position) * this.quantity * 0.9;
+                    let exitPrice = low + Math.random() * (high - low);
+                    this.pnl += (exitPrice - this.position) * this.quantity * 0.9;
                     this.tradeActions.push({ time, action: 'Target Hit', price: this.targetPrice });
                     this.isPositionOpen = false;
                     if (!this.reEnterPosition) {
@@ -117,9 +119,10 @@ class BuySimulator {
 
         // Auto Square-off
         if (this.isPositionOpen) {
-            const lastCandle = data[data.length - 1];
-            this.pnl += (lastCandle.close - this.position) * this.quantity * 0.9;
-            this.tradeActions.push({ time: lastCandle.time, action: 'Auto Square-off', price: lastCandle.close });
+            const lastCandle = data[data.length - 1];   
+            let exitPrice = lastCandle.close + Math.random() * (lastCandle.high - lastCandle.low);
+            this.pnl += (exitPrice - this.position) * this.quantity * 0.9;
+            this.tradeActions.push({ time: lastCandle.time, action: 'Auto Square-off', price: exitPrice });
             this.isPositionOpen = false;
         }
 

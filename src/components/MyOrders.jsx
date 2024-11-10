@@ -10,6 +10,7 @@ ChartJS.register(ArcElement, Tooltip, Legend);
 // Define fields for GeneralTable
 const orderFields = [
     { key: 'tradingsymbol', label: 'Symbol' },
+    { key: 'transaction_type', label: 'Type' },
     { key: 'initiated_by', label: 'Initiator' },
     { key: 'tag', label: 'Tag' },
     { key: 'bear_status', label: 'Status' },

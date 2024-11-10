@@ -54,8 +54,8 @@ const updateTargetPriceFunction_text = `
 
 const initialState = {
   timeRange: {
-    start: new Date('2024-10-23'),
-    end: new Date('2024-10-24')
+    start: new Date('2024-11-08'),
+    end: new Date('2024-11-08')
   },
   simulation: {
     result: null,
@@ -662,6 +662,7 @@ const ShortSellingSimulatorPage = () => {
                 className="w-full px-3 py-2 text-base border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
               >
                 <option value="nifty">Nifty</option>
+                <option value="highbeta">HIGHBETA</option>
                 <option value="roce">ROCE</option>
                 <option value="roe">ROE</option>
               </select>
