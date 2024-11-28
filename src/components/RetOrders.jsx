@@ -204,14 +204,34 @@ export default function Orders() {
                                     <p className="text-xl font-bold">{tradeAnalysis.summary.winRate}%</p>
                                 </div>
                                 <div className="bg-gray-50 p-3 rounded">
+                                    <p className="text-sm text-gray-600">Realised P&L</p>
+                                    <p className={`text-xl font-bold ${tradeAnalysis.summary.realisedPnL >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                        ₹{tradeAnalysis.summary.realisedPnL}
+                                    </p>
+                                </div>
+                                <div className="bg-gray-50 p-3 rounded">
+                                    <p className="text-sm text-gray-600">Open Trades</p>
+                                    <p className="text-xl font-bold">{tradeAnalysis.summary.openTrades}</p>
+                                </div>
+                                <div className="bg-gray-50 p-3 rounded">
                                     <p className="text-sm text-gray-600">Total P&L</p>
                                     <p className={`text-xl font-bold ${tradeAnalysis.summary.totalPnL >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                                         ₹{tradeAnalysis.summary.totalPnL}
                                     </p>
                                 </div>
                                 <div className="bg-gray-50 p-3 rounded">
-                                    <p className="text-sm text-gray-600">Open Trades</p>
-                                    <p className="text-xl font-bold">{tradeAnalysis.summary.openTrades}</p>
+                                    <p className="text-sm text-gray-600">Zaire Trades</p>
+                                    <p className="text-xl font-bold">{tradeAnalysis.summary.zaireTrades}</p>
+                                </div>
+                                <div className="bg-gray-50 p-3 rounded">
+                                    <p className="text-sm text-gray-600">Zaire P&L</p>
+                                    <p className={`text-xl font-bold ${tradeAnalysis.summary.zairePnL >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                        ₹{tradeAnalysis.summary.zairePnL}
+                                    </p>
+                                </div>
+                                <div className="bg-gray-50 p-3 rounded">
+                                    <p className="text-sm text-gray-600">Zaire Win Rate</p>
+                                    <p className="text-xl font-bold">{tradeAnalysis.summary.zaireWinRate}%</p>
                                 </div>
                             </div>
                         </div>
