@@ -189,10 +189,10 @@ export default function Orders() {
 
 
 
-            <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
                 {tradeAnalysis && (
                     <>
-                        <div className="bg-white rounded-lg shadow-md p-4">
+                        <div className="bg-white rounded-lg md:col-span-1 shadow-md p-4">
                             <h3 className="text-lg font-semibold mb-4">Trade Summary</h3>
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="bg-gray-50 p-3 rounded">
@@ -233,18 +233,31 @@ export default function Orders() {
                                     <p className="text-sm text-gray-600">Zaire Win Rate</p>
                                     <p className="text-xl font-bold">{tradeAnalysis.summary.zaireWinRate}%</p>
                                 </div>
+                                <div className="bg-gray-50 p-3 rounded">
+                                    <p className="text-sm text-gray-600">Zaire Target Exits</p>
+                                    <p className="text-xl font-bold">{tradeAnalysis.summary.zaireTargetExits}</p>
+                                </div>
+                                <div className="bg-gray-50 p-3 rounded">
+                                    <p className="text-sm text-gray-600">Zaire Stop Loss Exits</p>
+                                    <p className="text-xl font-bold">{tradeAnalysis.summary.zaireStopLossExits}</p>
+                                </div>
+                                <div className="bg-gray-50 p-3 rounded">
+                                    <p className="text-sm text-gray-600">Zaire Other Exits</p>
+                                    <p className="text-xl font-bold">{tradeAnalysis.summary.zaireOtherExits}</p>
+                                </div>
                             </div>
                         </div>
 
-                        <div className="bg-white rounded-lg shadow-md p-4">
+                        <div className="bg-white rounded-lg md:col-span-2 shadow-md p-4">
                             <h3 className="text-lg font-semibold mb-4">Trade Details</h3>
-                            <div className="overflow-auto max-h-[400px]">
+                            <div className="overflow-auto max-h-[500px]">
                                 <table className="min-w-full">
                                     <thead className="bg-gray-50">
                                         <tr>
                                             <th className="px-4 py-2">Symbol</th>
                                             <th className="px-4 py-2">Direction</th>
                                             <th className="px-4 py-2">Source</th>
+                                            <th className="px-4 py-2">Exit Reason</th>
                                             <th className="px-4 py-2">Status</th>
                                             <th className="px-4 py-2">P&L</th>
                                         </tr>
@@ -255,6 +268,7 @@ export default function Orders() {
                                                 <td className="px-4 py-2">{trade.symbol}</td>
                                                 <td className="px-4 py-2">{trade.direction}</td>
                                                 <td className="px-4 py-2">{trade.source}</td>
+                                                <td className="px-4 py-2">{trade.exitReason}</td>
                                                 <td className="px-4 py-2">{trade.status}</td>
                                                 <td className={`px-4 py-2 ${trade.pnl >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                                                     ₹{trade.pnl}
