@@ -185,27 +185,36 @@ const SimulationResults = ({ data, tradeActions, pnl, nseiData, symbol }) => {
           xMax: +action.time + 5.5*60*60*1000,
           borderColor: 
             action?.action.includes('Short') ? 'red' : 
-            action?.action === 'Stop Loss Hit' ? 'orange' :
+            action?.action === 'Stop Loss Hit' ? 'red' :
             action?.action === 'Target Hit' ? 'green' :
             action?.action === 'Auto Square-off' ? 'blue' :
+            action?.action === 'Target Placed' ? 'black' :
+            action?.action === 'Stop Loss Placed' ? 'orange' :
+            action?.action === 'Trigger Placed' ? 'purple' :
+            action?.action === 'Cancelled' ? 'gray' :
             'gray',
           borderWidth: 2,
           label: {
             content: `${action?.action} at ${action?.price?.toFixed(2)}`,
             display: true,
             position: 'start',
-            yAdjust: action?.action.includes('Short') ? -40 : 
-                action?.action === 'Stop Loss Hit' ? -50 :
+            yAdjust: action?.action === 'Stop Loss Hit' ? -50 :
                 action?.action === 'Trigger Hit' ? -20 :
                 action?.action === 'Target Hit' ? -40 :
                 action?.action === 'Auto Square-off' ? -20 :
+                action?.action === 'Target Placed' ? -40 :
+                action?.action === 'Stop Loss Placed' ? -60 :
+                action?.action === 'Trigger Placed' ? -40 :
+                action?.action === 'Cancelled' ? -0 :
                 -20, // Random value between -50 and 50
             backgroundColor: 
-              action?.action.includes('Short') ? 'red' : 
-              action?.action === 'Stop Loss Hit' ? 'orange' :
+              action?.action === 'Stop Loss Hit' ? 'red' :
               action?.action === 'Trigger Hit' ? 'purple' :
               action?.action === 'Target Hit' ? 'green' :
-              action?.action === 'Auto Square-off' ? 'blue' :
+              action?.action === 'Target Placed' ? 'black' :
+              action?.action === 'Stop Loss Placed' ? 'orange' :
+              action?.action === 'Trigger Placed' ? 'purple' :
+              action?.action === 'Cancelled' ? 'gray' :
               'gray',
             font: {
               size: 12
@@ -230,10 +239,14 @@ const SimulationResults = ({ data, tradeActions, pnl, nseiData, symbol }) => {
 
   const getActionColor = (action) => {
     // return action?.action.includes('Short') ? 'text-red-600' :
-    return action?.action === 'Stop Loss Hit' ? 'text-orange-600' :
+    return action?.action === 'Stop Loss Hit' ? 'text-red-600' :
     action?.action === 'Target Hit' ? 'text-green-600' :
-    action?.action === 'Trigger Hit' ? 'text-purple-600' :
+    action?.action === 'Trigger Hit' ? 'text-purple-300' :
     action?.action === 'Auto Square-off' ? 'text-blue-600' :
+    action?.action === 'Target Placed' ? 'text-yellow-600' :
+    action?.action === 'Stop Loss Placed' ? 'text-orange-600' :
+    action?.action === 'Trigger Placed' ? 'text-purple-600' :
+    action?.action === 'Cancelled' ? 'text-gray-600' :
     'text-gray-600';
   }
 

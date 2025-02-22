@@ -44,7 +44,9 @@ const initialState = {
     result: null,
     reEnterPosition: false,
     cancelInMins: 5,
-    updateSL: false
+    updateSL: false,
+    updateSLInterval: 5,
+    targetStopLossRatio: '2:1'
   },
 };
 
@@ -57,8 +59,9 @@ const ShortSellingSimulatorPage = () => {
   const [selectedResult, setSelectedResult] = useState(null);
   const [selectedResultData, setSelectedResultData] = useState(null);
   // const [selectedFunctions, setSelectedFunctions] = useState([]);
-  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [dateRange, setDateRange] = useState([new Date(), new Date()]);
   const [selectedSymbol, setSelectedSymbol] = useState([]);
+  const [pollInterval, setPollInterval] = useState(null);
 
   const stockOptions = [
     { value: 'HCLTECH', label: 'HCLTECH' },
@@ -104,41 +107,66 @@ const ShortSellingSimulatorPage = () => {
   const fetchSimulationData = async () => {
     setIsLoading(true);
     try {
-      const simulation = _.merge({}, state.simulation)
-      delete simulation.result
+      const simulation = _.merge({}, state.simulation);
+      delete simulation.result;
 
-      const queryParams = qs.stringify({
-        date: selectedDate.toISOString().split('T')[0],
+      // Start the simulation
+      const response = await postAuthorizedData('/simulation/simulate/v2/start', {
+        startdate: dateRange[0].toISOString().split('T')[0],
+        enddate: dateRange[1].toISOString().split('T')[0],
         symbol: selectedSymbol.join(','),
         simulation
-      })
+      });
 
-      const response = await fetchAuthorizedData(`/simulation/simulate/v2?${queryParams}`);
-      console.log(response)
-      const formattedData = response.map(item => ({
-        symbol: item.sym,
-        date: new Date(item.placedAt).toISOString().split('T')[0],
-        pnl: item.pnl,
-        direction: item.direction,
-        quantity: item.quantity, // Assuming quantity is 1 for simplicity
-        data: item.data.filter(d => new Date(d.time).toISOString().split('T')[0] === selectedDate.toISOString().split('T')[0]),
-        actions: item.actions
-      }));
+      const { jobId } = response;
 
-      updateState('simulation.result', { results: formattedData });
+      // Set up polling
+      const interval = setInterval(async () => {
+        const statusResponse = await fetchAuthorizedData(`/simulation/simulate/v2/status/${jobId}`);
+        
+        if (statusResponse.status === 'completed') {
+          // Clear polling interval
+          clearInterval(interval);
+          setPollInterval(null);
+          setIsLoading(false);
+
+          // Format and set the results
+          const formattedData = statusResponse.result.map(item => ({
+            symbol: item.sym,
+            date: new Date(item.placedAt).toISOString().split('T')[0],
+            pnl: item.pnl,
+            direction: item.direction,
+            quantity: item.quantity,
+            data: item.data.filter(d => new Date(d.time).toISOString().split('T')[0] === dateRange[0].toISOString().split('T')[0]),
+            actions: item.actions
+          }));
+
+          updateState('simulation.result', { results: formattedData });
+        } else if (statusResponse.status === 'error') {
+          clearInterval(interval);
+          setPollInterval(null);
+          setIsLoading(false);
+          toast.error(statusResponse.error || 'Simulation failed');
+        }
+      }, 2000); // Poll every 2 seconds
+
+      setPollInterval(interval);
+
     } catch (error) {
-      toast.error('Failed to fetch simulation data');
-      console.error('Error fetching simulation data:', error);
-    } finally {
       setIsLoading(false);
+      toast.error('Failed to start simulation');
+      console.error('Error starting simulation:', error);
     }
   };
 
-  // useEffect(() => {
-  //   if (selectedDate && selectedSymbol.length > 0) {
-  //     fetchSimulationData();
-  //   }
-  // }, [selectedDate, selectedSymbol]);
+  // Cleanup polling on component unmount
+  useEffect(() => {
+    return () => {
+      if (pollInterval) {
+        clearInterval(pollInterval);
+      }
+    };
+  }, [pollInterval]);
 
   const handleRowClick = async (result) => {
     setIsLoading(true);
@@ -168,54 +196,22 @@ const ShortSellingSimulatorPage = () => {
       )}
       <div className="container mx-auto px-4 py-20">
         <h1 className="text-3xl font-bold mb-6 text-white">Stock Trading Simulator</h1>
-        <div className="bg-white p-6 rounded-lg shadow mb-8">
-          <div className="flex flex-wrap -mx-2">
-            <div className="w-full md:w-1/2 px-2 mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
+        <div className="bg-white p-6 rounded-lg shadow mb-8 ">
+          <div className="flex flex-wrap -mx-2 grid grid-cols-2 md:grid-cols-6 gap-4">
+            <div className=" px-2 mb-4 col-span-2 ">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Date Range</label>
               <DatePicker
-                selected={selectedDate}
-                onChange={(date) => setSelectedDate(date)}
+                selectsRange={true}
+                startDate={dateRange[0]}
+                endDate={dateRange[1]}
+                onChange={(update) => {
+                  setDateRange(update);
+                }}
                 dateFormat="yyyy-MM-dd"
-                className="w-full px-3 py-2 text-base border border-gray-300 rounded-md"
+                className="px-3 py-2 text-base border border-gray-300 rounded-md"
               />
             </div>
-            {/* <div className="w-full md:w-1/2 px-2 mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Direction</label>
-              <input
-                value={state.simulation.type}
-                onChange={(selected) => setState('simulation.type', selected.value)}
-                options={['BEARISH', 'BULLISH']}
-              />
-            </div> */}
-            <div className="w-full md:w-1/2 px-2 mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Cancel Interval</label>
-              <input
-                type="number"
-                step={5}
-                value={state.simulation.cancelInMins}
-                onChange={(selected) => updateState('simulation.cancelInMins', selected.value)}
-                className="w-full px-3 py-2 text-base border border-gray-300 rounded-md"
-
-              />
-            </div>
-            <div className="w-full md:w-1/2 px-2 mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Re-Enter Position</label>
-              <Switch
-                checked={state.simulation.reEnterPosition}
-                onChange={(checked) => updateState('simulation.reEnterPosition', checked)}
-                className="switch"
-              />
-            </div>
-            <div className="w-full md:w-1/2 px-2 mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Update SL</label>
-              <Switch
-                checked={state.simulation.updateSL}
-                onChange={(checked) => updateState('simulation.updateSL', checked)}
-                className="switch"
-
-              />
-            </div>
-            <div className="w-full md:w-1/2 px-2 mb-4">
+            <div className=" px-2 mb-4 col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-1">Symbol</label>
               <Select
                 isMulti
@@ -226,6 +222,65 @@ const ShortSellingSimulatorPage = () => {
                 placeholder="Select stocks..."
               />
             </div>
+            {/* <div className="w-full md:w-1/2 px-2 mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Direction</label>
+              <input
+                value={state.simulation.type}
+                onChange={(selected) => setState('simulation.type', selected.value)}
+                options={['BEARISH', 'BULLISH']}
+              />
+            </div> */}
+            <div className=" px-2 mb-4 col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Cancel Interval</label>
+              <input
+                type="number"
+                step={5}
+                value={state.simulation.cancelInMins}
+                onChange={(selected) => updateState('simulation.cancelInMins', selected.value)}
+                className="px-3 py-2 text-base border border-gray-300 rounded-md"
+
+              />
+            </div>
+            <div className=" px-2 mb-4 col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Target:SL (candle length) Ratio</label>
+              <select
+                value={state.simulation.targetStopLossRatio}
+                className="px-3 py-2 text-base border border-gray-300 rounded-md bg-white"
+                onChange={(event) => updateState('simulation.targetStopLossRatio', event.target.value)}
+              >
+                <option value={'1:1'}>1:1</option>
+                <option value={'2:1'}>2:1</option>
+                <option value={'3:1'}>3:1</option>
+                <option value={'2:2'}>2:2</option>
+              </select>
+            </div>
+            <div className=" px-2 mb-4 col-span-1">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Re-Enter Position</label>
+              <Switch
+                checked={state.simulation.reEnterPosition}
+                onChange={(checked) => updateState('simulation.reEnterPosition', checked)}
+              />
+            </div>
+            <div className=" px-2 mb-4 col-span-1">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Update SL</label>
+              <Switch
+                checked={state.simulation.updateSL}
+                onChange={(checked) => updateState('simulation.updateSL', checked)}
+                className="switch"
+
+              />
+            </div>
+            {state.simulation.updateSL && <div className=" px-2 mb-4 col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Update SL Interval</label>
+              <input
+                type="number"
+                step={5}
+                value={state.simulation.updateSLInterval}
+                onChange={(selected) => updateState('simulation.updateSLInterval', selected.value)}
+                className="px-3 py-2 text-base border border-gray-300 rounded-md"
+              />
+            </div>}
+
           </div>
           <div className="mt-4">
             <button onClick={fetchSimulationData} className="w-full bg-indigo-500 text-white px-4 py-2 rounded-md hover:bg-indigo-600">

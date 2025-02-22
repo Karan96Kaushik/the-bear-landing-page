@@ -29,7 +29,7 @@ export const fetchAuthorizedData = async (endpoint) => {
       headers: {
         'Authorization': `Bearer ${token}`
       },
-      timeout: 120000
+      timeout: 300000
     });
 
     return response.data;
@@ -37,6 +37,7 @@ export const fetchAuthorizedData = async (endpoint) => {
     if (error.response && error.response.status === 401) {
       handleUnauthorizedError();
     }
+    console.log(error)
     throw new Error( error?.message);
   }
 };
@@ -60,7 +61,7 @@ export const postAuthorizedData = async (endpoint, data) => {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json'
       },
-      timeout: 120000
+      timeout: 300000
     });
 
     return response.data;
