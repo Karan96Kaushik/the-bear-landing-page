@@ -10,7 +10,8 @@ import {
   LineController,
 } from 'chart.js';
 import { CandlestickController, CandlestickElement } from 'chartjs-chart-financial';
-
+import { enIN } from 'date-fns/locale';
+import { ChevronRightIcon } from 'lucide-react';
 // Register the controllers and elements
 ChartJS.register(
   CategoryScale,
@@ -47,8 +48,8 @@ ChartJS.register(
  * @param {number} props.pnl - Final Profit/Loss value
  * @returns {JSX.Element}
  */
-const SimulationResults = ({ data, tradeActions, pnl, nseiData }) => {
-console.log({nseiData});
+const SimulationResults = ({ data, tradeActions, pnl, nseiData, symbol }) => {
+  console.log({nseiData});
   // Add theme detection
   const isDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
 
@@ -58,7 +59,7 @@ console.log({nseiData});
         {
           label: 'Stock Price',
           data: data?.map((d) => ({
-            x: d.time,
+            x: +d.time + 5.5*60*60*1000,
             o: d.open,
             h: d.high,
             l: d.low,
@@ -72,7 +73,7 @@ console.log({nseiData});
         {
           label: 'SMA44',
           data: data?.map((d) => ({
-            x: d.time,
+            x: +d.time + 5.5*60*60*1000,
             y: d.sma44
           })) || [],
           type: 'line',
@@ -113,13 +114,19 @@ console.log({nseiData});
             minute: 'HH:mm',
           },
           tooltipFormat: 'MMM d, HH:mm',
-          timezone: 'Asia/Kolkata'
+          // timezone: 'Asia/Kolkata'
         },
         grid: {
           color: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
         },
         ticks: {
           color: isDarkMode ? '#ffffff' : '#666666',
+        },
+        adapters: {
+          date: {
+            zone: 'Asia/Kolkata', // Set Indian timezone
+            locale: enIN
+          }
         }
       },
       y: {
@@ -129,14 +136,14 @@ console.log({nseiData});
           if (!data) return 0;
           const validLows = data.map(d => d.l).filter(val => val !== null && val !== 0);
           const validNsei = nseiData?.map(d => d.l).filter(val => val !== null && val !== 0) || [];
-          return Math.min(...validLows, ...validNsei) * 0.99;
+          return Math.min(...validLows, ...validNsei) * 0.999;
         },
         max: (context) => {
           const data = context.chart.data?.datasets[0].data;
           if (!data) return 0;
           const validHighs = data.map(d => d.h).filter(val => val !== null && val !== 0);
           const validNsei = nseiData?.map(d => d.h).filter(val => val !== null && val !== 0) || [];
-          return Math.max(...validHighs, ...validNsei) * 1.05;
+          return Math.max(...validHighs, ...validNsei) * 1.001;
         },
         grid: {
           color: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
@@ -174,8 +181,8 @@ console.log({nseiData});
       annotation: {
         annotations: tradeActions?.map(action => ({
           type: 'line',
-          xMin: action.time,
-          xMax: action.time,
+          xMin: +action.time + 5.5*60*60*1000,
+          xMax: +action.time + 5.5*60*60*1000,
           borderColor: 
             action?.action.includes('Short') ? 'red' : 
             action?.action === 'Stop Loss Hit' ? 'orange' :
@@ -189,14 +196,14 @@ console.log({nseiData});
             position: 'start',
             yAdjust: action?.action.includes('Short') ? -40 : 
                 action?.action === 'Stop Loss Hit' ? -50 :
-                action?.action === 'Buy at Limit' ? -40 :
-                action?.action === 'Target Hit' ? -50 :
+                action?.action === 'Trigger Hit' ? -20 :
+                action?.action === 'Target Hit' ? -40 :
                 action?.action === 'Auto Square-off' ? -20 :
                 -20, // Random value between -50 and 50
             backgroundColor: 
               action?.action.includes('Short') ? 'red' : 
               action?.action === 'Stop Loss Hit' ? 'orange' :
-              action?.action === 'Buy at Limit' ? 'purple' :
+              action?.action === 'Trigger Hit' ? 'purple' :
               action?.action === 'Target Hit' ? 'green' :
               action?.action === 'Auto Square-off' ? 'blue' :
               'gray',
@@ -222,10 +229,10 @@ console.log({nseiData});
   };
 
   const getActionColor = (action) => {
-    return action?.action.includes('Short') ? 'text-red-600' :
-    action?.action === 'Stop Loss Hit' ? 'text-orange-600' :
+    // return action?.action.includes('Short') ? 'text-red-600' :
+    return action?.action === 'Stop Loss Hit' ? 'text-orange-600' :
     action?.action === 'Target Hit' ? 'text-green-600' :
-    action?.action === 'Buy at Limit' ? 'text-purple-600' :
+    action?.action === 'Trigger Hit' ? 'text-purple-600' :
     action?.action === 'Auto Square-off' ? 'text-blue-600' :
     'text-gray-600';
   }
@@ -247,6 +254,18 @@ console.log({nseiData});
           </li>
         ))}
       </ul>
+      <div className='mt-4 flex justify-end text-end  p-2 rounded-md'>
+        <div className='flex items-end gap-2'>
+          
+        </div>
+        <div className='flex items-end gap-2 bg-blue-600 text-gray-100 p-2 rounded-md'>
+          <button className='' onClick={() => {
+            window.open(`https://finance.yahoo.com/chart/${symbol}.NS`, '_blank');
+          }}>View Yahoo Chart for {symbol}.NS</button>
+          <ChevronRightIcon className='w-6 h-6 ml-2' />
+        </div>
+      </div>
+
     </div>
   );
 };
