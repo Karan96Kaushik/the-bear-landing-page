@@ -51,12 +51,12 @@ const initialState = {
 const ShortSellingSimulatorPage = () => {
   const [state, setState] = useState(initialState);
   const [isLoading, setIsLoading] = useState(false);
-  const [dailyPnL, setDailyPnL] = useState([]);
-  const [activeTab, setActiveTab] = useState('stopLoss');
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  // const [dailyPnL, setDailyPnL] = useState([]);
+  // const [activeTab, setActiveTab] = useState('stopLoss');
+  // const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedResult, setSelectedResult] = useState(null);
   const [selectedResultData, setSelectedResultData] = useState(null);
-  const [selectedFunctions, setSelectedFunctions] = useState([]);
+  // const [selectedFunctions, setSelectedFunctions] = useState([]);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [selectedSymbol, setSelectedSymbol] = useState([]);
 
@@ -66,8 +66,21 @@ const ShortSellingSimulatorPage = () => {
     { value: 'INFY', label: 'INFY' },
     { value: 'WIPRO', label: 'WIPRO' },
     { value: 'TECHM', label: 'TECHM' },
-
-
+    { value: 'CUMMINSIND', label: 'CUMMINSIND' },
+    { value: 'HEROMOTOCO', label: 'HEROMOTOCO' },
+    { value: 'HINDUNILVR', label: 'HINDUNILVR' },
+    { value: 'INDHOTEL', label: 'INDHOTEL' },
+    { value: 'LT', label: 'LT' },
+    { value: 'MANKIND', label: 'MANKIND' },
+    { value: 'M&M', label: 'M&M' },
+    { value: 'NESTLEIND', label: 'NESTLEIND' },
+    { value: 'EICHERMOT', label: 'EICHERMOT' },
+    { value: 'GODREJPROP', label: 'GODREJPROP' },
+    { value: 'TATAMOTORS', label: 'TATAMOTORS' },
+    { value: 'TATAPOWER', label: 'TATAPOWER' },
+    { value: 'TATACHEM', label: 'TATACHEM' },
+    { value: 'TATACOMM', label: 'TATACOMM' },
+    
     // Add more stock options as needed
   ];
 
@@ -252,6 +265,10 @@ const ShortSellingSimulatorPage = () => {
                 ))}
               </tbody>
             </table>
+
+            <div className='mt-4'>
+              Total PnL: {state.simulation.result.results.reduce((acc, curr) => acc + curr.pnl, 0)?.toFixed(2)}
+            </div>
 
             {selectedResultData && (
               <div className="mt-8">

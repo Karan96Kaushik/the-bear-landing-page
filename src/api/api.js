@@ -28,7 +28,8 @@ export const fetchAuthorizedData = async (endpoint) => {
     const response = await axios.get(`${API_URL}${endpoint}`, {
       headers: {
         'Authorization': `Bearer ${token}`
-      }
+      },
+      timeout: 120000
     });
 
     return response.data;
@@ -58,7 +59,8 @@ export const postAuthorizedData = async (endpoint, data) => {
       headers: {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json'
-      }
+      },
+      timeout: 120000
     });
 
     return response.data;

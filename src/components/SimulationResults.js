@@ -250,7 +250,7 @@ const SimulationResults = ({ data, tradeActions, pnl, nseiData, symbol }) => {
       <ul className="list-disc pl-5">
         {tradeActions?.map((action, index) => (
           <li key={index} className={`mb-1 ${getActionColor(action)}`}>
-            {new Date(action.time).toLocaleString()}: {action?.action} at {action?.price?.toFixed(2)}
+            {new Date(action.time + 5.5*60*60*1000).toLocaleString()}: {action?.action} at {action?.price?.toFixed(2)}
           </li>
         ))}
       </ul>
