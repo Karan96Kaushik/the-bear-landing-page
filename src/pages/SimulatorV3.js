@@ -62,6 +62,10 @@ const ShortSellingSimulatorPage = () => {
   const [dateRange, setDateRange] = useState([new Date(), new Date()]);
   const [selectedSymbol, setSelectedSymbol] = useState([]);
   const [pollInterval, setPollInterval] = useState(null);
+  const [pastResults, setPastResults] = useState(() => {
+    const saved = localStorage.getItem('simulationHistory');
+    return saved ? JSON.parse(saved) : [];
+  });
 
   const stockOptions = [
     { value: 'HCLTECH', label: 'HCLTECH' },
@@ -110,13 +114,15 @@ const ShortSellingSimulatorPage = () => {
       const simulation = _.merge({}, state.simulation);
       delete simulation.result;
 
-      // Start the simulation
-      const response = await postAuthorizedData('/simulation/simulate/v2/start', {
+      const requestParams = {
         startdate: dateRange[0].toISOString().split('T')[0],
         enddate: dateRange[1].toISOString().split('T')[0],
         symbol: selectedSymbol.join(','),
         simulation
-      });
+      };
+
+      // Start the simulation
+      const response = await postAuthorizedData('/simulation/simulate/v2/start', requestParams);
 
       const { jobId } = response;
 
@@ -137,9 +143,27 @@ const ShortSellingSimulatorPage = () => {
             pnl: item.pnl,
             direction: item.direction,
             quantity: item.quantity,
-            data: item.data.filter(d => new Date(d.time).toISOString().split('T')[0] === dateRange[0].toISOString().split('T')[0]),
+            data: item.data.filter(d => new Date(d.time).toISOString().split('T')[0] === new Date(item.placedAt).toISOString().split('T')[0]),
             actions: item.actions
           }));
+
+          const totalPnl = formattedData.reduce((acc, curr) => acc + curr.pnl, 0);
+          
+          // Save to history
+          const historyEntry = {
+            id: Date.now(),
+            timestamp: new Date().toISOString(),
+            params: requestParams,
+            dateRange: [dateRange[0].toISOString(), dateRange[1].toISOString()],
+            totalPnl,
+            // results: formattedData
+          };
+
+          setPastResults(prev => {
+            const updated = [historyEntry, ...prev];
+            localStorage.setItem('simulationHistory', JSON.stringify(updated));
+            return updated;
+          });
 
           updateState('simulation.result', { results: formattedData });
         } else if (statusResponse.status === 'error') {
@@ -148,7 +172,48 @@ const ShortSellingSimulatorPage = () => {
           setIsLoading(false);
           toast.error(statusResponse.error || 'Simulation failed');
         }
-      }, 2000); // Poll every 2 seconds
+        else {
+          const currentDateTime = new Date(statusResponse.currentDate);
+          
+          // Define trading day start and end times
+          const startTime = new Date(currentDateTime);
+          startTime.setUTCHours(3, 51, 0, 0);
+          
+          const endTime = new Date(currentDateTime);
+          endTime.setUTCHours(9, 50, 0, 0);
+          
+          // Calculate daily progress percentage
+          const totalDuration = endTime - startTime;
+          const elapsed = currentDateTime - startTime;
+          const dailyProgress = Math.min(Math.max(Math.round((elapsed / totalDuration) * 100), 0), 100);
+
+          // Calculate overall progress based on weekdays in date range
+          const getWeekdayCount = (start, end) => {
+            let count = 0;
+            let current = new Date(start);
+            while (current <= end) {
+              if (current.getDay() !== 0 && current.getDay() !== 6) {
+                count++;
+              }
+              current.setDate(current.getDate() + 1);
+            }
+            return count;
+          };
+
+          const totalWeekdays = getWeekdayCount(dateRange[0], dateRange[1]);
+          const completedWeekdays = getWeekdayCount(dateRange[0], currentDateTime);
+          const overallProgress = Math.round(((completedWeekdays - 1 + (dailyProgress / 100)) / totalWeekdays) * 100);
+
+          toast(`Simulation running: (${overallProgress}%)`, {
+            duration: 3000,
+            icon: '🔍',
+            style: {
+              background: '#abb53f',
+              color: 'black'
+            }
+          });
+        }
+      }, 3000); // Poll every 2 seconds
 
       setPollInterval(interval);
 
@@ -172,6 +237,7 @@ const ShortSellingSimulatorPage = () => {
     setIsLoading(true);
     try {
       setSelectedResult(result);
+      // console.log(result.data.map(d => new Date(d.time)))
       setSelectedResultData({
         data: result.data,
         tradeActions: result.actions,
@@ -327,9 +393,16 @@ const ShortSellingSimulatorPage = () => {
 
             {selectedResultData && (
               <div className="mt-8">
-                <h3 className="text-lg font-semibold mb-4">
-                  Chart for {selectedResult.symbol} on {selectedResult.date}
-                </h3>
+                <div className='flex justify-between'>
+                  <h3 className="text-lg font-semibold mb-4">
+                    Chart for {selectedResult.symbol} on {selectedResult.date}
+                  </h3>
+                  <button 
+                    className='bg-indigo-500 text-white px-4 py-2 rounded-md hover:bg-indigo-600'
+                    onClick={() => setSelectedResult(null)}>
+                    Close
+                  </button>
+                </div>
                 <SimulationResults
                   data={selectedResultData.data}
                   tradeActions={selectedResultData.tradeActions}
@@ -338,6 +411,51 @@ const ShortSellingSimulatorPage = () => {
                 />
               </div>
             )}
+          </div>
+        )}
+
+        {/* Add Past Results section after current results */}
+        {pastResults.length > 0 && (
+          <div className="bg-white p-6 rounded-lg shadow mb-8">
+            <h2 className="text-xl font-semibold mb-4">Past Simulation Results</h2>
+            <table className="w-full">
+              <thead>
+                <tr className="bg-gray-100">
+                  <th className="text-left py-2 px-4">Date</th>
+                  <th className="text-left py-2 px-4">Symbols</th>
+                  <th className="text-left py-2 px-4">Params</th>
+                  <th className="text-left py-2 px-4">Date Range</th>
+                  <th className="text-right py-2 px-4">Total P&L</th>
+                </tr>
+              </thead>
+              <tbody>
+                {pastResults.map((result) => (
+                  <tr key={result.id} className="hover:bg-gray-50">
+                    <td className="py-2 px-4">{new Date(result.timestamp).toLocaleString()}</td>
+                    <td className="py-2 px-4">{result.params.symbol}</td>
+                    <td className="py-2 px-4">
+                      RE: {!!result.params.simulation.reEnterPosition ? 'Yes' : 'No'} | USL: {!!result.params.simulation.updateSL ? 'Yes' : 'No'} | TSLR: {result.params.simulation.targetStopLossRatio} | CI: {result.params.simulation.cancelInMins}
+                    </td>
+                    <td className="py-2 px-4">
+                      {`${result.params.startdate} to ${result.params.enddate}`}
+                    </td>
+                    <td className={`text-right py-2 px-4 ${result.totalPnl >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      {result.totalPnl.toFixed(2)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <div className='mt-4'>
+              <button 
+                className='bg-indigo-500 text-white px-4 py-2 rounded-md hover:bg-indigo-600'
+                onClick={() => {
+                  localStorage.removeItem('simulationHistory');
+                  setPastResults([]);
+                }}>
+                Clear History
+              </button>
+            </div>
           </div>
         )}
       </div>
