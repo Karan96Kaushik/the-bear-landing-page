@@ -42,10 +42,11 @@ const initialState = {
   },
   simulation: {
     result: null,
-    reEnterPosition: false,
+    reEnterPosition: true,
     cancelInMins: 5,
-    updateSL: false,
-    updateSLInterval: 5,
+    updateSL: true,
+    updateSLInterval: 15,
+    updateSLFrequency: 5,
     targetStopLossRatio: '2:1'
   },
 };
@@ -59,7 +60,7 @@ const ShortSellingSimulatorPage = () => {
   const [selectedResult, setSelectedResult] = useState(null);
   const [selectedResultData, setSelectedResultData] = useState(null);
   // const [selectedFunctions, setSelectedFunctions] = useState([]);
-  const [dateRange, setDateRange] = useState([new Date(), new Date()]);
+  const [dateRange, setDateRange] = useState([new Date('2025-01-27'), new Date('2025-02-21')]);
   const [selectedSymbol, setSelectedSymbol] = useState([]);
   const [pollInterval, setPollInterval] = useState(null);
   const [pastResults, setPastResults] = useState(() => {
@@ -243,6 +244,7 @@ const ShortSellingSimulatorPage = () => {
         tradeActions: result.actions,
         pnl: result.pnl
       });
+      
     } catch (err) {
       toast.error(err?.message || 'Failed to load chart data');
     } finally {
@@ -336,16 +338,31 @@ const ShortSellingSimulatorPage = () => {
 
               />
             </div>
-            {state.simulation.updateSL && <div className=" px-2 mb-4 col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Update SL Interval</label>
-              <input
-                type="number"
-                step={5}
-                value={state.simulation.updateSLInterval}
-                onChange={(selected) => updateState('simulation.updateSLInterval', selected.value)}
-                className="px-3 py-2 text-base border border-gray-300 rounded-md"
-              />
-            </div>}
+            {state.simulation.updateSL && 
+              <> 
+                <div className=" px-2 mb-4 col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Update SL Interval</label>
+                  <input
+                    type="number"
+                    step={5}
+                    value={state.simulation.updateSLInterval}
+                    onChange={(event) => updateState('simulation.updateSLInterval', event.target.value)}
+                    className="px-3 py-2 text-base border border-gray-300 rounded-md"
+                  />
+                </div>
+                <div className=" px-2 mb-4 col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Update SL Frequency</label>
+                    <input
+                      type="number"
+                      step={5}
+                      value={state.simulation.updateSLFrequency}
+                      onChange={(event) => updateState('simulation.updateSLFrequency', event.target.value)}
+                      className="px-3 py-2 text-base border border-gray-300 rounded-md"
+                    />
+                </div>
+            
+            </>
+            }
 
           </div>
           <div className="mt-4">
@@ -387,8 +404,98 @@ const ShortSellingSimulatorPage = () => {
               </tbody>
             </table>
 
-            <div className='mt-4'>
-              Total PnL: {state.simulation.result.results.reduce((acc, curr) => acc + curr.pnl, 0)?.toFixed(2)}
+            <div className='mt-4 space-y-4'>
+              <div className='space-y-2'>
+                <div className='font-semibold'>Overall Statistics:</div>
+                <div>Total PnL: {state.simulation.result.results.reduce((acc, curr) => acc + curr.pnl, 0)?.toFixed(2)}</div>
+                <div>
+                  Mean PnL per Trade: {(state.simulation.result.results.reduce((acc, curr) => acc + curr.pnl, 0) / state.simulation.result.results.length)?.toFixed(2)}
+                </div>
+                <div>
+                  Std Dev PnL per Trade: {(Math.sqrt(
+                    state.simulation.result.results.reduce((acc, curr) => {
+                      const mean = state.simulation.result.results.reduce((a, c) => a + c.pnl, 0) / state.simulation.result.results.length;
+                      return acc + Math.pow(curr.pnl - mean, 2);
+                    }, 0) / state.simulation.result.results.length
+                  ))?.toFixed(2)}
+                </div>
+              </div>
+
+              <div className='space-y-2'>
+                <div className='font-semibold'>Daily Statistics:</div>
+                {(() => {
+                  const dailyPnL = state.simulation.result.results.reduce((acc, curr) => {
+                    const date = curr.date;
+                    acc[date] = acc[date] || [];
+                    acc[date].push(curr.pnl);
+                    return acc;
+                  }, {});
+
+                  const dailyTotals = Object.values(dailyPnL).map(pnls => pnls.reduce((a, b) => a + b, 0));
+                  const dailyMean = dailyTotals.reduce((a, b) => a + b, 0) / dailyTotals.length;
+                  const dailyStdDev = Math.sqrt(
+                    dailyTotals.reduce((acc, val) => acc + Math.pow(val - dailyMean, 2), 0) / dailyTotals.length
+                  );
+
+                  return (
+                    <>
+                      <div>Mean PnL per Day: {dailyMean.toFixed(2)}</div>
+                      <div>Std Dev PnL per Day: {dailyStdDev.toFixed(2)}</div>
+                    </>
+                  );
+                })()}
+              </div>
+
+              <div className='space-y-2'>
+                <div className='font-semibold'>Weekly Statistics:</div>
+                {(() => {
+                  const weeklyPnL = state.simulation.result.results.reduce((acc, curr) => {
+                    const date = new Date(curr.date);
+                    const weekKey = `${date.getFullYear()}-W${Math.ceil((date.getDate() + date.getDay()) / 7)}`;
+                    acc[weekKey] = acc[weekKey] || [];
+                    acc[weekKey].push(curr.pnl);
+                    return acc;
+                  }, {});
+
+                  const weeklyTotals = Object.values(weeklyPnL).map(pnls => pnls.reduce((a, b) => a + b, 0));
+                  const weeklyMean = weeklyTotals.reduce((a, b) => a + b, 0) / weeklyTotals.length;
+                  const weeklyStdDev = Math.sqrt(
+                    weeklyTotals.reduce((acc, val) => acc + Math.pow(val - weeklyMean, 2), 0) / weeklyTotals.length
+                  );
+
+                  return (
+                    <>
+                      <div>Mean PnL per Week: {weeklyMean.toFixed(2)}</div>
+                      <div>Std Dev PnL per Week: {weeklyStdDev.toFixed(2)}</div>
+                    </>
+                  );
+                })()}
+              </div>
+
+              <div className='space-y-2'>
+                <div className='font-semibold'>Order Statistics:</div>
+                {(() => {
+                  const dailyOrders = state.simulation.result.results.reduce((acc, curr) => {
+                    const date = curr.date;
+                    acc[date] = acc[date] || 0;
+                    acc[date]++;
+                    return acc;
+                  }, {});
+
+                  const ordersPerDay = Object.values(dailyOrders);
+                  const ordersMean = ordersPerDay.reduce((a, b) => a + b, 0) / ordersPerDay.length;
+                  const ordersStdDev = Math.sqrt(
+                    ordersPerDay.reduce((acc, val) => acc + Math.pow(val - ordersMean, 2), 0) / ordersPerDay.length
+                  );
+
+                  return (
+                    <>
+                      <div>Mean Orders per Day: {ordersMean.toFixed(2)}</div>
+                      <div>Std Dev Orders per Day: {ordersStdDev.toFixed(2)}</div>
+                    </>
+                  );
+                })()}
+              </div>
             </div>
 
             {selectedResultData && (
