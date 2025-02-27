@@ -53,6 +53,9 @@ const SimulationResults = ({ data, tradeActions, pnl, nseiData, symbol }) => {
   // Add theme detection
   const isDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
 
+  // Add state for annotation type
+  const [showVerticalAnnotations, setShowVerticalAnnotations] = React.useState(true);
+
   const chartData = useMemo(() => {
     let chartData = {
       datasets: [
@@ -199,8 +202,16 @@ const SimulationResults = ({ data, tradeActions, pnl, nseiData, symbol }) => {
       annotation: {
         annotations: tradeActions?.map(action => ({
           type: 'line',
-          xMin: +action.time + 5.5*60*60*1000,
-          xMax: +action.time + 5.5*60*60*1000,
+          // Conditional x/y min/max based on annotation type
+          ...(showVerticalAnnotations ? {
+            xMin: +action.time + 5.5*60*60*1000,
+            xMax: +action.time + 5.5*60*60*1000,
+          } : {
+            yMin: action.price,
+            yMax: action.price,
+            xMin: Math.min(...data.map(d => +d.time + 5.5*60*60*1000)),
+            xMax: Math.max(...data.map(d => +d.time + 5.5*60*60*1000)),
+          }),
           borderColor: 
             action?.action.includes('Short') ? 'red' : 
             action?.action === 'Stop Loss Hit' ? 'red' :
@@ -212,11 +223,11 @@ const SimulationResults = ({ data, tradeActions, pnl, nseiData, symbol }) => {
             action?.action === 'Cancelled' ? 'gray' :
             'gray',
           borderWidth: 2,
-          label: {
+          label: !showVerticalAnnotations ? {} : {
             content: `${action?.action} at ${action?.price?.toFixed(2)}`,
             display: true,
-            position: 'start',
-            yAdjust: action?.action === 'Stop Loss Hit' ? -50 :
+            position: showVerticalAnnotations ? 'start' : 'end',
+            yAdjust: showVerticalAnnotations ? (action?.action === 'Stop Loss Hit' ? -50 :
                 action?.action === 'Trigger Hit' ? -20 :
                 action?.action === 'Target Hit' ? -40 :
                 action?.action === 'Auto Square-off' ? -20 :
@@ -224,7 +235,7 @@ const SimulationResults = ({ data, tradeActions, pnl, nseiData, symbol }) => {
                 action?.action === 'Stop Loss Placed' ? -60 :
                 action?.action === 'Trigger Placed' ? -40 :
                 action?.action === 'Cancelled' ? -0 :
-                -20, // Random value between -50 and 50
+                -20) : 0, // Random value between -50 and 50
             backgroundColor: 
               action?.action === 'Stop Loss Hit' ? 'red' :
               action?.action === 'Trigger Hit' ? 'purple' :
@@ -303,9 +314,20 @@ const SimulationResults = ({ data, tradeActions, pnl, nseiData, symbol }) => {
           </li>
         ))}
       </ul>
-      <div className='mt-4 flex justify-end text-end  p-2 rounded-md'>
-        <div className='flex items-end gap-2'>
-          
+      <div className='mt-4 flex justify-between items-center'>
+        <div className='flex items-center gap-2'>
+          <label className="relative inline-flex items-center cursor-pointer">
+            <input
+              type="checkbox"
+              className="sr-only peer"
+              checked={showVerticalAnnotations}
+              onChange={(e) => setShowVerticalAnnotations(e.target.checked)}
+            />
+            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+            <span className="ml-3 text-sm font-medium">
+              {showVerticalAnnotations ? 'Vertical' : 'Horizontal'} Annotations
+            </span>
+          </label>
         </div>
         <div className='flex items-end gap-2 bg-blue-600 text-gray-100 p-2 rounded-md'>
           <button className='' onClick={() => {

@@ -71,6 +71,7 @@ const ShortSellingSimulatorPage = () => {
 	});
 	
 	const stockOptions = [
+		{ value: 'AUROPHARMA', label: 'AUROPHARMA' },
 		{ value: 'HCLTECH', label: 'HCLTECH' },
 		{ value: 'TCS', label: 'TCS' },
 		{ value: 'INFY', label: 'INFY' },
@@ -87,10 +88,6 @@ const ShortSellingSimulatorPage = () => {
 		{ value: 'EICHERMOT', label: 'EICHERMOT' },
 		{ value: 'GODREJPROP', label: 'GODREJPROP' },
 		{ value: 'TATAMOTORS', label: 'TATAMOTORS' },
-		{ value: 'TATAPOWER', label: 'TATAPOWER' },
-		{ value: 'TATACHEM', label: 'TATACHEM' },
-		{ value: 'TATACOMM', label: 'TATACOMM' },
-		
 		// Add more stock options as needed
 	];
 	
