@@ -150,6 +150,24 @@ const SimulationResults = ({ data, tradeActions, pnl, nseiData, symbol }) => {
         },
         ticks: {
           color: isDarkMode ? '#ffffff' : '#666666',
+        },
+        tooltip: {
+          callbacks: {
+            label: (context) => {
+              const datasetLabel = context.dataset.label;
+              if (datasetLabel === 'Stock Price') {
+                const point = context.raw;
+                return [
+                  `Open: ${point.o.toFixed(2)}`,
+                  `High: ${point.h.toFixed(2)}`,
+                  `Low: ${point.l.toFixed(2)}`,
+                  `Close: ${point.c.toFixed(2)}`
+                ];
+              } else {
+                return `${datasetLabel}: ${context.raw.y.toFixed(2)}`;
+              }
+            }
+          }
         }
       }
     },
@@ -222,6 +240,24 @@ const SimulationResults = ({ data, tradeActions, pnl, nseiData, symbol }) => {
             padding: 4
           }
         })) || []
+      },
+      tooltip: {
+        callbacks: {
+          label: (context) => {
+            const datasetLabel = context.dataset.label;
+            if (datasetLabel === 'Stock Price') {
+              const point = context.raw;
+              return [
+                `Open: ${point.o.toFixed(2)}`,
+                `High: ${point.h.toFixed(2)}`,
+                `Low: ${point.l.toFixed(2)}`,
+                `Close: ${point.c.toFixed(2)}`
+              ];
+            } else {
+              return `${datasetLabel}: ${context.raw.y.toFixed(2)}`;
+            }
+          }
+        }
       },
       responsive: true,
       maintainAspectRatio: false,

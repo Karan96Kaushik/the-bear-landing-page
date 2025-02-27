@@ -23,7 +23,7 @@ const orderFields = [
     { 
         key: 'timestamp', 
         label: 'Timestamp',
-        render: (timestamp) => new Date(timestamp).toLocaleString()
+        render: (timestamp) => new Date(+new Date(timestamp) + 5.5 * 60 * 60 * 1000).toLocaleString()
     }
 ];
 
