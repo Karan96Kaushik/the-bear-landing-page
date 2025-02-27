@@ -35,7 +35,7 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
-    "start": "react-scripts start",
+    "start": "PORT=9000 react-scripts start",
     "deployprod": "rm -rf build && rm -rf dist.zip && npm run build && zip -r dist.zip build && scp dist.zip the-bear:/home/ubuntu/the-bear-lp/ && ssh the-bear -t \"cd the-bear-lp && rm -r build/ && unzip dist.zip\"",
     "build": "react-scripts build",
     "test": "react-scripts test",
