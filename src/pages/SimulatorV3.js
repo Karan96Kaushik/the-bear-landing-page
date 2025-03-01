@@ -37,6 +37,132 @@ ChartJS.register(
 	zoomPlugin
 );
 
+function createTempParams(selectionParamOptions) {
+	return Object.keys(selectionParamOptions).reduce((acc, key) => {
+		if (selectionParamOptions[key].type === 'category') {
+			acc[key] = {value: selectionParamOptions[key].defaultValue, label: String(selectionParamOptions[key].defaultValue)};
+		} else {
+			acc[key] = selectionParamOptions[key].defaultValue;
+		}
+		return acc;
+	}, {});
+}
+
+function ParameterPopup({ selectionParams, setSelectionParams }) {
+
+  const [isPopupOpen, setIsPopupOpen] = useState(false);
+  const [tempParams, setTempParams] = useState();
+
+//   useEffect(() => {
+//     if (isPopupOpen) {
+//       setTempParams(createTempParams(selectionParamOptions));
+//     }
+//   }, [isPopupOpen]);
+
+//   console.debug('selectionParams', selectionParams)
+//   console.debug('tempParams', tempParams)
+
+  const openPopup = () => {
+    setTempParams({ ...selectionParams });
+    setIsPopupOpen(true);
+  };
+
+  const closePopup = () => {
+    setIsPopupOpen(false);
+  };
+
+  const saveChanges = () => {
+	const newParams = Object.keys(tempParams).reduce((acc, key) => {
+		if (selectionParamOptions[key].type === 'category') {
+			acc[key] = tempParams[key].value;
+		} else {
+			acc[key] = tempParams[key];
+		}
+		return acc;
+	}, {});
+    setSelectionParams(newParams);
+	console.debug('newParams', newParams)
+    closePopup();
+  };
+
+  const handleInputChange = (key, value) => {
+	// console.debug(key, value)
+    setTempParams((prev) => ({ ...prev, [key]: value }));
+  };
+
+  return (
+    <div className="p-4 w-full">
+      <button
+        onClick={openPopup}
+        className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
+      >
+        Change Parameters
+      </button>
+
+      {isPopupOpen && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg max-w-4xl">
+            <h2 className="text-xl font-semibold mb-4">Edit Parameters</h2>
+
+            <div className="space-y-4">
+				{Object.keys(selectionParamOptions).filter(key => selectionParamOptions[key].type === 'number').map((key) => (
+					<div key={key} className="flex flex-row gap-2 items-center">
+						<label className="block text-sm font-medium text-gray-700">
+							{key}
+						</label>
+						<input
+							className="w-1/2 px-2 py-1 border border-gray-300 rounded-md"
+							type="number"
+							step={selectionParamOptions[key].step}
+							value={tempParams[key]}
+							onChange={(e) => handleInputChange(key, parseFloat(e.target.value))}
+						/>
+					</div>
+				))}
+				{Object.keys(selectionParamOptions).filter(key => selectionParamOptions[key].type === 'category').map((key) => (
+					<div key={key} className="flex flex-row gap-2 items-center">
+						<label className="block text-sm font-medium text-gray-700">
+							{key}
+						</label>
+						<Select
+							options={selectionParamOptions[key].options.map(option => ({ value: option, label: String(option) }))}
+							value={tempParams[key]}
+							onChange={(e) => handleInputChange(key, e)}
+						/>
+					</div>
+				))}
+            </div>
+
+            <div className="mt-6 flex justify-end space-x-4">
+              <button
+                onClick={closePopup}
+                className="bg-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-400"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={saveChanges}
+                className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
+              >
+                Save
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+const selectionParamOptions = {
+	TOUCHING_SMA_TOLERANCE: {type: 'number', start: 0.00040, end: 0.00050, step: 0.00001, defaultValue: 0.00045},
+	NARROW_RANGE_TOLERANCE: {type: 'number', start: 0.0040, end: 0.0050, step: 0.0001, defaultValue: 0.0046},
+	CANDLE_CONDITIONS_SLOPE_TOLERANCE: {type: 'number', start: 1, end: 2, step: 1, defaultValue: 1},
+	BASE_CONDITIONS_SLOPE_TOLERANCE: {type: 'number', start: 1, end: 2, step: 1, defaultValue: 1},
+	MA_WINDOW: {type: 'category', options: [22, 44], defaultValue: 44},
+	CHECK_75MIN: {type: 'category', options: [true, false], defaultValue: true}
+}
+
 const initialState = {
 	timeRange: {
 		start: new Date('2024-11-08'),
@@ -56,6 +182,7 @@ const initialState = {
 };
 
 const ShortSellingSimulatorPage = () => {
+	const [selectionParams, setSelectionParams] = useState(createTempParams(selectionParamOptions));
 	const [state, setState] = useState(initialState);
 	const [isLoading, setIsLoading] = useState(false);
 	// const [dailyPnL, setDailyPnL] = useState([]);
@@ -71,15 +198,6 @@ const ShortSellingSimulatorPage = () => {
 		const saved = localStorage.getItem('simulationHistory');
 		return saved ? JSON.parse(saved) : [];
 	});
-
-	const selectionParams = {
-		TOUCHING_SMA_TOLERANCE: 0.00040,
-		NARROW_RANGE_TOLERANCE: 0.0046,
-		CANDLE_CONDITIONS_SLOPE_TOLERANCE: 1,
-		BASE_CONDITIONS_SLOPE_TOLERANCE: 1,
-		MA_WINDOW: 44,
-		CHECK_75MIN: true
-	}
 
 	const stockOptions = [
 		{ value: 'AUROPHARMA', label: 'AUROPHARMA' },
@@ -400,6 +518,9 @@ const ShortSellingSimulatorPage = () => {
 			
 			</>
 			}
+
+
+			<ParameterPopup selectionParams={selectionParams} setSelectionParams={setSelectionParams} />
 
 		  </div>
 		  <div className="mt-4">

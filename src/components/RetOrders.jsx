@@ -193,7 +193,13 @@ export default function Orders() {
                     <>
                         <div className="bg-white rounded-lg md:col-span-1 shadow-md p-4">
                             <h3 className="text-lg font-semibold mb-4">Trade Summary</h3>
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-3 gap-4">
+                                <div className="bg-gray-50 p-3 rounded">
+                                    <p className="text-sm text-gray-600">Total P&L</p>
+                                    <p className={`text-xl font-bold ${tradeAnalysis.summary.totalPnL >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                        ₹{tradeAnalysis.summary.totalPnL}
+                                    </p>
+                                </div>
                                 <div className="bg-gray-50 p-3 rounded">
                                     <p className="text-sm text-gray-600">Total Trades</p>
                                     <p className="text-xl font-bold">{tradeAnalysis.summary.totalTrades}</p>
@@ -212,12 +218,7 @@ export default function Orders() {
                                     <p className="text-sm text-gray-600">Open Trades</p>
                                     <p className="text-xl font-bold">{tradeAnalysis.summary.openTrades}</p>
                                 </div>
-                                <div className="bg-gray-50 p-3 rounded">
-                                    <p className="text-sm text-gray-600">Total P&L</p>
-                                    <p className={`text-xl font-bold ${tradeAnalysis.summary.totalPnL >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                                        ₹{tradeAnalysis.summary.totalPnL}
-                                    </p>
-                                </div>
+    
                                 <div className="bg-gray-50 p-3 rounded">
                                     <p className="text-sm text-gray-600">Zaire Trades</p>
                                     <p className="text-xl font-bold">{tradeAnalysis.summary.zaireTrades}</p>
