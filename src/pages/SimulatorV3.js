@@ -24,6 +24,7 @@ import Select from 'react-select';
 
 import _ from 'lodash';
 import moment from 'moment/moment';
+import TrialResults from '../components/TrialResults';
 
 ChartJS.register(
 	TimeScale,
@@ -49,8 +50,9 @@ const initialState = {
 		updateSLInterval: 15,
 		updateSLFrequency: 15,
 		targetStopLossRatio: '2:1',
-		marketOrder: false
+		marketOrder: false,
 	},
+	trials: []
 };
 
 const ShortSellingSimulatorPage = () => {
@@ -69,7 +71,16 @@ const ShortSellingSimulatorPage = () => {
 		const saved = localStorage.getItem('simulationHistory');
 		return saved ? JSON.parse(saved) : [];
 	});
-	
+
+	const selectionParams = {
+		TOUCHING_SMA_TOLERANCE: 0.00040,
+		NARROW_RANGE_TOLERANCE: 0.0046,
+		CANDLE_CONDITIONS_SLOPE_TOLERANCE: 1,
+		BASE_CONDITIONS_SLOPE_TOLERANCE: 1,
+		MA_WINDOW: 44,
+		CHECK_75MIN: true
+	}
+
 	const stockOptions = [
 		{ value: 'AUROPHARMA', label: 'AUROPHARMA' },
 		{ value: 'HCLTECH', label: 'HCLTECH' },
@@ -118,7 +129,8 @@ const ShortSellingSimulatorPage = () => {
 				startdate: dateRange[0].toISOString().split('T')[0],
 				enddate: dateRange[1].toISOString().split('T')[0],
 				symbol: selectedSymbol.join(','),
-				simulation
+				simulation,
+				selectionParams
 			};
 			
 			// Start the simulation
@@ -141,6 +153,7 @@ const ShortSellingSimulatorPage = () => {
 						const formattedData = statusResponse.result.map(item => ({
 							symbol: item.sym,
 							date: moment(item.placedAt).format('DD-MM-YYYY'),
+							timestamp: new Date(item.placedAt),
 							datetime: moment(+new Date(item.placedAt) + 5.5 * 60 * 60 * 1000).format('DD-MM-YYYY HH:mm'),
 							pnl: item.pnl,
 							direction: item.direction,
@@ -168,6 +181,12 @@ const ShortSellingSimulatorPage = () => {
 						});
 						
 						updateState('simulation.result', { results: formattedData });
+						updateState('trials', [{
+							data: formattedData,
+							params: requestParams.simulation,
+							selectionParams: requestParams.selectionParams,
+							startTime: statusResponse.startTime
+						},...state.trials]);
 					} else if (statusResponse.status === 'error') {
 						clearInterval(interval);
 						setPollInterval(null);
@@ -221,6 +240,9 @@ const ShortSellingSimulatorPage = () => {
 					}
 				} catch (err) {
 					console.error('Error polling simulation status:', err);
+					setIsLoading(false);
+					clearInterval(interval);
+					setPollInterval(null);
 				}
 			}, 3000); // Poll every 3 seconds
 			
@@ -388,8 +410,22 @@ const ShortSellingSimulatorPage = () => {
 		</div>
 
 		{state.simulation.result && (
+			<>
 		  <div className="bg-white p-6 rounded-lg shadow mb-8">
-			<h2 className="text-xl font-semibold mb-4">Simulation Results</h2>
+
+		  <h2 className="text-xl font-semibold mb-4">Trial Results</h2>
+
+		  <div className='mt-4'>
+				{state.trials.map(trial => (
+					<div className='mt-4'>
+						<TrialResults
+							data={trial}
+						/>
+					</div>
+				))}
+			</div>
+
+			<h2 className="text-xl font-semibold my-4">Last Trial Results</h2>
 			<table className="w-full">
 			  <thead>
 				<tr className="bg-gray-100">
@@ -419,99 +455,10 @@ const ShortSellingSimulatorPage = () => {
 			  </tbody>
 			</table>
 
-			<div className='mt-4 space-y-4'>
-			  <div className='space-y-2'>
-				<div className='font-semibold'>Overall Statistics:</div>
-				<div>Total PnL: {state.simulation.result.results.reduce((acc, curr) => acc + curr.pnl, 0)?.toFixed(2)}</div>
-				<div>
-				  Mean PnL per Trade: {(state.simulation.result.results.reduce((acc, curr) => acc + curr.pnl, 0) / state.simulation.result.results.length)?.toFixed(2)}
-				</div>
-				<div>
-				  Std Dev PnL per Trade: {(Math.sqrt(
-					state.simulation.result.results.reduce((acc, curr) => {
-					  const mean = state.simulation.result.results.reduce((a, c) => a + c.pnl, 0) / state.simulation.result.results.length;
-					  return acc + Math.pow(curr.pnl - mean, 2);
-					}, 0) / state.simulation.result.results.length
-				  ))?.toFixed(2)}
-				</div>
-			  </div>
-
-			  <div className='space-y-2'>
-				<div className='font-semibold'>Daily Statistics:</div>
-				{(() => {
-				  const dailyPnL = state.simulation.result.results.reduce((acc, curr) => {
-					const date = curr.date;
-					acc[date] = acc[date] || [];
-					acc[date].push(curr.pnl);
-					return acc;
-				  }, {});
-
-				  const dailyTotals = Object.values(dailyPnL).map(pnls => pnls.reduce((a, b) => a + b, 0));
-				  const dailyMean = dailyTotals.reduce((a, b) => a + b, 0) / dailyTotals.length;
-				  const dailyStdDev = Math.sqrt(
-					dailyTotals.reduce((acc, val) => acc + Math.pow(val - dailyMean, 2), 0) / dailyTotals.length
-				  );
-
-				  return (
-					<>
-					  <div>Mean PnL per Day: {dailyMean.toFixed(2)}</div>
-					  <div>Std Dev PnL per Day: {dailyStdDev.toFixed(2)}</div>
-					</>
-				  );
-				})()}
-			  </div>
-
-			  <div className='space-y-2'>
-				<div className='font-semibold'>Weekly Statistics:</div>
-				{(() => {
-				  const weeklyPnL = state.simulation.result.results.reduce((acc, curr) => {
-					const date = new Date(curr.date);
-					const weekKey = `${date.getFullYear()}-W${Math.ceil((date.getDate() + date.getDay()) / 7)}`;
-					acc[weekKey] = acc[weekKey] || [];
-					acc[weekKey].push(curr.pnl);
-					return acc;
-				  }, {});
-
-				  const weeklyTotals = Object.values(weeklyPnL).map(pnls => pnls.reduce((a, b) => a + b, 0));
-				  const weeklyMean = weeklyTotals.reduce((a, b) => a + b, 0) / weeklyTotals.length;
-				  const weeklyStdDev = Math.sqrt(
-					weeklyTotals.reduce((acc, val) => acc + Math.pow(val - weeklyMean, 2), 0) / weeklyTotals.length
-				  );
-
-				  return (
-					<>
-					  <div>Mean PnL per Week: {weeklyMean.toFixed(2)}</div>
-					  <div>Std Dev PnL per Week: {weeklyStdDev.toFixed(2)}</div>
-					</>
-				  );
-				})()}
-			  </div>
-
-			  <div className='space-y-2'>
-				<div className='font-semibold'>Order Statistics:</div>
-				{(() => {
-				  const dailyOrders = state.simulation.result.results.reduce((acc, curr) => {
-					const date = curr.date;
-					acc[date] = acc[date] || 0;
-					acc[date]++;
-					return acc;
-				  }, {});
-
-				  const ordersPerDay = Object.values(dailyOrders);
-				  const ordersMean = ordersPerDay.reduce((a, b) => a + b, 0) / ordersPerDay.length;
-				  const ordersStdDev = Math.sqrt(
-					ordersPerDay.reduce((acc, val) => acc + Math.pow(val - ordersMean, 2), 0) / ordersPerDay.length
-				  );
-
-				  return (
-					<>
-					  <div>Mean Orders per Day: {ordersMean.toFixed(2)}</div>
-					  <div>Std Dev Orders per Day: {ordersStdDev.toFixed(2)}</div>
-					</>
-				  );
-				})()}
-			  </div>
 			</div>
+			<div className="bg-white p-6 rounded-lg shadow mb-8">
+
+
 
 			{selectedResultData && (
 			  <div className="mt-8">
@@ -534,6 +481,7 @@ const ShortSellingSimulatorPage = () => {
 			  </div>
 			)}
 		  </div>
+		  </>
 		)}
 
 		{/* Add Past Results section after current results */}
