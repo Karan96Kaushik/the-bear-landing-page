@@ -160,7 +160,8 @@ const selectionParamOptions = {
 	CANDLE_CONDITIONS_SLOPE_TOLERANCE: {type: 'number', start: 1, end: 2, step: 1, defaultValue: 1},
 	BASE_CONDITIONS_SLOPE_TOLERANCE: {type: 'number', start: 1, end: 2, step: 1, defaultValue: 1},
 	MA_WINDOW: {type: 'category', options: [22, 44], defaultValue: 44},
-	CHECK_75MIN: {type: 'category', options: [true, false], defaultValue: true}
+	CHECK_75MIN: {type: 'category', options: [true, false], defaultValue: true},
+	TOUCHING_SMA_15_TOLERANCE: {type: 'number', start: 0.00040, end: 0.00050, step: 0.00001, defaultValue: -1}
 }
 
 const initialState = {
@@ -402,14 +403,7 @@ const ShortSellingSimulatorPage = () => {
 
   return (
 	<div className="bg-gray-900 min-h-screen relative">
-	  {isLoading && (
-		<div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-		  <div className="bg-white rounded-lg p-6 flex items-center space-x-4">
-			<Loader2 className="h-8 w-8 text-blue-500 animate-spin" />
-			<span className="text-lg font-semibold text-gray-700">Loading...</span>
-		  </div>
-		</div>
-	  )}
+	  
 	  <div className="container mx-auto px-4 py-20">
 		<h1 className="text-3xl font-bold mb-6 text-white">Stock Trading Simulator</h1>
 		<div className="bg-white p-6 rounded-lg shadow mb-8 ">
@@ -524,8 +518,8 @@ const ShortSellingSimulatorPage = () => {
 
 		  </div>
 		  <div className="mt-4">
-			<button onClick={fetchSimulationData} className="w-full bg-indigo-500 text-white px-4 py-2 rounded-md hover:bg-indigo-600">
-			  Fetch Simulation Data
+			<button onClick={fetchSimulationData} disabled={isLoading} className="w-full bg-indigo-500 text-white px-4 py-2 rounded-md hover:bg-indigo-600">
+			  { !isLoading ? 'Fetch Simulation Data' : <><Loader2 className="h-8 w-8 text-blue-500 animate-spin" /> Fetching Simulation Data...</>}
 			</button>
 		  </div>
 		</div>
