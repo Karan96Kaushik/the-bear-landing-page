@@ -37,6 +37,55 @@ ChartJS.register(
 	zoomPlugin
 );
 
+const processTrialData = (trialData) => {
+	const dailyPnL = Object.values(
+		trialData.reduce((acc, curr) => {
+		  const date = curr.timestamp.toISOString().split('T')[0];
+		  acc[date] = acc[date] || [];
+		  acc[date].push(curr.pnl);
+		  return acc;
+		}, {})
+	  ).map(pnls => pnls.reduce((a, b) => a + b, 0))
+
+	const totalPnl = dailyPnL.reduce((acc, curr) => acc + curr.pnl, 0)
+
+	const weeklyPnl = Object.values(
+		trialData.reduce((acc, curr) => {
+		  const date = new Date(curr.timestamp);
+		  const weekKey = `${date.getFullYear()}-W${Math.ceil((date.getDate() + date.getDay()) / 7)}`;
+		  acc[weekKey] = acc[weekKey] || [];
+		  acc[weekKey].push(curr.pnl);
+
+		  console.log('----', `W${Math.ceil((date.getDate() + date.getDay()) / 7)}`, date, date.getDate(), date.getDay(), curr.date)
+		  return acc;
+		}, {})
+	  ).map(pnls => pnls.reduce((a, b) => a + b, 0))
+
+	const orderCountStats = Object.values(
+		trialData.reduce((acc, curr) => {
+		  const date = curr.timestamp.toISOString().split('T')[0];
+		  acc[date] = acc[date] || 0;
+		  acc[date]++;
+		  return acc;
+		}, {})
+	  )
+
+	const meanPnlPerTrade = (trialData.reduce((acc, curr) => acc + curr.pnl, 0) / trialData.length)
+	const stdDevPnlPerTrade = Math.sqrt(trialData.reduce((acc, curr) => acc + Math.pow(curr.pnl - meanPnlPerTrade, 2), 0) / trialData.length)
+
+	const positiveTrades = trialData.filter(trade => trade.pnl > 0).length
+
+	return {
+		dailyPnL,
+		weeklyPnl,
+		orderCountStats,
+		positiveTrades,
+		meanPnlPerTrade,
+		stdDevPnlPerTrade,
+		totalPnl
+	}
+}
+
 function createTempParams(selectionParamOptions) {
 	return Object.keys(selectionParamOptions).reduce((acc, key) => {
 		if (selectionParamOptions[key].type === 'category') {
@@ -155,13 +204,48 @@ function ParameterPopup({ selectionParams, setSelectionParams }) {
 }
 
 const selectionParamOptions = {
-	TOUCHING_SMA_TOLERANCE: {type: 'number', start: 0.00040, end: 0.00050, step: 0.00001, defaultValue: 0.00045},
-	NARROW_RANGE_TOLERANCE: {type: 'number', start: 0.0040, end: 0.0050, step: 0.0001, defaultValue: 0.0046},
+	TOUCHING_SMA_TOLERANCE: {type: 'number', start: 0.00030, end: 0.00040, step: 0.00005, defaultValue: 0.00045},
+	NARROW_RANGE_TOLERANCE: {type: 'number', start: 0.0040, end: 0.0050, step: 0.0010, defaultValue: 0.0046},
 	CANDLE_CONDITIONS_SLOPE_TOLERANCE: {type: 'number', start: 1, end: 2, step: 1, defaultValue: 1},
 	BASE_CONDITIONS_SLOPE_TOLERANCE: {type: 'number', start: 1, end: 2, step: 1, defaultValue: 1},
 	MA_WINDOW: {type: 'category', options: [22, 44], defaultValue: 44},
 	CHECK_75MIN: {type: 'category', options: [true, false], defaultValue: true},
-	TOUCHING_SMA_15_TOLERANCE: {type: 'number', start: 0.00040, end: 0.00050, step: 0.00001, defaultValue: -1}
+	TOUCHING_SMA_15_TOLERANCE: {type: 'number', start: 0.00030, end: 0.00040, step: 0.00005, defaultValue: -1}
+}
+
+
+function generateCombinations(options) {
+    const keys = Object.keys(options);
+    
+    // Generate value ranges for each parameter
+    const values = keys.map(key => {
+        const param = options[key];
+        if (param.type === 'number') {
+            const range = [];
+            for (let val = param.start; val <= param.end; val += param.step) {
+                range.push(Number(val.toFixed(6))); // Ensuring precision
+            }
+            return range;
+        } else if (param.type === 'category') {
+            return param.options;
+        }
+    });
+    
+    // Generate all possible combinations
+    const combinations = [];
+    function combine(index, current) {
+        if (index === keys.length) {
+            combinations.push({ ...current });
+            return;
+        }
+        for (const value of values[index]) {
+            current[keys[index]] = value;
+            combine(index + 1, current);
+        }
+    }
+    
+    combine(0, {});
+    return combinations;
 }
 
 const initialState = {
@@ -197,6 +281,11 @@ const ShortSellingSimulatorPage = () => {
 	const [pollInterval, setPollInterval] = useState(null);
 	const [pastResults, setPastResults] = useState(() => {
 		const saved = localStorage.getItem('simulationHistory');
+		return saved ? JSON.parse(saved) : [];
+	});
+
+	const [pastTrials, setPastTrials] = useState(() => {
+		const saved = localStorage.getItem('simulationTrials');
 		return saved ? JSON.parse(saved) : [];
 	});
 
@@ -238,19 +327,9 @@ const ShortSellingSimulatorPage = () => {
 		});
 	};
 	
-	const fetchSimulationData = async () => {
+	const fetchSimulationData = (requestParams) => new Promise(async (resolve, reject) => {
 		setIsLoading(true);
 		try {
-			const simulation = _.merge({}, state.simulation);
-			delete simulation.result;
-			
-			const requestParams = {
-				startdate: dateRange[0].toISOString().split('T')[0],
-				enddate: dateRange[1].toISOString().split('T')[0],
-				symbol: selectedSymbol.join(','),
-				simulation,
-				selectionParams
-			};
 			
 			// Start the simulation
 			const response = await postAuthorizedData('/simulation/simulate/v2/start', requestParams);
@@ -292,25 +371,43 @@ const ShortSellingSimulatorPage = () => {
 							totalPnl,
 							// results: formattedData
 						};
+
+						const trialData = processTrialData(formattedData)
 						
 						setPastResults(prev => {
 							const updated = [historyEntry, ...prev];
 							localStorage.setItem('simulationHistory', JSON.stringify(updated));
 							return updated;
 						});
+
+						setPastTrials(prev => {
+							let data = {
+								results: trialData,
+								params: requestParams.simulation,
+								selectionParams: requestParams.selectionParams,
+								startTime: statusResponse.startTime
+							}
+							const updated = [data, ...prev];
+							localStorage.setItem('simulationTrials', JSON.stringify(updated));
+							return updated;
+						});
 						
 						updateState('simulation.result', { results: formattedData });
-						updateState('trials', [{
-							data: formattedData,
-							params: requestParams.simulation,
-							selectionParams: requestParams.selectionParams,
-							startTime: statusResponse.startTime
-						},...state.trials]);
+
+						return resolve();
+
+						// updateState('trials', [{
+						// 	data: formattedData,
+						// 	params: requestParams.simulation,
+						// 	selectionParams: requestParams.selectionParams,
+						// 	startTime: statusResponse.startTime
+						// },...state.trials]);
 					} else if (statusResponse.status === 'error') {
 						clearInterval(interval);
 						setPollInterval(null);
 						setIsLoading(false);
 						toast.error(statusResponse.error || 'Simulation failed');
+						return reject(statusResponse.error || 'Simulation failed');
 					}
 					else {
 						const currentDateTime = new Date(statusResponse.currentDate);
@@ -372,7 +469,37 @@ const ShortSellingSimulatorPage = () => {
 			toast.error('Failed to start simulation');
 			console.error('Error starting simulation:', error);
 		}
-	};
+	})
+
+	const startTrials = async () => {
+		const combinations = generateCombinations(selectionParamOptions);
+		console.debug('combinations', combinations)
+		let simulation;
+
+		let startDate = dateRange[0].toISOString().split('T')[0];
+		let endDate = dateRange[1].toISOString().split('T')[0];
+
+		toast.success(`Starting ${combinations.length} simulations...`);
+
+		for (const combination of combinations) {
+			try {
+				simulation = _.merge({}, state.simulation);
+				delete simulation.result;
+				let requestParams = {
+					startdate: startDate,
+					enddate: endDate,
+					symbol: selectedSymbol.join(','),
+					simulation,
+					selectionParams: combination
+				};
+				toast.success('Started simulation for ' + Object.keys(combination).join(', '));
+				await fetchSimulationData(requestParams);
+			} catch (err) {
+				console.error('Error starting simulation:', err);
+				toast.error('Error running simulation:', err);
+			}
+		}
+	}
 	
 	// Cleanup polling on component unmount
 	useEffect(() => {
@@ -518,27 +645,34 @@ const ShortSellingSimulatorPage = () => {
 
 		  </div>
 		  <div className="mt-4">
-			<button onClick={fetchSimulationData} disabled={isLoading} className="w-full bg-indigo-500 text-white px-4 py-2 rounded-md hover:bg-indigo-600">
-			  { !isLoading ? 'Fetch Simulation Data' : <><Loader2 className="h-8 w-8 text-blue-500 animate-spin" /> Fetching Simulation Data...</>}
+			<button onClick={startTrials} disabled={isLoading} className="w-full bg-indigo-500 text-white px-4 py-2 rounded-md hover:bg-indigo-600 items-center justify-center flex">
+			  { !isLoading ? 'Run Trials' : <><Loader2 className="h-8 w-8 text-white animate-spin" /> </>}
 			</button>
 		  </div>
 		</div>
 
-		{state.simulation.result && (
+		{pastTrials && (
 			<>
 		  <div className="bg-white p-6 rounded-lg shadow mb-8">
 
-		  <h2 className="text-xl font-semibold mb-4">Trial Results</h2>
+			<h2 className="text-xl font-semibold mb-4">Trial Results</h2>
 
-		  <div className='mt-4'>
-				{state.trials.map(trial => (
-					<div className='mt-4'>
-						<TrialResults
-							data={trial}
-						/>
-					</div>
-				))}
+			<div className='mt-4'>
+					{pastTrials.map(trial => (
+						<div className='mt-4'>
+							<TrialResults
+								data={trial}
+							/>
+						</div>
+					))}
+				</div>
 			</div>
+			</>
+		)}
+
+		{state.simulation.result && (
+			<>
+			<div className="bg-white p-6 rounded-lg shadow mb-8">
 
 			<h2 className="text-xl font-semibold my-4">Last Trial Results</h2>
 			<table className="w-full">
@@ -636,7 +770,9 @@ const ShortSellingSimulatorPage = () => {
 				className='bg-indigo-500 text-white px-4 py-2 rounded-md hover:bg-indigo-600'
 				onClick={() => {
 				  localStorage.removeItem('simulationHistory');
+				  localStorage.removeItem('simulationTrials');
 				  setPastResults([]);
+				  setPastTrials([]);
 				}}>
 				Clear History
 			  </button>
