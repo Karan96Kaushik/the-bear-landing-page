@@ -38,7 +38,7 @@ ChartJS.register(
 );
 
 const processTrialData = (trialData) => {
-	const dailyPnL = Object.values(
+	const dailyPnl = Object.values(
 		trialData.reduce((acc, curr) => {
 		  const date = curr.timestamp.toISOString().split('T')[0];
 		  acc[date] = acc[date] || [];
@@ -47,7 +47,9 @@ const processTrialData = (trialData) => {
 		}, {})
 	  ).map(pnls => pnls.reduce((a, b) => a + b, 0))
 
-	const totalPnl = dailyPnL.reduce((acc, curr) => acc + curr.pnl, 0)
+	const totalPnl = dailyPnl.reduce((acc, curr) => acc + curr, 0)
+
+	const totalTrades = trialData.length
 
 	const weeklyPnl = Object.values(
 		trialData.reduce((acc, curr) => {
@@ -55,8 +57,16 @@ const processTrialData = (trialData) => {
 		  const weekKey = `${date.getFullYear()}-W${Math.ceil((date.getDate() + date.getDay()) / 7)}`;
 		  acc[weekKey] = acc[weekKey] || [];
 		  acc[weekKey].push(curr.pnl);
+		  return acc;
+		}, {})
+	  ).map(pnls => pnls.reduce((a, b) => a + b, 0))
 
-		  console.log('----', `W${Math.ceil((date.getDate() + date.getDay()) / 7)}`, date, date.getDate(), date.getDay(), curr.date)
+	  const hourlyPnl = Object.values(
+		trialData.reduce((acc, curr) => {
+		  const date = new Date(curr.timestamp);
+		  const hourKey = `${date.getHours()}`;
+		  acc[hourKey] = acc[hourKey] || [];
+		  acc[hourKey].push(curr.pnl);
 		  return acc;
 		}, {})
 	  ).map(pnls => pnls.reduce((a, b) => a + b, 0))
@@ -76,40 +86,44 @@ const processTrialData = (trialData) => {
 	const positiveTrades = trialData.filter(trade => trade.pnl > 0).length
 
 	return {
-		dailyPnL,
+		dailyPnl,
 		weeklyPnl,
+		hourlyPnl,
 		orderCountStats,
 		positiveTrades,
 		meanPnlPerTrade,
 		stdDevPnlPerTrade,
-		totalPnl
+		totalPnl,
+		totalTrades
 	}
 }
 
-function createTempParams(selectionParamOptions) {
-	return Object.keys(selectionParamOptions).reduce((acc, key) => {
-		if (selectionParamOptions[key].type === 'category') {
-			acc[key] = {value: selectionParamOptions[key].defaultValue, label: String(selectionParamOptions[key].defaultValue)};
-		} else {
-			acc[key] = selectionParamOptions[key].defaultValue;
-		}
-		return acc;
-	}, {});
+const selectionParams = {
+	TOUCHING_SMA_TOLERANCE: {type: 'number', start: 0.00030, end: 0.00040, step: 0.00005, defaultValue: 0.00045},
+	NARROW_RANGE_TOLERANCE: {type: 'number', start: 0.0040, end: 0.0050, step: 0.0010, defaultValue: 0.0046},
+	CANDLE_CONDITIONS_SLOPE_TOLERANCE: {type: 'number', start: 1, end: 2, step: 1, defaultValue: 1},
+	BASE_CONDITIONS_SLOPE_TOLERANCE: {type: 'number', start: 1, end: 2, step: 1, defaultValue: 1},
+	MA_WINDOW: {type: 'category', options: [22, 44], defaultValue: 44},
+	CHECK_75MIN: {type: 'category', options: [true, false], defaultValue: true},
+	TOUCHING_SMA_15_TOLERANCE: {type: 'number', start: 0.00030, end: 0.00040, step: 0.00005, defaultValue: -1}
 }
 
+const initialSelectionParamOptions = {
+  TOUCHING_SMA_TOLERANCE: { type: 'category', options: [0.0003, 0.00035, 0.0004], defaultValue: 0.00045 },
+  TOUCHING_SMA_15_TOLERANCE: { type: 'category', options: [0.0003, 0.00035, 0.0004], defaultValue: -1 },
+  NARROW_RANGE_TOLERANCE: { type: 'category', options: [0.004, 0.0045, 0.005], defaultValue: 0.0046 },
+  CANDLE_CONDITIONS_SLOPE_TOLERANCE: { type: 'category', options: [1, 1.5], defaultValue: 1 },
+  BASE_CONDITIONS_SLOPE_TOLERANCE: { type: 'category', options: [1, 1.5], defaultValue: 1 },
+  MA_WINDOW: { type: 'category', options: [22, 44], defaultValue: 44 },
+  CHECK_75MIN: { type: 'category', options: [0, 1], defaultValue: 0 },
+  STOCK_LIST: { type: 'category', options: ['SimulationTest!D2:D550', 'SimulationTest!E2:E550'], defaultValue: 'SimulationTest!D2:D550' },
+};
+
 function ParameterPopup({ selectionParams, setSelectionParams }) {
-
   const [isPopupOpen, setIsPopupOpen] = useState(false);
-  const [tempParams, setTempParams] = useState();
-
-//   useEffect(() => {
-//     if (isPopupOpen) {
-//       setTempParams(createTempParams(selectionParamOptions));
-//     }
-//   }, [isPopupOpen]);
-
-//   console.debug('selectionParams', selectionParams)
-//   console.debug('tempParams', tempParams)
+  const [tempParams, setTempParams] = useState(initialSelectionParamOptions);
+  const [newOptionValue, setNewOptionValue] = useState('');
+  const [selectedKeyForNewOption, setSelectedKeyForNewOption] = useState('');
 
   const openPopup = () => {
     setTempParams({ ...selectionParams });
@@ -121,22 +135,33 @@ function ParameterPopup({ selectionParams, setSelectionParams }) {
   };
 
   const saveChanges = () => {
-	const newParams = Object.keys(tempParams).reduce((acc, key) => {
-		if (selectionParamOptions[key].type === 'category') {
-			acc[key] = tempParams[key].value;
-		} else {
-			acc[key] = tempParams[key];
-		}
-		return acc;
-	}, {});
-    setSelectionParams(newParams);
-	console.debug('newParams', newParams)
+	console.debug(tempParams)
+    setSelectionParams(tempParams);
     closePopup();
   };
 
-  const handleInputChange = (key, value) => {
-	// console.debug(key, value)
-    setTempParams((prev) => ({ ...prev, [key]: value }));
+  const addNewOptionToKey = () => {
+    if (selectedKeyForNewOption && newOptionValue) {
+      const newValue = parseFloat(newOptionValue.trim()) || newOptionValue.trim(); // Handle numbers and strings
+      setTempParams((prev) => ({
+        ...prev,
+        [selectedKeyForNewOption]: {
+          ...prev[selectedKeyForNewOption],
+          options: [...prev[selectedKeyForNewOption].options, newValue],
+        },
+      }));
+      setNewOptionValue('');
+    }
+  };
+
+  const removeOptionFromKey = (key, optionToRemove) => {
+    setTempParams((prev) => ({
+      ...prev,
+      [key]: {
+        ...prev[key],
+        options: prev[key].options.filter((option) => option !== optionToRemove),
+      },
+    }));
   };
 
   return (
@@ -150,36 +175,65 @@ function ParameterPopup({ selectionParams, setSelectionParams }) {
 
       {isPopupOpen && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg max-w-4xl">
+          <div className="bg-white p-6 rounded-lg shadow-lg max-w-7xl">
             <h2 className="text-xl font-semibold mb-4">Edit Parameters</h2>
 
-            <div className="space-y-4">
-				{Object.keys(selectionParamOptions).filter(key => selectionParamOptions[key].type === 'number').map((key) => (
-					<div key={key} className="flex flex-row gap-2 items-center">
-						<label className="block text-sm font-medium text-gray-700">
-							{key}
-						</label>
-						<input
-							className="w-1/2 px-2 py-1 border border-gray-300 rounded-md"
-							type="number"
-							step={selectionParamOptions[key].step}
-							value={tempParams[key]}
-							onChange={(e) => handleInputChange(key, parseFloat(e.target.value))}
-						/>
-					</div>
-				))}
-				{Object.keys(selectionParamOptions).filter(key => selectionParamOptions[key].type === 'category').map((key) => (
-					<div key={key} className="flex flex-row gap-2 items-center">
-						<label className="block text-sm font-medium text-gray-700">
-							{key}
-						</label>
-						<Select
-							options={selectionParamOptions[key].options.map(option => ({ value: option, label: String(option) }))}
-							value={tempParams[key]}
-							onChange={(e) => handleInputChange(key, e)}
-						/>
-					</div>
-				))}
+            <div className="space-y-4 grid grid-cols-3 gap-4">
+              {Object.keys(tempParams).map((key) => (
+                <div key={key} className="flex flex-col gap-2 col-span-1">
+                  <label className="block text-sm font-medium text-gray-700">
+                    {key}
+                  </label>
+                  <div className="flex flex-row gap-2 items-center">
+                    {/* <Select
+                      options={tempParams[key].options.map((option) => ({
+                        value: option,
+                        label: String(option),
+                      }))}
+                      value={{ value: tempParams[key].defaultValue, label: String(tempParams[key].defaultValue) }}
+                      onChange={(selectedOption) =>
+                        handleInputChange(key, {
+                          ...tempParams[key],
+                          defaultValue: selectedOption.value,
+                        })
+                      }
+                      className="w-1/2"
+                    /> */}
+                    <input
+                      type="text"
+                      placeholder="New Option Value"
+                      value={selectedKeyForNewOption === key ? newOptionValue : ''}
+                      onChange={(e) => {
+                        setSelectedKeyForNewOption(key);
+                        setNewOptionValue(e.target.value);
+                      }}
+                      className="w-1/3 px-2 py-1 border border-gray-300 rounded-md"
+                    />
+                    <button
+                      onClick={addNewOptionToKey}
+                      className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600"
+                    >
+                      Add
+                    </button>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {tempParams[key].options.map((option) => (
+                      <div
+                        key={option}
+                        className="flex items-center gap-2 bg-gray-100 px-2 py-1 rounded-lg"
+                      >
+                        <span>{option}</span>
+                        <button
+                          onClick={() => removeOptionFromKey(key, option)}
+                          className="text-red-500 hover:text-red-700"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
             </div>
 
             <div className="mt-6 flex justify-end space-x-4">
@@ -202,17 +256,6 @@ function ParameterPopup({ selectionParams, setSelectionParams }) {
     </div>
   );
 }
-
-const selectionParamOptions = {
-	TOUCHING_SMA_TOLERANCE: {type: 'number', start: 0.00030, end: 0.00040, step: 0.00005, defaultValue: 0.00045},
-	NARROW_RANGE_TOLERANCE: {type: 'number', start: 0.0040, end: 0.0050, step: 0.0010, defaultValue: 0.0046},
-	CANDLE_CONDITIONS_SLOPE_TOLERANCE: {type: 'number', start: 1, end: 2, step: 1, defaultValue: 1},
-	BASE_CONDITIONS_SLOPE_TOLERANCE: {type: 'number', start: 1, end: 2, step: 1, defaultValue: 1},
-	MA_WINDOW: {type: 'category', options: [22, 44], defaultValue: 44},
-	CHECK_75MIN: {type: 'category', options: [true, false], defaultValue: true},
-	TOUCHING_SMA_15_TOLERANCE: {type: 'number', start: 0.00030, end: 0.00040, step: 0.00005, defaultValue: -1}
-}
-
 
 function generateCombinations(options) {
     const keys = Object.keys(options);
@@ -267,7 +310,7 @@ const initialState = {
 };
 
 const ShortSellingSimulatorPage = () => {
-	const [selectionParams, setSelectionParams] = useState(createTempParams(selectionParamOptions));
+	const [selectionParams, setSelectionParams] = useState(initialSelectionParamOptions);
 	const [state, setState] = useState(initialState);
 	const [isLoading, setIsLoading] = useState(false);
 	// const [dailyPnL, setDailyPnL] = useState([]);
@@ -472,7 +515,7 @@ const ShortSellingSimulatorPage = () => {
 	})
 
 	const startTrials = async () => {
-		const combinations = generateCombinations(selectionParamOptions);
+		const combinations = generateCombinations(selectionParams);
 		console.debug('combinations', combinations)
 		let simulation;
 

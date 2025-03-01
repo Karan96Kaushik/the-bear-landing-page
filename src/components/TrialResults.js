@@ -89,8 +89,8 @@ export default function TrialResults({ data }) {
       {renderSection('Overall Statistics', 'showOverallStats', (
         <>
           <div>Total PnL: {results.totalPnl?.toFixed(2)}</div>
-          <div>Mean PnL per Trade: {results.meanPnlPerTrade?.toFixed(2)}</div>
-          <div>Std Dev PnL per Trade: {results.stdDevPnlPerTrade?.toFixed(2)}</div>
+          <div>Mean PnL per Trade: {results.meanPnlPerTrade ? results.meanPnlPerTrade?.toFixed(2) : 'N/A'}</div>
+          <div>Std Dev PnL per Trade: {results.stdDevPnlPerTrade ? results.stdDevPnlPerTrade?.toFixed(2) : 'N/A'}</div>
           <div>Positive Trades: {results.positiveTrades}</div>
         </>
       ))}
