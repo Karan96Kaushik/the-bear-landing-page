@@ -91,7 +91,7 @@ export default function TrialResults({ data }) {
           <div>Total PnL: {results.totalPnl?.toFixed(2)}</div>
           <div>Mean PnL per Trade: {results.meanPnlPerTrade ? results.meanPnlPerTrade?.toFixed(2) : 'N/A'}</div>
           <div>Std Dev PnL per Trade: {results.stdDevPnlPerTrade ? results.stdDevPnlPerTrade?.toFixed(2) : 'N/A'}</div>
-          <div>Positive Trades: {results.positiveTrades}</div>
+          <div>Positive Trades: {results.positiveTrades} / {results.totalTrades} ({(results.positiveTrades*100 / results.totalTrades).toFixed(2)}%)</div>
         </>
       ))}
 

@@ -111,9 +111,9 @@ const selectionParams = {
 const initialSelectionParamOptions = {
   TOUCHING_SMA_TOLERANCE: { type: 'category', options: [0.0003, 0.00035, 0.0004], defaultValue: 0.00045 },
   TOUCHING_SMA_15_TOLERANCE: { type: 'category', options: [0.0003, 0.00035, 0.0004], defaultValue: -1 },
-  NARROW_RANGE_TOLERANCE: { type: 'category', options: [0.004, 0.0045, 0.005], defaultValue: 0.0046 },
-  CANDLE_CONDITIONS_SLOPE_TOLERANCE: { type: 'category', options: [1, 1.5], defaultValue: 1 },
-  BASE_CONDITIONS_SLOPE_TOLERANCE: { type: 'category', options: [1, 1.5], defaultValue: 1 },
+  NARROW_RANGE_TOLERANCE: { type: 'category', options: [0.004, 0.0035], defaultValue: 0.0046 },
+  CANDLE_CONDITIONS_SLOPE_TOLERANCE: { type: 'category', options: [1, 1.002], defaultValue: 1 },
+  BASE_CONDITIONS_SLOPE_TOLERANCE: { type: 'category', options: [1, 1.002], defaultValue: 1 },
   MA_WINDOW: { type: 'category', options: [22, 44], defaultValue: 44 },
   CHECK_75MIN: { type: 'category', options: [0, 1], defaultValue: 0 },
   STOCK_LIST: { type: 'category', options: ['SimulationTest!D2:D550', 'SimulationTest!E2:E550'], defaultValue: 'SimulationTest!D2:D550' },
@@ -302,6 +302,8 @@ const processTrialsForExport = (trials) => {
 	  meanPnlPerTrade: trial.results.meanPnlPerTrade,
 	  stdDevPnlPerTrade: trial.results.stdDevPnlPerTrade,
 	  positiveTrades: trial.results.positiveTrades,
+	  totalTrades: trial.results.totalTrades,
+	  positivePercent: (trial.results.positiveTrades/trial.results.totalTrades).toFixed(2),
 
 	  ...trial.selectionParams,
 	  
