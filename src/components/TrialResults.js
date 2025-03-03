@@ -11,6 +11,8 @@ export default function TrialResults({ data }) {
       showOrderStats: true,
       showWeeklyStats: true,
       showSymbolStats: false,
+	  showDirectionStats: true,
+	  showHourlyStats: true,
     },
   });
 
@@ -30,15 +32,6 @@ export default function TrialResults({ data }) {
 		return newState;
 	});
 };
-
-/**
- * 
- * TODO : 
- * 
- * FIX WEEKLY STATS
- * 
- * 
- */
 
 
   const renderSection = (title, key, content) => (
@@ -80,7 +73,7 @@ export default function TrialResults({ data }) {
         ))
       ))}
 
-	{renderSection('Selection Params', 'showSelectionParams', (
+	  {renderSection('Selection Params', 'showSelectionParams', (
         Object.entries(selectionParams || {}).map(([key, value]) => (
           <div key={key} className="text-sm">{key}: {value}</div>
         ))
@@ -116,6 +109,37 @@ export default function TrialResults({ data }) {
         )
       ))}
 
+      {renderSection('Direction Statistics', 'showDirectionStats', (
+        Object.keys(results.directionWisePnl || {}).map((key) => {
+			const sum = results.directionWisePnl[key].reduce((a, b) => a + b, 0)
+			const mean = sum / results.directionWisePnl[key].length;
+			const stdDev = Math.sqrt(results.directionWisePnl[key].reduce((acc, val) => acc + Math.pow(val - mean, 2), 0) / results.directionWisePnl[key].length);
+			console.log(key, sum, mean, stdDev, results.directionWisePnl)
+			return (
+			<>
+				<div key={key}>{key}: {sum.toFixed(2)}</div>
+				<div key={key}>Mean: {mean.toFixed(2)}</div>
+				<div key={key}>Std Dev: {stdDev.toFixed(2)}</div>
+				<div key={key}>Positive Trades: {results.directionWisePnl[key].filter(pnl => pnl > 0).length} / {results.directionWisePnl[key].length} ({(results.directionWisePnl[key].filter(pnl => pnl > 0).length*100 / results.directionWisePnl[key].length).toFixed(2)}%)</div>
+			</>
+        )})
+      ))}
+
+      {renderSection('Hourly Statistics', 'showHourlyStats', (
+        Object.keys(results.hourWisePnl || {}).map((key) => {
+			const sum = results.hourWisePnl[key].reduce((a, b) => a + b, 0)
+			const mean = sum / results.hourWisePnl[key].length;
+			const stdDev = Math.sqrt(results.hourWisePnl[key].reduce((acc, val) => acc + Math.pow(val - mean, 2), 0) / results.hourWisePnl[key].length);
+			return (
+			<>
+				<div key={key}>{key}: {sum.toFixed(2)}</div>
+				<div key={key}>Mean: {mean.toFixed(2)}</div>
+				<div key={key}>Std Dev: {stdDev.toFixed(2)}</div>
+				<div key={key}>Positive Trades: {results.hourWisePnl[key].filter(pnl => pnl > 0).length} / {results.hourWisePnl[key].length} ({(results.hourWisePnl[key].filter(pnl => pnl > 0).length*100 / results.hourWisePnl[key].length).toFixed(2)}%)</div>
+			</>
+        )})
+      ))}
+
     </div>
-  );
+  )
 }

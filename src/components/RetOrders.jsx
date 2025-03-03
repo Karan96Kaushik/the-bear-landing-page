@@ -99,9 +99,9 @@ export default function Orders() {
 
     // Prepare chart data
     const chartData = {
-        labels: stats?.map(stat => stat._id || 'Unknown'),
+        labels: ['Target', 'Stop Loss', 'Positive', 'Negative'],
         datasets: [{
-            data: stats?.map(stat => stat.count),
+            data: [tradeAnalysis?.summary.zaireTargetExits, tradeAnalysis?.trades.filter(trade => trade.exitReason?.includes('UD')).length, tradeAnalysis?.summary.zairePositiveTrades, tradeAnalysis?.summary.zaireNegativeTrades],
             backgroundColor: [
                 'rgba(255, 99, 132, 0.8)',
                 'rgba(54, 162, 235, 0.8)',
@@ -121,7 +121,7 @@ export default function Orders() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                 <div className="bg-white rounded-lg shadow-md">
                     <div className="p-4 border-b">
-                        <h3 className="text-lg font-semibold">Order Status Distribution</h3>
+                        <h3 className="text-lg font-semibold">Trade Result Distribution</h3>
                     </div>
                     <div className="p-4">
                         <div className="h-[300px] flex items-center justify-center">

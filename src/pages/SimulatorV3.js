@@ -61,15 +61,19 @@ const processTrialData = (trialData) => {
 		}, {})
 	  ).map(pnls => pnls.reduce((a, b) => a + b, 0))
 
-	  const hourlyPnl = Object.values(
-		trialData.reduce((acc, curr) => {
+	  const hourWisePnl = trialData.reduce((acc, curr) => {
 		  const date = new Date(curr.timestamp);
 		  const hourKey = `${date.getHours()}`;
 		  acc[hourKey] = acc[hourKey] || [];
 		  acc[hourKey].push(curr.pnl);
 		  return acc;
 		}, {})
-	  ).map(pnls => pnls.reduce((a, b) => a + b, 0))
+
+	  const directionWisePnl = trialData.reduce((acc, curr) => {
+		  acc[curr.direction] = acc[curr.direction] || [];
+		  acc[curr.direction].push(curr.pnl);
+		  return acc;
+		}, {})
 
 	const orderCountStats = Object.values(
 		trialData.reduce((acc, curr) => {
@@ -88,13 +92,14 @@ const processTrialData = (trialData) => {
 	return {
 		dailyPnl,
 		weeklyPnl,
-		hourlyPnl,
+		hourWisePnl,
+		directionWisePnl,
 		orderCountStats,
 		positiveTrades,
 		meanPnlPerTrade,
 		stdDevPnlPerTrade,
 		totalPnl,
-		totalTrades
+		totalTrades,
 	}
 }
 
@@ -109,14 +114,14 @@ const selectionParams = {
 }
 
 const initialSelectionParamOptions = {
-  TOUCHING_SMA_TOLERANCE: { type: 'category', options: [0.0003, 0.00035, 0.0004], defaultValue: 0.00045 },
-  TOUCHING_SMA_15_TOLERANCE: { type: 'category', options: [0.0003, 0.00035, 0.0004], defaultValue: -1 },
-  NARROW_RANGE_TOLERANCE: { type: 'category', options: [0.004, 0.0035], defaultValue: 0.0046 },
-  CANDLE_CONDITIONS_SLOPE_TOLERANCE: { type: 'category', options: [1, 1.002], defaultValue: 1 },
-  BASE_CONDITIONS_SLOPE_TOLERANCE: { type: 'category', options: [1, 1.002], defaultValue: 1 },
-  MA_WINDOW: { type: 'category', options: [22, 44], defaultValue: 44 },
-  CHECK_75MIN: { type: 'category', options: [0, 1], defaultValue: 0 },
-  STOCK_LIST: { type: 'category', options: ['SimulationTest!D2:D550', 'SimulationTest!E2:E550'], defaultValue: 'SimulationTest!D2:D550' },
+  TOUCHING_SMA_TOLERANCE: { type: 'category', options: [0.0003] },
+  TOUCHING_SMA_15_TOLERANCE: { type: 'category', options: [0.00028, 0.0003] },
+  NARROW_RANGE_TOLERANCE: { type: 'category', options: [0.004, 0.0035] },
+  CANDLE_CONDITIONS_SLOPE_TOLERANCE: { type: 'category', options: [1, 1.00004, 1.00002] },
+  BASE_CONDITIONS_SLOPE_TOLERANCE: { type: 'category', options: [1, 1.00004, 1.00002] },
+  MA_WINDOW: { type: 'category', options: [22, 44] },
+  CHECK_75MIN: { type: 'category', options: [0, 1] },
+  STOCK_LIST: { type: 'category', options: ['SimulationTest!D2:D550', 'SimulationTest!E2:E550'] },
 };
 
 function ParameterPopup({ selectionParams, setSelectionParams }) {
