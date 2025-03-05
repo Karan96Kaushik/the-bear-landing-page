@@ -99,9 +99,18 @@ export default function Orders() {
 
     // Prepare chart data
     const chartData = {
-        labels: ['Target', 'Stop Loss', 'Positive', 'Negative'],
+        labels: [
+            'Target', 
+            'Stop Loss', 
+            'Positive', 
+            'Negative'
+        ],
         datasets: [{
-            data: [tradeAnalysis?.summary.zaireTargetExits, tradeAnalysis?.trades.filter(trade => trade.exitReason?.includes('UD')).length, tradeAnalysis?.summary.zairePositiveTrades, tradeAnalysis?.summary.zaireNegativeTrades],
+            data: [
+                tradeAnalysis?.summary.zaireTargetExits, 
+                tradeAnalysis?.trades.filter(trade => trade.exitReason === 'stoploss').length, 
+                tradeAnalysis?.trades.filter(trade => trade.pnl > 0).length, 
+                tradeAnalysis?.trades.filter(trade => trade.pnl < 0).length],
             backgroundColor: [
                 'rgba(255, 99, 132, 0.8)',
                 'rgba(54, 162, 235, 0.8)',
