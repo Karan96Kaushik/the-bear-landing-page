@@ -118,9 +118,9 @@ export default function TrialResults({ data }) {
 			return (
 			<>
 				<div key={key}>{key}: {sum.toFixed(2)}</div>
-				<div key={key}>Mean: {mean.toFixed(2)}</div>
-				<div key={key}>Std Dev: {stdDev.toFixed(2)}</div>
-				<div key={key}>Positive Trades: {results.directionWisePnl[key].filter(pnl => pnl > 0).length} / {results.directionWisePnl[key].length} ({(results.directionWisePnl[key].filter(pnl => pnl > 0).length*100 / results.directionWisePnl[key].length).toFixed(2)}%)</div>
+				<div key={key}>- Mean: {mean.toFixed(2)}</div>
+				<div key={key}>- Std Dev: {stdDev.toFixed(2)}</div>
+				<div key={key}>- Positive Trades: {results.directionWisePnl[key].filter(pnl => pnl > 0).length} / {results.directionWisePnl[key].length} ({(results.directionWisePnl[key].filter(pnl => pnl > 0).length*100 / results.directionWisePnl[key].length).toFixed(2)}%)</div>
 			</>
         )})
       ))}
@@ -133,9 +133,9 @@ export default function TrialResults({ data }) {
 			return (
 			<>
 				<div key={key}>{key}: {sum.toFixed(2)}</div>
-				<div key={key}>Mean: {mean.toFixed(2)}</div>
-				<div key={key}>Std Dev: {stdDev.toFixed(2)}</div>
-				<div key={key}>Positive Trades: {results.hourWisePnl[key].filter(pnl => pnl > 0).length} / {results.hourWisePnl[key].length} ({(results.hourWisePnl[key].filter(pnl => pnl > 0).length*100 / results.hourWisePnl[key].length).toFixed(2)}%)</div>
+				<div key={key}>- Mean: {mean.toFixed(2)}</div>
+				<div key={key}>- Std Dev: {stdDev.toFixed(2)}</div>
+				<div key={key}>- Positive Trades: {results.hourWisePnl[key].filter(pnl => pnl > 0).length} / {results.hourWisePnl[key].length} ({(results.hourWisePnl[key].filter(pnl => pnl > 0).length*100 / results.hourWisePnl[key].length).toFixed(2)}%)</div>
 			</>
         )})
       ))}

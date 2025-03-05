@@ -238,8 +238,12 @@ export default function Orders() {
                                     <p className="text-xl font-bold">{tradeAnalysis.summary.zaireTargetExits}</p>
                                 </div>
                                 <div className="bg-gray-50 p-3 rounded">
-                                    <p className="text-sm text-gray-600">Zaire Stop Loss Exits</p>
+                                    <p className="text-sm text-gray-600">Zaire Stoploss Exits</p>
                                     <p className="text-xl font-bold">{tradeAnalysis.summary.zaireStopLossExits}</p>
+                                </div>
+                                <div className="bg-gray-50 p-3 rounded">
+                                    <p className="text-sm text-gray-600">Zaire Full Stoploss UD Exits</p>
+                                    <p className="text-xl font-bold">{tradeAnalysis.summary.zaireStopLossUDExits}</p>
                                 </div>
                                 <div className="bg-gray-50 p-3 rounded">
                                     <p className="text-sm text-gray-600">Zaire Other Exits</p>
