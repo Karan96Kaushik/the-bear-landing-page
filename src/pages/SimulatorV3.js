@@ -106,6 +106,7 @@ const processTrialData = (trialData) => {
 const selectionParams = {
 	TOUCHING_SMA_TOLERANCE: {type: 'number', start: 0.00030, end: 0.00040, step: 0.00005, defaultValue: 0.00045},
 	NARROW_RANGE_TOLERANCE: {type: 'number', start: 0.0040, end: 0.0050, step: 0.0010, defaultValue: 0.0046},
+	WIDE_RANGE_TOLERANCE: {type: 'number', start: 0.0010, end: 0.0020, step: 0.0001, defaultValue: 0.0015},
 	CANDLE_CONDITIONS_SLOPE_TOLERANCE: {type: 'number', start: 1, end: 2, step: 1, defaultValue: 1},
 	BASE_CONDITIONS_SLOPE_TOLERANCE: {type: 'number', start: 1, end: 2, step: 1, defaultValue: 1},
 	MA_WINDOW: {type: 'category', options: [22, 44], defaultValue: 44},
@@ -117,11 +118,12 @@ const initialSelectionParamOptions = {
   TOUCHING_SMA_TOLERANCE: { type: 'category', options: [0.0003] },
   TOUCHING_SMA_15_TOLERANCE: { type: 'category', options: [0.00028, 0.0003] },
   NARROW_RANGE_TOLERANCE: { type: 'category', options: [0.004, 0.0035] },
+  WIDE_RANGE_TOLERANCE: { type: 'category', options: [0.001, 0.0005] },
   CANDLE_CONDITIONS_SLOPE_TOLERANCE: { type: 'category', options: [1, 1.00004, 1.00002] },
   BASE_CONDITIONS_SLOPE_TOLERANCE: { type: 'category', options: [1, 1.00004, 1.00002] },
   MA_WINDOW: { type: 'category', options: [22, 44] },
   CHECK_75MIN: { type: 'category', options: [0, 1] },
-  STOCK_LIST: { type: 'category', options: ['SimulationTest!D2:D550', 'SimulationTest!E2:E550'] },
+  STOCK_LIST: { type: 'category', options: ['SimulationTest!D2:D550', 'SimulationTest!E2:E550', 'HIGHBETA!D2:D550'] },
 };
 
 function ParameterPopup({ selectionParams, setSelectionParams }) {
