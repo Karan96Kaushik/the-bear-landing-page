@@ -203,6 +203,8 @@ export default function Orders() {
                         <div className="bg-white rounded-lg md:col-span-1 shadow-md p-4">
                             <h3 className="text-lg font-semibold mb-4">Trade Summary</h3>
                             <div className="grid grid-cols-3 gap-4">
+
+
                                 <div className="bg-gray-50 p-3 rounded">
                                     <p className="text-sm text-gray-600">Total P&L</p>
                                     <p className={`text-xl font-bold ${tradeAnalysis.summary.totalPnL >= 0 ? 'text-green-600' : 'text-red-600'}`}>
@@ -210,19 +212,54 @@ export default function Orders() {
                                     </p>
                                 </div>
                                 <div className="bg-gray-50 p-3 rounded">
-                                    <p className="text-sm text-gray-600">Total Trades</p>
-                                    <p className="text-xl font-bold">{tradeAnalysis.summary.totalTrades}</p>
-                                </div>
-                                <div className="bg-gray-50 p-3 rounded">
-                                    <p className="text-sm text-gray-600">Win Rate</p>
-                                    <p className="text-xl font-bold">{tradeAnalysis.summary.winRate}%</p>
-                                </div>
-                                <div className="bg-gray-50 p-3 rounded">
                                     <p className="text-sm text-gray-600">Realised P&L</p>
                                     <p className={`text-xl font-bold ${tradeAnalysis.summary.realisedPnL >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                                         ₹{tradeAnalysis.summary.realisedPnL}
                                     </p>
                                 </div>
+                                <div className="bg-gray-50 p-3 rounded">
+                                    <p className="text-sm text-gray-600">Win Rate</p>
+                                    <p className="text-xl font-bold">{tradeAnalysis.summary.winRate}%</p>
+                                </div>
+
+
+                                <div className="bg-gray-50 p-3 rounded">
+                                    <p className="text-sm text-gray-600">Bailey P&L</p>
+                                    <p className={`text-xl font-bold ${tradeAnalysis.summary.baileyPnL >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                        ₹{tradeAnalysis.summary.baileyPnL}
+                                    </p>
+                                </div>
+                                <div className="bg-gray-50 p-3 rounded">
+                                    <p className="text-sm text-gray-600">Zaire P&L</p>
+                                    <p className={`text-xl font-bold ${tradeAnalysis.summary.zairePnL >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                        ₹{tradeAnalysis.summary.zairePnL}
+                                    </p>
+                                </div>
+                                <div className="bg-gray-50 p-3 rounded">
+                                    <p className="text-sm text-gray-600">Manual P&L</p>
+                                    <p className={`text-xl font-bold ${tradeAnalysis.summary.manualPnL >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                        ₹{tradeAnalysis.summary.manualPnL}
+                                    </p>
+                                </div>
+
+                                <div className="bg-gray-50 p-3 rounded">
+                                    <p className="text-sm text-gray-600">Bailey Win Rate</p>
+                                    <p className="text-xl font-bold">{tradeAnalysis.summary.baileyWinRate}%</p>
+                                </div>
+                                <div className="bg-gray-50 p-3 rounded">
+                                    <p className="text-sm text-gray-600">Zaire Win Rate</p>
+                                    <p className="text-xl font-bold">{tradeAnalysis.summary.zaireWinRate}%</p>
+                                </div>
+                                <div className="bg-gray-50 p-3 rounded">
+                                    <p className="text-sm text-gray-600">Manual Win Rate</p>
+                                    <p className="text-xl font-bold">{tradeAnalysis.summary.manualWinRate}%</p>
+                                </div>
+
+                                <div className="bg-gray-50 p-3 rounded">
+                                    <p className="text-sm text-gray-600">Total Trades</p>
+                                    <p className="text-xl font-bold">{tradeAnalysis.summary.totalTrades}</p>
+                                </div>
+
                                 <div className="bg-gray-50 p-3 rounded">
                                     <p className="text-sm text-gray-600">Open Trades</p>
                                     <p className="text-xl font-bold">{tradeAnalysis.summary.openTrades}</p>
@@ -232,21 +269,11 @@ export default function Orders() {
                                     <p className="text-sm text-gray-600">Zaire Trades</p>
                                     <p className="text-xl font-bold">{tradeAnalysis.summary.zaireTrades}</p>
                                 </div>
-                                <div className="bg-gray-50 p-3 rounded">
-                                    <p className="text-sm text-gray-600">Zaire P&L</p>
-                                    <p className={`text-xl font-bold ${tradeAnalysis.summary.zairePnL >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                                        ₹{tradeAnalysis.summary.zairePnL}
-                                    </p>
-                                </div>
-                                <div className="bg-gray-50 p-3 rounded">
-                                    <p className="text-sm text-gray-600">Zaire Win Rate</p>
-                                    <p className="text-xl font-bold">{tradeAnalysis.summary.zaireWinRate}%</p>
-                                </div>
-                                <div className="bg-gray-50 p-3 rounded">
+                                {/* <div className="bg-gray-50 p-3 rounded">
                                     <p className="text-sm text-gray-600">Zaire Target Exits</p>
                                     <p className="text-xl font-bold">{tradeAnalysis.summary.zaireTargetExits}</p>
-                                </div>
-                                <div className="bg-gray-50 p-3 rounded">
+                                </div> */}
+                                {/* <div className="bg-gray-50 p-3 rounded">
                                     <p className="text-sm text-gray-600">Zaire Stoploss Exits</p>
                                     <p className="text-xl font-bold">{tradeAnalysis.summary.zaireStopLossExits}</p>
                                 </div>
@@ -257,7 +284,39 @@ export default function Orders() {
                                 <div className="bg-gray-50 p-3 rounded">
                                     <p className="text-sm text-gray-600">Zaire Other Exits</p>
                                     <p className="text-xl font-bold">{tradeAnalysis.summary.zaireOtherExits}</p>
+                                </div> */}
+                                {/* <div className="bg-gray-50 p-3 rounded">
+                                    <p className="text-sm text-gray-600">Manual Trades</p>
+                                    <p className="text-xl font-bold">{tradeAnalysis.summary.manualTrades}</p>
                                 </div>
+                                <div className="bg-gray-50 p-3 rounded">
+                                    <p className="text-sm text-gray-600">Manual Win Rate</p>
+                                    <p className="text-xl font-bold">{tradeAnalysis.summary.manualWinRate}%</p>
+                                </div>
+                                <div className="bg-gray-50 p-3 rounded">
+                                    <p className="text-sm text-gray-600">Manual Target Exits</p>
+                                    <p className="text-xl font-bold">{tradeAnalysis.summary.manualTargetExits}</p>
+                                </div> */}
+                                {/* <div className="bg-gray-50 p-3 rounded">
+                                    <p className="text-sm text-gray-600">Manual Stoploss Exits</p>
+                                    <p className="text-xl font-bold">{tradeAnalysis.summary.manualStopLossExits}</p>
+                                </div>
+                                <div className="bg-gray-50 p-3 rounded">
+                                    <p className="text-sm text-gray-600">Manual Full Stoploss Exits</p>
+                                    <p className="text-xl font-bold">{tradeAnalysis.summary.manualStopLossUDExits}</p>
+                                </div> */}
+                                {/* <div className="bg-gray-50 p-3 rounded">
+                                    <p className="text-sm text-gray-600">Manual Other Exits</p>
+                                    <p className="text-xl font-bold">{tradeAnalysis.summary.manualOtherExits}</p>
+                                </div> */}
+                                {/* <div className="bg-gray-50 p-3 rounded">
+                                    <p className="text-sm text-gray-600">Manual Win Rate</p>
+                                    <p className="text-xl font-bold">{tradeAnalysis.summary.manualWinRate}%</p>
+                                </div> */}
+                                {/* <div className="bg-gray-50 p-3 rounded">
+                                    <p className="text-sm text-gray-600">Bailey Win Rate</p>
+                                    <p className="text-xl font-bold">{tradeAnalysis.summary.baileyWinRate}%</p>
+                                </div> */}
                             </div>
                         </div>
 
