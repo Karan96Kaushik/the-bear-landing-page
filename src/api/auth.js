@@ -12,8 +12,9 @@ export const loginUser = async (credentials) => {
   try {
     const response = await axios.post(`${API_URL}/login`, credentials);
 
-    const { accessToken, user } = response.data;
+    const { accessToken, user, refreshToken } = response.data;
     localStorage.setItem('thebearToken', accessToken);
+    localStorage.setItem('thebearRefreshToken', refreshToken);
 
     return {
       token: accessToken,
@@ -38,4 +39,28 @@ export const getToken = () => {
  */
 export const logoutUser = () => {
   localStorage.removeItem('thebearToken');
+};
+
+/**
+ * Get refresh token from localStorage
+ * @returns {string | null} - The user's refresh token or null if not logged in
+ */
+export const getRefreshToken = () => {
+  return localStorage.getItem('thebearRefreshToken');
+};
+
+/**
+ * Set refresh token in localStorage
+ * @param {string} token - The refresh token to set
+ */
+export const setRefreshToken = (token) => {
+  localStorage.setItem('thebearRefreshToken', token);
+};
+
+/**
+ * Set token in localStorage
+ * @param {string} token - The token to set
+ */
+export const setToken = (token) => {
+  localStorage.setItem('thebearToken', token);
 };
