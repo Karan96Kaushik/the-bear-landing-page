@@ -37,6 +37,17 @@ ChartJS.register(
 	zoomPlugin
 );
 
+const trialStockColumns = [
+	{key: 'symbol', label: 'Stock'},
+	{key: 'datetime', label: 'Date'},
+	{key: 'quantity', label: 'Quantity'},
+	{key: 'direction', label: 'Direction'},
+	{key: 'pnl', label: 'P&L', classRenderer: (pnl) => pnl >= 0 ? 'text-green-600' : 'text-red-600', renderer: (pnl) => pnl?.toFixed(2)},
+	{key: 'triggerPrice', label: 'Trigger Price', renderer: (triggerPrice) => triggerPrice?.toFixed(2)},
+	{key: 'targetPrice', label: 'Target Price', renderer: (targetPrice) => targetPrice?.toFixed(2)},
+	{key: 'stopLossPrice', label: 'Stop Loss Price', renderer: (stopLossPrice) => stopLossPrice?.toFixed(2)}
+]
+
 const processTrialData = (trialData) => {
 	const dailyPnl = Object.values(
 		trialData.reduce((acc, curr) => {
@@ -461,7 +472,10 @@ const ShortSellingSimulatorPage = () => {
 							direction: item.direction,
 							quantity: item.quantity,
 							data: item.data.filter(d => new Date(d.time).toISOString().split('T')[0] === new Date(item.placedAt).toISOString().split('T')[0]),
-							actions: item.actions
+							actions: item.actions,
+							triggerPrice: item.triggerPrice,
+							targetPrice: item.targetPrice,
+							stopLossPrice: item.stopLossPrice
 						}));
 						
 						const totalPnl = formattedData.reduce((acc, curr) => acc + curr.pnl, 0);
@@ -782,11 +796,9 @@ const ShortSellingSimulatorPage = () => {
 			<table className="w-full">
 			  <thead>
 				<tr className="bg-gray-100">
-				  <th className="text-left py-2 px-4">Stock</th>
-				  <th className="text-left py-2 px-4">Date</th>
-				  <th className="text-right py-2 px-4">Quantity</th>
-				  <th className="text-right py-2 px-4">Direction</th>
-				  <th className="text-right py-2 px-4">P&L</th>
+				  {trialStockColumns.map(column => (
+					<th key={column.key} className="text-left py-2 px-4">{column.label}</th>
+				  ))}
 				</tr>
 			  </thead>
 			  <tbody>
@@ -796,13 +808,9 @@ const ShortSellingSimulatorPage = () => {
 					className={`${index % 2 === 0 ? 'bg-gray-50' : ''} cursor-pointer hover:bg-gray-100`}
 					onClick={() => handleRowClick(result)}
 				  >
-					<td className="py-2 px-4">{result.symbol}</td>
-					<td className="py-2 px-4">{result.datetime}</td>
-					<td className="text-right py-2 px-4">{result.quantity}</td>
-					<td className="text-right py-2 px-4">{result.direction}</td>
-					<td className={`text-right py-2 px-4 ${result.pnl >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-					  {result.pnl?.toFixed(2)}
-					</td>
+					{trialStockColumns.map(column => (
+						<td key={column.key} className={`py-2 px-4 ${column.classRenderer ? column.classRenderer(result[column.key]) : ''}`}>{column.renderer ? column.renderer(result[column.key]) : result[column.key]}</td>
+					))}
 				  </tr>
 				))}
 			  </tbody>

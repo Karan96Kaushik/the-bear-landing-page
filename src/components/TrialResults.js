@@ -6,13 +6,13 @@ export default function TrialResults({ data }) {
   const [state, setState] = useState({
     ui: {
 	  showTrialParams: false,
-      showOverallStats: true,
-      showDailyStats: true,
-      showOrderStats: true,
-      showWeeklyStats: true,
-      showSymbolStats: false,
-	  showDirectionStats: true,
-	  showHourlyStats: true,
+    showOverallStats: true,
+    showDailyStats: true,
+    showOrderStats: false,
+    showWeeklyStats: false,
+    showSymbolStats: false,
+	  showDirectionStats: false,
+	  showHourlyStats: false,
     },
   });
 

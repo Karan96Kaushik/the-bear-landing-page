@@ -49,7 +49,7 @@ ChartJS.register(
  * @returns {JSX.Element}
  */
 const SimulationResults = ({ data, tradeActions, pnl, nseiData, symbol }) => {
-  console.log({nseiData});
+  // console.log({nseiData});
   // Add theme detection
   const isDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
 
@@ -161,13 +161,13 @@ const SimulationResults = ({ data, tradeActions, pnl, nseiData, symbol }) => {
               if (datasetLabel === 'Stock Price') {
                 const point = context.raw;
                 return [
-                  `Open: ${point.o.toFixed(2)}`,
-                  `High: ${point.h.toFixed(2)}`,
-                  `Low: ${point.l.toFixed(2)}`,
-                  `Close: ${point.c.toFixed(2)}`
+                  `Open: ${point.o?.toFixed(2)}`,
+                  `High: ${point.h?.toFixed(2)}`,
+                  `Low: ${point.l?.toFixed(2)}`,
+                  `Close: ${point.c?.toFixed(2)}`
                 ];
               } else {
-                return `${datasetLabel}: ${context.raw.y.toFixed(2)}`;
+                return `${datasetLabel}: ${context.raw.y?.toFixed(2)}`;
               }
             }
           }
@@ -259,13 +259,13 @@ const SimulationResults = ({ data, tradeActions, pnl, nseiData, symbol }) => {
             if (datasetLabel === 'Stock Price') {
               const point = context.raw;
               return [
-                `Open: ${point.o.toFixed(2)}`,
-                `High: ${point.h.toFixed(2)}`,
-                `Low: ${point.l.toFixed(2)}`,
-                `Close: ${point.c.toFixed(2)}`
+                `Open: ${point.o?.toFixed(2)}`,
+                `High: ${point.h?.toFixed(2)}`,
+                `Low: ${point.l?.toFixed(2)}`,
+                `Close: ${point.c?.toFixed(2)}`
               ];
             } else {
-              return `${datasetLabel}: ${context.raw.y.toFixed(2)}`;
+              return `${datasetLabel}: ${context.raw.y?.toFixed(2)}`;
             }
           }
         }
