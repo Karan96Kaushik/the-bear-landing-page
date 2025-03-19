@@ -11,7 +11,7 @@ ChartJS.register(ArcElement, Tooltip, Legend);
 const orderFields = [
     { key: 'tradingsymbol', label: 'Symbol' },
     { key: 'transaction_type', label: 'Type' },
-    { key: 'initiated_by', label: 'Initiator' },
+    { key: 'exitReason', label: 'Exit Reason' },
     { key: 'source', label: 'Source' },
     { key: 'quantity', label: 'Quantity' },
     { 
@@ -341,7 +341,7 @@ export default function Orders() {
                                             <tr key={index} className="border-t">
                                                 <td className="px-4 py-2">{trade.symbol}</td>
                                                 <td className="px-4 py-2">{trade.direction}</td>
-                                                <td className="px-4 py-2">{trade.source}</td>
+                                                <td className="px-4 py-2 uppercase">{trade.source}</td>
                                                 <td className="px-4 py-2 capitalize">{trade.exitReason}</td>
                                                 <td className="px-4 py-2">{trade.status}</td>
                                                 <td className={`px-4 py-2 ${trade.pnl >= 0 ? 'text-green-600' : 'text-red-600'}`}>

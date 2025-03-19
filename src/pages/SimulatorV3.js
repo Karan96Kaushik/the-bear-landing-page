@@ -60,7 +60,7 @@ const processTrialData = (trialData) => {
 
 	const totalPnl = dailyPnl.reduce((acc, curr) => acc + curr, 0)
 
-	const totalTrades = trialData.length
+	const totalTrades = trialData.filter(t => t.pnl !== 0).length
 
 	const weeklyPnl = Object.values(
 		trialData.reduce((acc, curr) => {

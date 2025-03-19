@@ -6,8 +6,8 @@ const GeneralTable = ({ data, fields }) => {
   }
 
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full border-collapse">
+    <div className="overflow-x-auto rounded-lg">
+      <table className="w-full border-collapse rounded-lg">
         <thead className="hidden md:table-header-group">
           <tr className="bg-gray-100">
             {fields.map((field) => (
@@ -30,7 +30,7 @@ const GeneralTable = ({ data, fields }) => {
                   ))}
                 </td>
               </tr>
-              <tr className="hidden md:table-row border-b">
+              <tr className="hidden md:table-row border-b hover:bg-gray-300">
                 {fields.map((field) => (
                   <td key={field.key} className="p-2">
                     {field.render ? field.render(item[field.key], item) : item[field.key]}
