@@ -103,21 +103,22 @@ export default function Orders() {
     const chartData = {
         labels: [
             'Target', 
-            'Stop Loss', 
             'Positive', 
+            'Stop Loss', 
             'Negative'
         ],
         datasets: [{
             data: [
                 tradeAnalysis?.summary.zaireTargetExits, 
-                tradeAnalysis?.trades.filter(trade => trade.exitReason === 'stoploss').length, 
                 tradeAnalysis?.trades.filter(trade => trade.pnl > 0).length, 
+                tradeAnalysis?.trades.filter(trade => trade.exitReason === 'stoploss').length, 
                 tradeAnalysis?.trades.filter(trade => trade.pnl < 0).length],
             backgroundColor: [
-                'rgba(75, 192, 192, 0.8)',
-                'rgba(255, 99, 132, 0.8)',
-                'rgba(54, 162, 235, 0.8)',
-                'rgba(255, 206, 86, 0.8)',
+                '#6fcccc',
+                '#45c6ed',
+                '#f53b60',
+                '#ff829c',
+                // 'rgba(255, 206, 86, 0.8)',
             ],
             borderWidth: 1
         }]
