@@ -83,7 +83,9 @@ export default function Orders() {
 
     useEffect(() => {
         const loadData = async () => {
-            await Promise.all([fetchOrders(), fetchStats(), fetchTradeAnalysis()]);
+            fetchOrders()
+            fetchStats()
+            fetchTradeAnalysis();
         };
         loadData();
     }, [page, filters]);
@@ -329,7 +331,7 @@ export default function Orders() {
                                             <th className="px-4 py-2">Symbol</th>
                                             <th className="px-4 py-2">Direction</th>
                                             <th className="px-4 py-2">Source</th>
-                                            <th className="px-4 py-2">Exit Reason</th>
+                                            <th className="px-4 py-2">Exit Reason SL-LTP-TG</th>
                                             <th className="px-4 py-2">Status</th>
                                             <th className="px-4 py-2">P&L</th>
                                         </tr>
@@ -340,7 +342,7 @@ export default function Orders() {
                                                 <td className="px-4 py-2">{trade.symbol}</td>
                                                 <td className="px-4 py-2">{trade.direction}</td>
                                                 <td className="px-4 py-2">{trade.source}</td>
-                                                <td className="px-4 py-2">{trade.exitReason}</td>
+                                                <td className="px-4 py-2 capitalize">{trade.exitReason}</td>
                                                 <td className="px-4 py-2">{trade.status}</td>
                                                 <td className={`px-4 py-2 ${trade.pnl >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                                                     ₹{trade.pnl}
