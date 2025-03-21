@@ -8,9 +8,11 @@ import MobileMenu from './components/MobileMenu';
 import { Toaster } from 'react-hot-toast';
 import { privateRoutes } from './routes/PrivateRoutes';
 import { publicRoutes } from './routes/PublicRoutes';
+
 function App() {
   const [navbar, setNavbar] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  
 
   useEffect(() => {
     const unsubscribe = store.subscribe(() => {
@@ -22,7 +24,11 @@ function App() {
     const authState = store.getState().auth;
     setIsAuthenticated(authState.isAuthenticated);
 
-    return () => unsubscribe();
+    window.addEventListener('scroll', changeBackground);
+    return () => {
+      unsubscribe();
+      window.removeEventListener('scroll', changeBackground);
+    };
   }, []);
 
   const changeBackground = () => {
@@ -32,13 +38,6 @@ function App() {
       setNavbar(false);
     }
   };
-
-  useEffect(() => {
-    window.addEventListener('scroll', changeBackground);
-    return () => {
-      window.removeEventListener('scroll', changeBackground);
-    };
-  }, []);
 
   return (
     <Provider store={store}>
