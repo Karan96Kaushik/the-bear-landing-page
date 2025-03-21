@@ -20,10 +20,10 @@ const GeneralTable = ({ data, fields }) => {
         <tbody>
           {data.map((item, index) => (
             <React.Fragment key={index}>
-              <tr className="md:hidden border-b">
-                <td className="block p-4 bg-gray-50">
+              <tr className="md:hidden border-b dark:border-gray-700">
+                <td className="block p-4 bg-gray-50 dark:bg-gray-800">
                   {fields.map((field) => (
-                    <div key={field.key} className="mb-2 last:mb-0">
+                    <div key={field.key} className="mb-2 last:mb-0 dark:text-white">
                       <span className="font-bold">{field.label}: </span>
                       {field.render ? field.render(item[field.key], item) : item[field.key]}
                     </div>
@@ -32,7 +32,7 @@ const GeneralTable = ({ data, fields }) => {
               </tr>
               <tr className="hidden md:table-row border-b hover:bg-gray-300 dark:hover:bg-gray-700">
                 {fields.map((field) => (
-                  <td key={field.key} className="p-2">
+                  <td key={field.key} className="p-2 dark:text-white dark:bg-gray-700">
                     {field.render ? field.render(item[field.key], item) : item[field.key]}
                   </td>
                 ))}
