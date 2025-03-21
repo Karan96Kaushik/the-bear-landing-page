@@ -20,9 +20,9 @@ const routes = [
   { path: '/simulator-v2', Component: SimulatorV2, name: 'Simulator V2' },
   { path: '/simulator-v3', Component: SimulatorV3, name: 'Simulator V3' },
   { path: '/stock-chart', Component: StockChartPage, name: 'Stock Chart' },
-  { path: '/my-orders', Component: MyOrdersPage, name: 'My Orders' },
-  { path: '/ret-orders', Component: RetOrders, name: 'Retrospective Orders' },
-  { path: '/dashboard', Component: Dashboard, name: 'Dashboard' },
+  { path: '/my-orders', Component: MyOrdersPage, name: 'Orders' },
+  { path: '/ret-orders', Component: RetOrders, name: 'Day Dashboard' },
+  { path: '/dashboard', Component: Dashboard, name: 'Long Term Dashboard' },
 ];
 
 const PrivateRoutes = () => {
