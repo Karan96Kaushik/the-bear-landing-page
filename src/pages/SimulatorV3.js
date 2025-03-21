@@ -186,37 +186,23 @@ function ParameterPopup({ selectionParams, setSelectionParams }) {
     <div className="p-4 w-full">
       <button
         onClick={openPopup}
-        className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
+        className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700"
       >
         Change Parameters
       </button>
 
       {isPopupOpen && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg max-w-7xl">
-            <h2 className="text-xl font-semibold mb-4">Edit Parameters</h2>
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg max-w-7xl">
+            <h2 className="text-xl font-semibold mb-4 dark:text-white">Edit Parameters</h2>
 
             <div className="space-y-4 grid grid-cols-3 gap-4">
               {Object.keys(tempParams).map((key) => (
                 <div key={key} className="flex flex-col gap-2 col-span-1">
-                  <label className="block text-sm font-medium text-gray-700">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                     {key}
                   </label>
                   <div className="flex flex-row gap-2 items-center">
-                    {/* <Select
-                      options={tempParams[key].options.map((option) => ({
-                        value: option,
-                        label: String(option),
-                      }))}
-                      value={{ value: tempParams[key].defaultValue, label: String(tempParams[key].defaultValue) }}
-                      onChange={(selectedOption) =>
-                        handleInputChange(key, {
-                          ...tempParams[key],
-                          defaultValue: selectedOption.value,
-                        })
-                      }
-                      className="w-1/2"
-                    /> */}
                     <input
                       type="text"
                       placeholder="New Option Value"
@@ -225,11 +211,11 @@ function ParameterPopup({ selectionParams, setSelectionParams }) {
                         setSelectedKeyForNewOption(key);
                         setNewOptionValue(e.target.value);
                       }}
-                      className="w-1/3 px-2 py-1 border border-gray-300 rounded-md"
+                      className="w-1/3 px-2 py-1 border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                     />
                     <button
                       onClick={addNewOptionToKey}
-                      className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600"
+                      className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 dark:bg-green-600 dark:hover:bg-green-700"
                     >
                       Add
                     </button>
@@ -238,12 +224,12 @@ function ParameterPopup({ selectionParams, setSelectionParams }) {
                     {tempParams[key].options.map((option) => (
                       <div
                         key={option}
-                        className="flex items-center gap-2 bg-gray-100 px-2 py-1 rounded-lg"
+                        className="flex items-center gap-2 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-lg"
                       >
-                        <span>{option}</span>
+                        <span className="dark:text-gray-300">{option}</span>
                         <button
                           onClick={() => removeOptionFromKey(key, option)}
-                          className="text-red-500 hover:text-red-700"
+                          className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
                         >
                           ×
                         </button>
@@ -257,13 +243,13 @@ function ParameterPopup({ selectionParams, setSelectionParams }) {
             <div className="mt-6 flex justify-end space-x-4">
               <button
                 onClick={closePopup}
-                className="bg-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-400"
+                className="bg-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-400 dark:bg-gray-600 dark:text-gray-200 dark:hover:bg-gray-500"
               >
                 Cancel
               </button>
               <button
                 onClick={saveChanges}
-                className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
+                className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700"
               >
                 Save
               </button>
@@ -650,14 +636,14 @@ const ShortSellingSimulatorPage = () => {
 	};
 
   return (
-	<div className="bg-gray-900 min-h-screen relative">
+	<div className="bg-gray-900 dark:bg-gray-950 min-h-screen relative">
 	  
 	  <div className="container mx-auto px-4 py-20">
 		<h1 className="text-3xl font-bold mb-6 text-white">Stock Trading Simulator</h1>
-		<div className="bg-white p-6 rounded-lg shadow mb-8 ">
+		<div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow mb-8">
 		  <div className="flex flex-wrap -mx-2 grid grid-cols-2 md:grid-cols-6 gap-4">
-			<div className=" px-2 mb-4 col-span-2 ">
-			  <label className="block text-sm font-medium text-gray-700 mb-1">Date Range</label>
+			<div className="px-2 mb-4 col-span-2">
+			  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Date Range</label>
 			  <DatePicker
 				selectsRange={true}
 				startDate={dateRange[0]}
@@ -666,44 +652,42 @@ const ShortSellingSimulatorPage = () => {
 				  setDateRange(update);
 				}}
 				dateFormat="yyyy-MM-dd"
-				className="px-3 py-2 text-base border border-gray-300 rounded-md"
+				className="px-3 py-2 text-base border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
 			  />
 			</div>
-			<div className=" px-2 mb-4 col-span-2">
-			  <label className="block text-sm font-medium text-gray-700 mb-1">Symbol</label>
+			<div className="px-2 mb-4 col-span-2">
+			  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Symbol</label>
 			  <Select
 				isMulti
 				value={stockOptions.filter(option => selectedSymbol.includes(option.value))}
 				onChange={(selected) => setSelectedSymbol(selected.map(option => option.value))}
 				options={stockOptions}
-				className="text-base"
+				styles={{
+					control: (base) => ({
+						...base,
+						backgroundColor: 'white',
+						color: 'black'
+					})
+				}}
+				className="text-base dark:text-white dark:bg-gray-700"
 				placeholder="Select stocks..."
 			  />
 			</div>
-			{/* <div className="w-full md:w-1/2 px-2 mb-4">
-			  <label className="block text-sm font-medium text-gray-700 mb-1">Direction</label>
-			  <input
-				value={state.simulation.type}
-				onChange={(selected) => setState('simulation.type', selected.value)}
-				options={['BEARISH', 'BULLISH']}
-			  />
-			</div> */}
-			<div className=" px-2 mb-4 col-span-2">
-			  <label className="block text-sm font-medium text-gray-700 mb-1">Cancel Interval</label>
+			<div className="px-2 mb-4 col-span-2">
+			  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Cancel Interval</label>
 			  <input
 				type="number"
 				step={5}
 				value={state.simulation.cancelInMins}
 				onChange={(event) => updateState('simulation.cancelInMins', event.target.value)}
-				className="px-3 py-2 text-base border border-gray-300 rounded-md w-1/2"
-
+				className="px-3 py-2 text-base border border-gray-300 rounded-md w-1/2 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
 			  />
 			</div>
-			<div className=" px-2 mb-4 col-span-2">
-			  <label className="block text-sm font-medium text-gray-700 mb-1">Target:SL (candle length) Ratio</label>
+			<div className="px-2 mb-4 col-span-2">
+			  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Target:SL (candle length) Ratio</label>
 			  <select
 				value={state.simulation.targetStopLossRatio}
-				className="px-3 py-2 text-base border border-gray-300 rounded-md bg-white"
+				className="px-3 py-2 text-base border border-gray-300 rounded-md bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white"
 				onChange={(event) => updateState('simulation.targetStopLossRatio', event.target.value)}
 			  >
 				<option value={'1:1'}>1:1</option>
@@ -712,61 +696,57 @@ const ShortSellingSimulatorPage = () => {
 				<option value={'2:2'}>2:2</option>
 			  </select>
 			</div>
-			<div className=" px-2 mb-4 col-span-1">
-			  <label className="block text-sm font-medium text-gray-700 mb-1">Re-Enter Position</label>
+			<div className="px-2 mb-4 col-span-1">
+			  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Re-Enter Position</label>
 			  <Switch
 				checked={state.simulation.reEnterPosition}
 				onChange={(checked) => updateState('simulation.reEnterPosition', checked)}
 			  />
 			</div>
-			<div className=" px-2 mb-4 col-span-1">
-			  <label className="block text-sm font-medium text-gray-700 mb-1">Market Order</label>
+			<div className="px-2 mb-4 col-span-1">
+			  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Market Order</label>
 			  <Switch
 				checked={state.simulation.marketOrder}
 				onChange={(checked) => updateState('simulation.marketOrder', checked)}
 			  />
 			</div>
-			<div className=" px-2 mb-4 col-span-1">
-			  <label className="block text-sm font-medium text-gray-700 mb-1">Update SL</label>
+			<div className="px-2 mb-4 col-span-1">
+			  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Update SL</label>
 			  <Switch
 				checked={state.simulation.updateSL}
 				onChange={(checked) => updateState('simulation.updateSL', checked)}
 				className="switch"
-
 			  />
 			</div>
 			{state.simulation.updateSL && 
 			  <> 
-				<div className=" px-2 mb-4 col-span-2">
-				  <label className="block text-sm font-medium text-gray-700 mb-1">Update SL Interval</label>
+				<div className="px-2 mb-4 col-span-2">
+				  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Update SL Interval</label>
 				  <input
 					type="number"
 					step={5}
 					value={state.simulation.updateSLInterval}
 					onChange={(event) => updateState('simulation.updateSLInterval', event.target.value)}
-					className="px-3 py-2 text-base border border-gray-300 rounded-md w-1/2"
+					className="px-3 py-2 text-base border border-gray-300 rounded-md w-1/2 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
 				  />
 				</div>
-				<div className=" px-2 mb-4 col-span-2">
-					<label className="block text-sm font-medium text-gray-700 mb-1">Update SL Frequency</label>
+				<div className="px-2 mb-4 col-span-2">
+					<label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Update SL Frequency</label>
 					<input
 					  type="number"
 					  step={5}
 					  value={state.simulation.updateSLFrequency}
 					  onChange={(event) => updateState('simulation.updateSLFrequency', event.target.value)}
-					  className="px-3 py-2 text-base border border-gray-300 rounded-md w-1/2"
+					  className="px-3 py-2 text-base border border-gray-300 rounded-md w-1/2 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
 					/>
 				</div>
-			
-			</>
+			  </>
 			}
 
-
 			<ParameterPopup selectionParams={selectionParams} setSelectionParams={setSelectionParams} />
-
 		  </div>
 		  <div className="mt-4">
-			<button onClick={startTrials} disabled={isLoading} className="w-full bg-indigo-500 text-white px-4 py-2 rounded-md hover:bg-indigo-600 items-center justify-center flex">
+			<button onClick={startTrials} disabled={isLoading} className="w-full bg-indigo-500 text-white px-4 py-2 rounded-md hover:bg-indigo-600 dark:bg-indigo-600 dark:hover:bg-indigo-700 items-center justify-center flex">
 			  { !isLoading ? 'Run Trials' : <><Loader2 className="h-8 w-8 text-white animate-spin" /> </>}
 			</button>
 		  </div>
@@ -774,10 +754,8 @@ const ShortSellingSimulatorPage = () => {
 
 		{pastTrials && (
 			<>
-		  <div className="bg-white p-6 rounded-lg shadow mb-8">
-
-			<h2 className="text-xl font-semibold mb-4">Trial Results</h2>
-
+		  <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow mb-8">
+			<h2 className="text-xl font-semibold mb-4 dark:text-white">Trial Results</h2>
 			<div className='mt-4'>
 					{pastTrials.map(trial => (
 						<div className='mt-4'>
@@ -793,47 +771,42 @@ const ShortSellingSimulatorPage = () => {
 
 		{state.simulation.result && (
 			<>
-			<div className="bg-white p-6 rounded-lg shadow mb-8">
-
-			<h2 className="text-xl font-semibold my-4">Last Trial Results</h2>
-			<table className="w-full">
-			  <thead>
-				<tr className="bg-gray-100">
-				  {trialStockColumns.map(column => (
-					<th key={column.key} className="text-left py-2 px-4">{column.label}</th>
-				  ))}
-				</tr>
-			  </thead>
-			  <tbody>
-				{state.simulation.result.results.map((result, index) => (
-				  <tr 
-					key={`${result.symbol}-${result.datetime}`} 
-					className={`${index % 2 === 0 ? 'bg-gray-50' : ''} cursor-pointer hover:bg-gray-100`}
-					onClick={() => handleRowClick(result)}
-				  >
+			<div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow mb-8">
+			  <h2 className="text-xl font-semibold my-4 dark:text-white">Last Trial Results</h2>
+			  <table className="w-full">
+				<thead>
+				  <tr className="bg-gray-100 dark:bg-gray-700">
 					{trialStockColumns.map(column => (
-						<td key={column.key} className={`py-2 px-4 ${column.classRenderer ? column.classRenderer(result[column.key]) : ''}`}>{column.renderer ? column.renderer(result[column.key]) : result[column.key]}</td>
+					  <th key={column.key} className="text-left py-2 px-4 dark:text-gray-300">{column.label}</th>
 					))}
 				  </tr>
-				))}
-			  </tbody>
-			</table>
-
+				</thead>
+				<tbody>
+				  {state.simulation.result.results.map((result, index) => (
+					<tr 
+					  key={`${result.symbol}-${result.datetime}`} 
+					  className={`${index % 2 === 0 ? 'bg-gray-50 dark:bg-gray-700' : 'dark:bg-gray-800'} cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600`}
+					  onClick={() => handleRowClick(result)}
+					>
+					  {trialStockColumns.map(column => (
+						  <td key={column.key} className={`py-2 px-4 ${column.classRenderer ? column.classRenderer(result[column.key]) : ''} dark:text-gray-300`}>{column.renderer ? column.renderer(result[column.key]) : result[column.key]}</td>
+					  ))}
+					</tr>
+				  ))}
+				</tbody>
+			  </table>
 			</div>
-			<div className="bg-white p-6 rounded-lg shadow mb-8">
-
-
-
-			{selectedResultData && (
-			  <div className="mt-8">
-				<div className='flex justify-between'>
-				  <h3 className="text-lg font-semibold mb-4">
-					Chart for {selectedResult.symbol} on {selectedResult.date}
-				  </h3>
-				  <button 
-					className='bg-indigo-500 text-white px-4 py-2 rounded-md hover:bg-indigo-600'
-					onClick={() => setSelectedResultData(null)}>
-					Close
+			<div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow mb-8">
+			  {selectedResultData && (
+				<div className="mt-8">
+				  <div className='flex justify-between'>
+					<h3 className="text-lg font-semibold mb-4 dark:text-white">
+					  Chart for {selectedResult.symbol} on {selectedResult.date}
+					</h3>
+					<button 
+					  className='bg-indigo-500 text-white px-4 py-2 rounded-md hover:bg-indigo-600 dark:bg-indigo-600 dark:hover:bg-indigo-700'
+					  onClick={() => setSelectedResultData(null)}>
+						Close
 				  </button>
 				</div>
 				<SimulationResults
@@ -850,30 +823,30 @@ const ShortSellingSimulatorPage = () => {
 
 		{/* Add Past Results section after current results */}
 		{pastResults.length > 0 && (
-		  <div className="bg-white p-6 rounded-lg shadow mb-8">
-			<h2 className="text-xl font-semibold mb-4">Past Simulation Results</h2>
+		  <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow mb-8">
+			<h2 className="text-xl font-semibold mb-4 dark:text-white">Past Simulation Results</h2>
 			<table className="w-full">
 			  <thead>
-				<tr className="bg-gray-100">
-				  <th className="text-left py-2 px-4">Date</th>
-				  <th className="text-left py-2 px-4">Symbols</th>
-				  <th className="text-left py-2 px-4">Params</th>
-				  <th className="text-left py-2 px-4">Date Range</th>
-				  <th className="text-right py-2 px-4">Total P&L</th>
+				<tr className="bg-gray-100 dark:bg-gray-700">
+				  <th className="text-left py-2 px-4 dark:text-gray-300">Date</th>
+				  <th className="text-left py-2 px-4 dark:text-gray-300">Symbols</th>
+				  <th className="text-left py-2 px-4 dark:text-gray-300">Params</th>
+				  <th className="text-left py-2 px-4 dark:text-gray-300">Date Range</th>
+				  <th className="text-right py-2 px-4 dark:text-gray-300">Total P&L</th>
 				</tr>
 			  </thead>
 			  <tbody>
 				{pastResults.map((result) => (
-				  <tr key={result.id} className="hover:bg-gray-50">
-					<td className="py-2 px-4">{new Date(result.timestamp).toLocaleString()}</td>
-					<td className="py-2 px-4">{result.params.symbol}</td>
-					<td className="py-2 px-4">
+				  <tr key={result.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:border-gray-700">
+					<td className="py-2 px-4 dark:text-gray-300">{new Date(result.timestamp).toLocaleString()}</td>
+					<td className="py-2 px-4 dark:text-gray-300">{result.params.symbol}</td>
+					<td className="py-2 px-4 dark:text-gray-300">
 					  RE: {!!result.params.simulation.reEnterPosition ? 'Yes' : 'No'} | USL: {!!result.params.simulation.updateSL ? 'Yes' : 'No'} | TSLR: {result.params.simulation.targetStopLossRatio} | CI: {result.params.simulation.cancelInMins}
 					</td>
-					<td className="py-2 px-4">
+					<td className="py-2 px-4 dark:text-gray-300">
 					  {`${result.params.startdate} to ${result.params.enddate}`}
 					</td>
-					<td className={`text-right py-2 px-4 ${result.totalPnl >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+					<td className={`text-right py-2 px-4 ${result.totalPnl >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
 					  {result.totalPnl.toFixed(2)}
 					</td>
 				  </tr>
@@ -882,7 +855,7 @@ const ShortSellingSimulatorPage = () => {
 			</table>
 			<div className='mt-4 flex gap-4'>
 			  <button 
-				className='bg-indigo-500 text-white px-4 py-2 rounded-md hover:bg-indigo-600'
+				className='bg-indigo-500 text-white px-4 py-2 rounded-md hover:bg-indigo-600 dark:bg-indigo-600 dark:hover:bg-indigo-700'
 				onClick={() => {
 				  localStorage.removeItem('simulationHistory');
 				  localStorage.removeItem('simulationTrials');
@@ -892,10 +865,10 @@ const ShortSellingSimulatorPage = () => {
 				Clear History
 			  </button>
 			  <button
-				className='bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600'
+				className='bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 dark:bg-green-600 dark:hover:bg-green-700'
 				onClick={() => exportTrialsToCSV(pastTrials)}>
 				Export Trials to CSV
-			</button>
+			  </button>
 			</div>
 		  </div>
 		)}

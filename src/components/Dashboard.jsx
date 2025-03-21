@@ -391,40 +391,40 @@ const Dashboard = () => {
     }
 
     return (
-        <div className="container mx-auto pt-20 p-4">
-            <h1 className="text-2xl font-bold mb-6">Trading Dashboard</h1>
+        <div className="container mx-auto pt-20 p-4 dark:bg-gray-900 dark:text-white">
+            <h1 className="text-2xl font-bold mb-6 dark:text-white">Trading Dashboard</h1>
             
             {/* Filters */}
-            <div className="bg-white p-4 rounded-lg shadow-md mb-6">
-                <h2 className="text-lg font-semibold mb-4">Filters</h2>
+            <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md mb-6">
+                <h2 className="text-lg font-semibold mb-4 dark:text-white">Filters</h2>
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Start Date</label>
                         <input
                             type="date"
                             name="startDate"
                             value={filters.startDate}
                             onChange={handleFilterChange}
-                            className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                         />
                     </div>
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">End Date</label>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">End Date</label>
                         <input
                             type="date"
                             name="endDate"
                             value={filters.endDate}
                             onChange={handleFilterChange}
-                            className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                         />
                     </div>
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Source</label>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Source</label>
                         <select
                             name="source"
                             value={filters.source}
                             onChange={handleFilterChange}
-                            className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                         >
                             {availableSources.map(source => (
                                 <option key={source} value={source}>
@@ -434,12 +434,12 @@ const Dashboard = () => {
                         </select>
                     </div>
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Direction</label>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Direction</label>
                         <select
                             name="direction"
                             value={filters.direction}
                             onChange={handleFilterChange}
-                            className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                         >
                             {availableDirections.map(direction => (
                                 <option key={direction} value={direction}>
@@ -452,7 +452,7 @@ const Dashboard = () => {
             </div>
             
             {loading ? (
-                <div className="flex justify-center items-center h-64">
+                <div className="flex justify-center items-center min-h-[500px]">
                     <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
                 </div>
             ) : (
@@ -460,27 +460,27 @@ const Dashboard = () => {
                     {/* Summary Stats */}
                     {analytics?.summary && (
                         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-                            <div className="bg-white p-4 rounded-lg shadow-md">
-                                <h3 className="text-sm text-gray-500">Total P&L</h3>
-                                <p className={`text-2xl font-bold ${analytics.summary.totalPnL >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                            <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md">
+                                <h3 className="text-sm text-gray-500 dark:text-gray-400">Total P&L</h3>
+                                <p className={`text-2xl font-bold ${analytics.summary.totalPnL >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
                                     ₹{analytics.summary.totalPnL.toFixed(2)}
                                 </p>
                             </div>
-                            <div className="bg-white p-4 rounded-lg shadow-md">
-                                <h3 className="text-sm text-gray-500">Win Rate</h3>
-                                <p className="text-2xl font-bold text-blue-600">
+                            <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md">
+                                <h3 className="text-sm text-gray-500 dark:text-gray-400">Win Rate</h3>
+                                <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
                                     {analytics.summary.winRate?.toFixed(2)}%
                                 </p>
                             </div>
-                            <div className="bg-white p-4 rounded-lg shadow-md">
-                                <h3 className="text-sm text-gray-500">Total Trades</h3>
-                                <p className="text-2xl font-bold">
+                            <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md">
+                                <h3 className="text-sm text-gray-500 dark:text-gray-400">Total Trades</h3>
+                                <p className="text-2xl font-bold dark:text-white">
                                     {analytics.summary.totalOrders}
                                 </p>
                             </div>
-                            <div className="bg-white p-4 rounded-lg shadow-md">
-                                <h3 className="text-sm text-gray-500">Average P&L per Trade</h3>
-                                <p className={`text-2xl font-bold ${analytics.summary.avgPnL >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                            <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md">
+                                <h3 className="text-sm text-gray-500 dark:text-gray-400">Average P&L per Trade</h3>
+                                <p className={`text-2xl font-bold ${analytics.summary.avgPnL >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
                                     ₹{analytics.summary.avgPnL?.toFixed(2)}
                                 </p>
                             </div>
@@ -489,8 +489,8 @@ const Dashboard = () => {
                     
                     {/* Charts */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                        <div className="bg-white p-4 rounded-lg shadow-md">
-                            <h2 className="text-lg font-semibold mb-4">Daily P&L by Source</h2>
+                        <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md">
+                            <h2 className="text-lg font-semibold mb-4 dark:text-white">Daily P&L by Source</h2>
                             <div className="h-80">
                                 <Bar 
                                     data={stackedBarChartData}
@@ -521,8 +521,8 @@ const Dashboard = () => {
                             </div>
                         </div>
                         
-                        <div className="bg-white p-4 rounded-lg shadow-md">
-                            <h2 className="text-lg font-semibold mb-4">Daily Order Count</h2>
+                        <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md">
+                            <h2 className="text-lg font-semibold mb-4 dark:text-white">Daily Order Count</h2>
                             <div className="h-80">
                                 <Line 
                                     data={barChartData}
@@ -554,8 +554,8 @@ const Dashboard = () => {
                     </div>
                     
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="bg-white p-4 rounded-lg shadow-md">
-                            <h2 className="text-lg font-semibold mb-4">Win/Loss Distribution</h2>
+                        <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md">
+                            <h2 className="text-lg font-semibold mb-4 dark:text-white">Win/Loss Distribution</h2>
                             <div className="h-80 flex items-center justify-center">
                                 <Pie 
                                     data={pieChartData}
@@ -567,21 +567,21 @@ const Dashboard = () => {
                             </div>
                         </div>
                         
-                        <div className="bg-white p-4 rounded-lg shadow-md">
-                            <h2 className="text-lg font-semibold mb-4">Source Performance</h2>
+                        <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md">
+                            <h2 className="text-lg font-semibold mb-4 dark:text-white">Source Performance</h2>
                             {analytics?.dailyData && (
                                 <div className="overflow-auto max-h-80">
-                                    <table className="min-w-full divide-y divide-gray-200">
-                                        <thead className="bg-gray-50">
+                                    <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                                        <thead className="bg-gray-50 dark:bg-gray-700">
                                             <tr>
-                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Source</th>
-                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Direction</th>
-                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Trade Count</th>
-                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">P&L</th>
-                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Win Rate</th>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Source</th>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Direction</th>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Trade Count</th>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">P&L</th>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Win Rate</th>
                                             </tr>
                                         </thead>
-                                        <tbody className="bg-white divide-y divide-gray-200">
+                                        <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                                             {Object.entries(
                                                 analytics.dailyData.reduce((acc, item) => {
                                                     const key = `${item._id.source || 'unknown'}-${item._id.direction || 'unknown'}`;
@@ -602,14 +602,14 @@ const Dashboard = () => {
                                                     return acc;
                                                 }, {})
                                             ).map(([key, data]) => (
-                                                <tr key={key}>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm uppercase">{data.source}</td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm capitalize">{data.direction}</td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm">{data.totalOrders}</td>
-                                                    <td className={`px-6 py-4 whitespace-nowrap text-sm ${data.totalPnL >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                                <tr key={key} className="dark:hover:bg-gray-700">
+                                                    <td className="px-6 py-4 whitespace-nowrap text-sm uppercase dark:text-gray-300">{data.source}</td>
+                                                    <td className="px-6 py-4 whitespace-nowrap text-sm capitalize dark:text-gray-300">{data.direction}</td>
+                                                    <td className="px-6 py-4 whitespace-nowrap text-sm dark:text-gray-300">{data.totalOrders}</td>
+                                                    <td className={`px-6 py-4 whitespace-nowrap text-sm ${data.totalPnL >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
                                                         ₹{data.totalPnL.toFixed(2)}
                                                     </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                                                    <td className="px-6 py-4 whitespace-nowrap text-sm dark:text-gray-300">
                                                         {((data.winCount / (data.winCount + data.lossCount)) * 100 || 0).toFixed(2)}%
                                                     </td>
                                                 </tr>

@@ -129,11 +129,11 @@ export default function Orders() {
     // if (loading) return <div>Loading...</div>;
 
     return (
-        <div className="container mx-auto pt-20 p-4">
+        <div className="container mx-auto pt-20 p-4 dark:bg-gray-900 dark:text-white">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                <div className="bg-white rounded-lg shadow-md">
-                    <div className="p-4 border-b">
-                        <h3 className="text-lg font-semibold">Trade Result Distribution</h3>
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md">
+                    <div className="p-4 border-b dark:border-gray-700">
+                        <h3 className="text-lg font-semibold dark:text-white">Trade Result Distribution</h3>
                     </div>
                     <div className="p-4">
                         <div className="h-[300px] flex items-center justify-center">
@@ -142,16 +142,16 @@ export default function Orders() {
                     </div>
                 </div>
                 
-                <div className="bg-white rounded-lg shadow-md">
-                    <div className="p-4 border-b">
-                        <h3 className="text-lg font-semibold">Status Counts</h3>
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md">
+                    <div className="p-4 border-b dark:border-gray-700">
+                        <h3 className="text-lg font-semibold dark:text-white">Status Counts</h3>
                     </div>
                     <div className="p-4">
                         <div className="grid grid-cols-2 gap-4">
                             {stats?.map((stat) => (
-                                <div key={stat._id} className="text-center p-4 bg-gray-50 rounded">
-                                    <h3 className="font-semibold">{stat._id || 'Unknown'}</h3>
-                                    <p className="text-2xl font-bold">{stat.count}</p>
+                                <div key={stat._id} className="text-center p-4 bg-gray-50 dark:bg-gray-700 rounded">
+                                    <h3 className="font-semibold dark:text-white">{stat._id || 'Unknown'}</h3>
+                                    <p className="text-2xl font-bold dark:text-white">{stat.count}</p>
                                 </div>
                             ))}
                         </div>
@@ -162,7 +162,7 @@ export default function Orders() {
             <div className="flex gap-4 mb-4">
                 <input
                     type="date"
-                    className="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                     name="date"
                     value={filters.date}
                     onChange={handleFilterChange}
@@ -170,7 +170,7 @@ export default function Orders() {
                 <input
                     type="text"
                     list="symbols"
-                    className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                     placeholder="Filter by symbol"
                     name="symbol"
                     value={filters.symbol}
@@ -185,7 +185,7 @@ export default function Orders() {
                 <input
                     type="text"
                     list="statuses"
-                    className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                     placeholder="Filter by status"
                     name="status"
                     value={filters.status}
@@ -203,74 +203,74 @@ export default function Orders() {
             <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
                 {tradeAnalysis && (
                     <>
-                        <div className="bg-white rounded-lg md:col-span-1 shadow-md p-4">
-                            <h3 className="text-lg font-semibold mb-4">Trade Summary</h3>
+                        <div className="bg-white dark:bg-gray-800 rounded-lg md:col-span-1 shadow-md p-4">
+                            <h3 className="text-lg font-semibold mb-4 dark:text-white">Trade Summary</h3>
                             <div className="grid grid-cols-3 gap-4">
 
 
-                                <div className="bg-gray-50 p-3 rounded">
-                                    <p className="text-sm text-gray-600">Total P&L</p>
-                                    <p className={`text-xl font-bold ${tradeAnalysis.summary.totalPnL >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                <div className="bg-gray-50 dark:bg-gray-700 p-3 rounded">
+                                    <p className="text-sm text-gray-600 dark:text-gray-300">Total P&L</p>
+                                    <p className={`text-xl font-bold ${tradeAnalysis.summary.totalPnL >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
                                         ₹{tradeAnalysis.summary.totalPnL}
                                     </p>
                                 </div>
-                                <div className="bg-gray-50 p-3 rounded">
-                                    <p className="text-sm text-gray-600">Realised P&L</p>
-                                    <p className={`text-xl font-bold ${tradeAnalysis.summary.realisedPnL >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                <div className="bg-gray-50 dark:bg-gray-700 p-3 rounded">
+                                    <p className="text-sm text-gray-600 dark:text-gray-300">Realised P&L</p>
+                                    <p className={`text-xl font-bold ${tradeAnalysis.summary.realisedPnL >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
                                         ₹{tradeAnalysis.summary.realisedPnL}
                                     </p>
                                 </div>
-                                <div className="bg-gray-50 p-3 rounded">
-                                    <p className="text-sm text-gray-600">Win Rate</p>
-                                    <p className="text-xl font-bold">{tradeAnalysis.summary.winRate}%</p>
+                                <div className="bg-gray-50 dark:bg-gray-700 p-3 rounded">
+                                    <p className="text-sm text-gray-600 dark:text-gray-300">Win Rate</p>
+                                    <p className="text-xl font-bold dark:text-white">{tradeAnalysis.summary.winRate}%</p>
                                 </div>
 
 
-                                <div className="bg-gray-50 p-3 rounded">
-                                    <p className="text-sm text-gray-600">Bailey P&L</p>
-                                    <p className={`text-xl font-bold ${tradeAnalysis.summary.baileyPnL >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                <div className="bg-gray-50 dark:bg-gray-700 p-3 rounded">
+                                    <p className="text-sm text-gray-600 dark:text-gray-300">Bailey P&L</p>
+                                    <p className={`text-xl font-bold ${tradeAnalysis.summary.baileyPnL >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
                                         ₹{tradeAnalysis.summary.baileyPnL}
                                     </p>
                                 </div>
-                                <div className="bg-gray-50 p-3 rounded">
-                                    <p className="text-sm text-gray-600">Zaire P&L</p>
-                                    <p className={`text-xl font-bold ${tradeAnalysis.summary.zairePnL >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                <div className="bg-gray-50 dark:bg-gray-700 p-3 rounded">
+                                    <p className="text-sm text-gray-600 dark:text-gray-300">Zaire P&L</p>
+                                    <p className={`text-xl font-bold ${tradeAnalysis.summary.zairePnL >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
                                         ₹{tradeAnalysis.summary.zairePnL}
                                     </p>
                                 </div>
-                                <div className="bg-gray-50 p-3 rounded">
-                                    <p className="text-sm text-gray-600">Manual P&L</p>
-                                    <p className={`text-xl font-bold ${tradeAnalysis.summary.manualPnL >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                <div className="bg-gray-50 dark:bg-gray-700 p-3 rounded">
+                                    <p className="text-sm text-gray-600 dark:text-gray-300">Manual P&L</p>
+                                    <p className={`text-xl font-bold ${tradeAnalysis.summary.manualPnL >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
                                         ₹{tradeAnalysis.summary.manualPnL}
                                     </p>
                                 </div>
 
-                                <div className="bg-gray-50 p-3 rounded">
-                                    <p className="text-sm text-gray-600">Bailey Win Rate</p>
-                                    <p className="text-xl font-bold">{tradeAnalysis.summary.baileyWinRate}%</p>
+                                <div className="bg-gray-50 dark:bg-gray-700 p-3 rounded">
+                                    <p className="text-sm text-gray-600 dark:text-gray-300">Bailey Win Rate</p>
+                                    <p className="text-xl font-bold dark:text-white">{tradeAnalysis.summary.baileyWinRate}%</p>
                                 </div>
-                                <div className="bg-gray-50 p-3 rounded">
-                                    <p className="text-sm text-gray-600">Zaire Win Rate</p>
-                                    <p className="text-xl font-bold">{tradeAnalysis.summary.zaireWinRate}%</p>
+                                <div className="bg-gray-50 dark:bg-gray-700 p-3 rounded">
+                                    <p className="text-sm text-gray-600 dark:text-gray-300">Zaire Win Rate</p>
+                                    <p className="text-xl font-bold dark:text-white">{tradeAnalysis.summary.zaireWinRate}%</p>
                                 </div>
-                                <div className="bg-gray-50 p-3 rounded">
-                                    <p className="text-sm text-gray-600">Manual Win Rate</p>
-                                    <p className="text-xl font-bold">{tradeAnalysis.summary.manualWinRate}%</p>
-                                </div>
-
-                                <div className="bg-gray-50 p-3 rounded">
-                                    <p className="text-sm text-gray-600">Total Trades</p>
-                                    <p className="text-xl font-bold">{tradeAnalysis.summary.totalTrades}</p>
+                                <div className="bg-gray-50 dark:bg-gray-700 p-3 rounded">
+                                    <p className="text-sm text-gray-600 dark:text-gray-300">Manual Win Rate</p>
+                                    <p className="text-xl font-bold dark:text-white">{tradeAnalysis.summary.manualWinRate}%</p>
                                 </div>
 
-                                <div className="bg-gray-50 p-3 rounded">
-                                    <p className="text-sm text-gray-600">Open Trades</p>
-                                    <p className="text-xl font-bold">{tradeAnalysis.summary.openTrades}</p>
+                                <div className="bg-gray-50 dark:bg-gray-700 p-3 rounded">
+                                    <p className="text-sm text-gray-600 dark:text-gray-300">Total Trades</p>
+                                    <p className="text-xl font-bold dark:text-white">{tradeAnalysis.summary.totalTrades}</p>
+                                </div>
+
+                                <div className="bg-gray-50 dark:bg-gray-700 p-3 rounded">
+                                    <p className="text-sm text-gray-600 dark:text-gray-300">Open Trades</p>
+                                    <p className="text-xl font-bold dark:text-white">{tradeAnalysis.summary.openTrades}</p>
                                 </div>
     
-                                <div className="bg-gray-50 p-3 rounded">
-                                    <p className="text-sm text-gray-600">Zaire Trades</p>
-                                    <p className="text-xl font-bold">{tradeAnalysis.summary.zaireTrades}</p>
+                                <div className="bg-gray-50 dark:bg-gray-700 p-3 rounded">
+                                    <p className="text-sm text-gray-600 dark:text-gray-300">Zaire Trades</p>
+                                    <p className="text-xl font-bold dark:text-white">{tradeAnalysis.summary.zaireTrades}</p>
                                 </div>
                                 {/* <div className="bg-gray-50 p-3 rounded">
                                     <p className="text-sm text-gray-600">Zaire Target Exits</p>
@@ -323,29 +323,29 @@ export default function Orders() {
                             </div>
                         </div>
 
-                        <div className="bg-white rounded-lg md:col-span-2 shadow-md p-4">
-                            <h3 className="text-lg font-semibold mb-4">Trade Details</h3>
+                        <div className="bg-white dark:bg-gray-800 rounded-lg md:col-span-2 shadow-md p-4">
+                            <h3 className="text-lg font-semibold mb-4 dark:text-white">Trade Details</h3>
                             <div className="overflow-auto max-h-[500px]">
                                 <table className="min-w-full">
-                                    <thead className="bg-gray-50">
+                                    <thead className="bg-gray-50 dark:bg-gray-700">
                                         <tr>
-                                            <th className="px-4 py-2">Symbol</th>
-                                            <th className="px-4 py-2">Direction</th>
-                                            <th className="px-4 py-2">Source</th>
-                                            <th className="px-4 py-2">Exit Reason SL-LTP-TG</th>
-                                            <th className="px-4 py-2">Status</th>
-                                            <th className="px-4 py-2">P&L</th>
+                                            <th className="px-4 py-2 dark:text-gray-300">Symbol</th>
+                                            <th className="px-4 py-2 dark:text-gray-300">Direction</th>
+                                            <th className="px-4 py-2 dark:text-gray-300">Source</th>
+                                            <th className="px-4 py-2 dark:text-gray-300">Exit Reason SL-LTP-TG</th>
+                                            <th className="px-4 py-2 dark:text-gray-300">Status</th>
+                                            <th className="px-4 py-2 dark:text-gray-300">P&L</th>
                                         </tr>
                                     </thead>
-                                    <tbody>
+                                    <tbody className="dark:bg-gray-800">
                                         {tradeAnalysis.trades.map((trade, index) => (
-                                            <tr key={index} className="border-t">
-                                                <td className="px-4 py-2">{trade.symbol}</td>
-                                                <td className="px-4 py-2">{trade.direction}</td>
-                                                <td className="px-4 py-2 uppercase">{trade.source}</td>
-                                                <td className="px-4 py-2 capitalize">{trade.exitReason}</td>
-                                                <td className="px-4 py-2">{trade.status}</td>
-                                                <td className={`px-4 py-2 ${trade.pnl >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                            <tr key={index} className="border-t dark:border-gray-700">
+                                                <td className="px-4 py-2 dark:text-gray-300">{trade.symbol}</td>
+                                                <td className="px-4 py-2 dark:text-gray-300">{trade.direction}</td>
+                                                <td className="px-4 py-2 uppercase dark:text-gray-300">{trade.source}</td>
+                                                <td className="px-4 py-2 capitalize dark:text-gray-300">{trade.exitReason}</td>
+                                                <td className="px-4 py-2 dark:text-gray-300">{trade.status}</td>
+                                                <td className={`px-4 py-2 ${trade.pnl >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
                                                     ₹{trade.pnl}
                                                 </td>
                                             </tr>
@@ -359,7 +359,7 @@ export default function Orders() {
             </div>
 
 
-            <div className="bg-gray-200 text-gray-800 mt-4">
+            <div className="bg-gray-200 dark:bg-gray-800 text-gray-800 dark:text-gray-200 mt-4">
                 <GeneralTable 
                     data={orders} 
                     fields={orderFields} 
@@ -370,14 +370,14 @@ export default function Orders() {
                 <button
                     onClick={() => setPage(p => Math.max(1, p - 1))}
                     disabled={page === 1}
-                    className="px-4 py-2 text-white bg-blue-500 rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="px-4 py-2 text-white bg-blue-500 rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-blue-600 dark:hover:bg-blue-700"
                 >
                     Previous
                 </button>
                 <button
                     onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                     disabled={page === totalPages}
-                    className="px-4 py-2 text-white bg-blue-500 rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="px-4 py-2 text-white bg-blue-500 rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-blue-600 dark:hover:bg-blue-700"
                 >
                     Next
                 </button>

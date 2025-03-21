@@ -89,7 +89,7 @@ function App() {
         </header>
 
         {/* Public and Private Routes */}
-        <main className="">
+        <main className="dark:bg-gray-900 dark:text-white">
           <PublicRoutes />
           <PrivateRoutes />
         </main>

@@ -9,9 +9,9 @@ const GeneralTable = ({ data, fields }) => {
     <div className="overflow-x-auto rounded-lg">
       <table className="w-full border-collapse rounded-lg">
         <thead className="hidden md:table-header-group">
-          <tr className="bg-gray-100">
+          <tr className="bg-gray-100 dark:bg-gray-700">
             {fields.map((field) => (
-              <th key={field.key} className="p-2 text-left border-b">
+              <th key={field.key} className="p-2 text-left border-b dark:border-gray-700">
                 {field.label}
               </th>
             ))}
@@ -30,7 +30,7 @@ const GeneralTable = ({ data, fields }) => {
                   ))}
                 </td>
               </tr>
-              <tr className="hidden md:table-row border-b hover:bg-gray-300">
+              <tr className="hidden md:table-row border-b hover:bg-gray-300 dark:hover:bg-gray-700">
                 {fields.map((field) => (
                   <td key={field.key} className="p-2">
                     {field.render ? field.render(item[field.key], item) : item[field.key]}
