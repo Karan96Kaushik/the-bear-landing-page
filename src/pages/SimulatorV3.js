@@ -422,7 +422,10 @@ const ShortSellingSimulatorPage = () => {
 		{ value: 'EICHERMOT', label: 'EICHERMOT' },
 		{ value: 'GODREJPROP', label: 'GODREJPROP' },
 		{ value: 'TATAMOTORS', label: 'TATAMOTORS' },
-		// Add more stock options as needed
+		{ value: 'NETWEB', label: 'NETWEB' },
+		{ value: 'MOTILALOFS', label: 'MOTILALOFS' },
+		{ value: 'HDFCBANK', label: 'HDFCBANK' },
+		{ value: 'ICICIBANK', label: 'ICICIBANK' },
 	];
 	
 	const updateState = (path, value) => {
