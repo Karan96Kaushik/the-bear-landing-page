@@ -127,14 +127,20 @@ const selectionParams = {
 
 const initialSelectionParamOptions = {
   TOUCHING_SMA_TOLERANCE: { type: 'category', options: [0.0003] },
-  TOUCHING_SMA_15_TOLERANCE: { type: 'category', options: [0.00028, 0.0003] },
-  NARROW_RANGE_TOLERANCE: { type: 'category', options: [0.004, 0.0035] },
-  WIDE_RANGE_TOLERANCE: { type: 'category', options: [0.001, 0.0005] },
-  CANDLE_CONDITIONS_SLOPE_TOLERANCE: { type: 'category', options: [1, 1.00004, 1.00002] },
-  BASE_CONDITIONS_SLOPE_TOLERANCE: { type: 'category', options: [1, 1.00004, 1.00002] },
-  MA_WINDOW: { type: 'category', options: [22, 44] },
-  CHECK_75MIN: { type: 'category', options: [0, 1] },
-  STOCK_LIST: { type: 'category', options: ['SimulationTest!D2:D550', 'SimulationTest!E2:E550', 'HIGHBETA!D2:D550'] },
+  TOUCHING_SMA_15_TOLERANCE: { type: 'category', options: [0.0003] },
+  //   TOUCHING_SMA_15_TOLERANCE: { type: 'category', options: [0.00028, 0.0003] },
+  NARROW_RANGE_TOLERANCE: { type: 'category', options: [0.004] },
+  //   NARROW_RANGE_TOLERANCE: { type: 'category', options: [0.004, 0.0035] },
+  WIDE_RANGE_TOLERANCE: { type: 'category', options: [0.0005] },
+  //   WIDE_RANGE_TOLERANCE: { type: 'category', options: [0.001, 0.0005] },
+  CANDLE_CONDITIONS_SLOPE_TOLERANCE: { type: 'category', options: [1] },
+//   CANDLE_CONDITIONS_SLOPE_TOLERANCE: { type: 'category', options: [1, 1.00004, 1.00002] },
+  BASE_CONDITIONS_SLOPE_TOLERANCE: { type: 'category', options: [1] },
+//   BASE_CONDITIONS_SLOPE_TOLERANCE: { type: 'category', options: [1, 1.00004, 1.00002] },
+  MA_WINDOW: { type: 'category', options: [22] },
+  CHECK_75MIN: { type: 'category', options: [1] },
+  //   STOCK_LIST: { type: 'category', options: ['SimulationTest!D2:D550', 'SimulationTest!E2:E550', 'HIGHBETA!D2:D550'] },
+  STOCK_LIST: { type: 'category', options: ['HIGHBETA!D2:D550'] },
 };
 
 function ParameterPopup({ selectionParams, setSelectionParams }) {
@@ -350,10 +356,10 @@ const exportTrialsToCSV = (trials) => {
 };
 
 const initialState = {
-	timeRange: {
-		start: new Date('2024-11-08'),
-		end: new Date('2024-11-08')
-	},
+	// timeRange: {
+	// 	start: new Date('2024-11-08'),
+	// 	end: new Date('2024-11-08')
+	// },
 	simulation: {
 		result: null,
 		reEnterPosition: true,
@@ -363,6 +369,7 @@ const initialState = {
 		updateSLFrequency: 15,
 		targetStopLossRatio: '2:1',
 		marketOrder: false,
+		type: 'zaire'
 	},
 	trials: []
 };
@@ -377,7 +384,7 @@ const ShortSellingSimulatorPage = () => {
 	const [selectedResult, setSelectedResult] = useState(null);
 	const [selectedResultData, setSelectedResultData] = useState(null);
 	// const [selectedFunctions, setSelectedFunctions] = useState([]);
-	const [dateRange, setDateRange] = useState([new Date('2025-01-27'), new Date('2025-02-21')]);
+	const [dateRange, setDateRange] = useState([new Date('2025-02-27'), new Date('2025-03-21')]);
 	const [selectedSymbol, setSelectedSymbol] = useState([]);
 	const [pollInterval, setPollInterval] = useState(null);
 	const [pastResults, setPastResults] = useState(() => {
@@ -389,6 +396,8 @@ const ShortSellingSimulatorPage = () => {
 		const saved = localStorage.getItem('simulationTrials');
 		return saved ? JSON.parse(saved) : [];
 	});
+
+	const [inputValue, setInputValue] = useState('');
 
 	const stockOptions = [
 		{ value: 'AUROPHARMA', label: 'AUROPHARMA' },
@@ -437,13 +446,16 @@ const ShortSellingSimulatorPage = () => {
 			
 			// Start the simulation
 			const response = await postAuthorizedData('/simulation/simulate/v2/start', requestParams);
+
+			setSelectedResult(null);
+			setSelectedResultData(null);
 			
 			const { jobId } = response;
 			
 			// Set up polling
 			const interval = setInterval(async () => {
 				try {
-					const statusResponse = await fetchAuthorizedData(`/simulation/simulate/v2/status/${jobId}`);
+					const statusResponse = await fetchAuthorizedData(`/simulation/simulate/v2/status/${jobId}?type=${requestParams.simulation.type}`);
 					
 					if (statusResponse.status === 'completed') {
 						// Clear polling interval
@@ -460,8 +472,9 @@ const ShortSellingSimulatorPage = () => {
 							pnl: item.pnl,
 							direction: item.direction,
 							quantity: item.quantity,
-							data: item.data.filter(d => new Date(d.time).toISOString().split('T')[0] === new Date(item.placedAt).toISOString().split('T')[0]),
+							data: state.simulation.type === 'lightyear' ? [] : item.data.filter(d => new Date(d.time).toISOString().split('T')[0] === new Date(item.placedAt).toISOString().split('T')[0]),
 							actions: item.actions,
+							perDayResults: item.perDayResults,
 							triggerPrice: item.triggerPrice,
 							targetPrice: item.targetPrice,
 							stopLossPrice: item.stopLossPrice
@@ -563,6 +576,7 @@ const ShortSellingSimulatorPage = () => {
 					}
 				} catch (err) {
 					console.error('Error polling simulation status:', err);
+					toast.error('Error polling simulation status: ' + err.message);
 					setIsLoading(false);
 					clearInterval(interval);
 					setPollInterval(null);
@@ -622,10 +636,13 @@ const ShortSellingSimulatorPage = () => {
 		try {
 			setSelectedResult(result);
 			// console.log(result.data.map(d => new Date(d.time)))
+			console.debug({perDayResults: result.perDayResults})
+
 			setSelectedResultData({
 				data: result.data,
 				tradeActions: result.actions,
-				pnl: result.pnl
+				pnl: result.pnl,
+				perDayResults: result.perDayResults
 			});
 			
 		} catch (err) {
@@ -639,7 +656,7 @@ const ShortSellingSimulatorPage = () => {
 	<div className="bg-gray-900 dark:bg-gray-950 min-h-screen relative">
 	  
 	  <div className="container mx-auto px-4 py-20">
-		<h1 className="text-3xl font-bold mb-6 text-white">Stock Trading Simulator</h1>
+		<h1 className="text-3xl font-bold mb-6 text-white">Simulator V3</h1>
 		<div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow mb-8">
 		  <div className="flex flex-wrap -mx-2 grid grid-cols-2 md:grid-cols-6 gap-4">
 			<div className="px-2 mb-4 col-span-2">
@@ -655,23 +672,73 @@ const ShortSellingSimulatorPage = () => {
 				className="px-3 py-2 text-base border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
 			  />
 			</div>
+			<div className="px-2 mb-4 col-span-2 dark:text-white">
+			  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Type</label>
+			  <select
+				value={state.simulation.type}
+				onChange={(event) => updateState('simulation.type', event.target.value)}
+				className="px-3 py-2 text-base border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+			  >
+				<option value={'zaire'}>Zaire</option>
+				<option value={'lightyear'}>Lightyear</option>
+			  </select>
+			</div>
+			
 			<div className="px-2 mb-4 col-span-2">
 			  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Symbol</label>
-			  <Select
-				isMulti
-				value={stockOptions.filter(option => selectedSymbol.includes(option.value))}
-				onChange={(selected) => setSelectedSymbol(selected.map(option => option.value))}
-				options={stockOptions}
-				styles={{
-					control: (base) => ({
-						...base,
-						backgroundColor: 'white',
-						color: 'black'
-					})
-				}}
-				className="text-base dark:text-white dark:bg-gray-700"
-				placeholder="Select stocks..."
-			  />
+			  <div className="flex flex-col">
+				<div className="relative">
+				  <input
+					type="text"
+					value={inputValue || ""}
+					onChange={(e) => {
+					  setInputValue(e.target.value);
+					}}
+					onKeyDown={(e) => {
+					  if (e.key === 'Enter') {
+						e.preventDefault();
+						const value = e.target.value.trim().toUpperCase();
+						if (value && !selectedSymbol.includes(value)) {
+						  setSelectedSymbol([...selectedSymbol, value]);
+						  setInputValue('');
+						}
+					  }
+					}}
+					className="px-3 py-2 text-base border border-gray-300 rounded-md w-full dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+					placeholder="Type symbol and press Enter..."
+				  />
+				  <div className="mt-2">
+					<span className="text-sm text-gray-500 dark:text-gray-400">Suggestions:</span>
+					<div className="flex flex-wrap gap-1 mt-1">
+					  {stockOptions.filter(option => !selectedSymbol.includes(option.value)).slice(0, 8).map(option => (
+						<button
+						  key={option.value}
+						  onClick={() => setSelectedSymbol([...selectedSymbol, option.value])}
+						  className="px-2 py-1 text-xs bg-gray-200 hover:bg-gray-300 dark:bg-gray-600 dark:hover:bg-gray-500 rounded-md dark:text-gray-200"
+						>
+						  {option.label}
+						</button>
+					  ))}
+					</div>
+				  </div>
+				</div>
+				<div className="flex flex-wrap gap-2 mt-2">
+				  {selectedSymbol.map(symbol => (
+					<div 
+					  key={symbol} 
+					  className="flex items-center gap-1 bg-blue-100 dark:bg-blue-900 px-2 py-1 rounded-md"
+					>
+					  <span className="text-blue-800 dark:text-blue-200">{symbol}</span>
+					  <button
+						onClick={() => setSelectedSymbol(selectedSymbol.filter(s => s !== symbol))}
+						className="text-blue-800 dark:text-blue-200 hover:text-blue-600 dark:hover:text-blue-400 font-bold"
+					  >
+						×
+					  </button>
+					</div>
+				  ))}
+				</div>
+			  </div>
 			</div>
 			<div className="px-2 mb-4 col-span-2">
 			  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Cancel Interval</label>
@@ -752,23 +819,6 @@ const ShortSellingSimulatorPage = () => {
 		  </div>
 		</div>
 
-		{pastTrials && (
-			<>
-		  <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow mb-8">
-			<h2 className="text-xl font-semibold mb-4 dark:text-white">Trial Results</h2>
-			<div className='mt-4'>
-					{pastTrials.map(trial => (
-						<div className='mt-4'>
-							<TrialResults
-								data={trial}
-							/>
-						</div>
-					))}
-				</div>
-			</div>
-			</>
-		)}
-
 		{state.simulation.result && (
 			<>
 			<div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow mb-8">
@@ -785,7 +835,7 @@ const ShortSellingSimulatorPage = () => {
 				  {state.simulation.result.results.map((result, index) => (
 					<tr 
 					  key={`${result.symbol}-${result.datetime}`} 
-					  className={`${index % 2 === 0 ? 'bg-gray-50 dark:bg-gray-700' : 'dark:bg-gray-800'} cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600`}
+					  className={`dark:bg-gray-800 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600`}
 					  onClick={() => handleRowClick(result)}
 					>
 					  {trialStockColumns.map(column => (
@@ -814,6 +864,7 @@ const ShortSellingSimulatorPage = () => {
 				  tradeActions={selectedResultData.tradeActions}
 				  pnl={selectedResultData.pnl}
 				  symbol={selectedResult.symbol}
+				  perDayResults={selectedResultData.perDayResults}
 				/>
 			  </div>
 			)}
@@ -872,6 +923,25 @@ const ShortSellingSimulatorPage = () => {
 			</div>
 		  </div>
 		)}
+
+
+		{pastTrials && (
+			<>
+		  <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow mb-8">
+			<h2 className="text-xl font-semibold mb-4 dark:text-white">Trial Results</h2>
+			<div className='mt-4'>
+					{pastTrials.map(trial => (
+						<div className='mt-4'>
+							<TrialResults
+								data={trial}
+							/>
+						</div>
+					))}
+				</div>
+			</div>
+			</>
+		)}
+
 	  </div>
 	</div>
   );

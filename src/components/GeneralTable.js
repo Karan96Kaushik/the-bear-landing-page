@@ -9,7 +9,7 @@ const GeneralTable = ({ data, fields }) => {
     <div className="overflow-x-auto rounded-lg">
       <table className="w-full border-collapse rounded-lg">
         <thead className="hidden md:table-header-group">
-          <tr className="bg-gray-100 dark:bg-gray-700">
+          <tr className="bg-gray-100 dark:bg-gray-800">
             {fields.map((field) => (
               <th key={field.key} className="p-2 text-left border-b dark:border-gray-700">
                 {field.label}

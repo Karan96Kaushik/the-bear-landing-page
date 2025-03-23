@@ -12,6 +12,12 @@ import {
 import { CandlestickController, CandlestickElement } from 'chartjs-chart-financial';
 import { enIN } from 'date-fns/locale';
 import { ChevronRightIcon } from 'lucide-react';
+
+// Check if the timezone is IST
+let is_timezone = 1 // 'Europe/London' != Intl.DateTimeFormat().resolvedOptions().timeZone ? 0 : 1;
+
+// console.log('is_timezone', is_timezone, Intl.DateTimeFormat().resolvedOptions().timeZone)
+
 // Register the controllers and elements
 ChartJS.register(
   CategoryScale,
@@ -48,7 +54,7 @@ ChartJS.register(
  * @param {number} props.pnl - Final Profit/Loss value
  * @returns {JSX.Element}
  */
-const SimulationResults = ({ data, tradeActions, pnl, nseiData, symbol }) => {
+const SimulationChart = ({ data, tradeActions, pnl, nseiData, symbol }) => {
   // console.log({nseiData});
   // Add theme detection
   const isDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -108,6 +114,7 @@ const SimulationResults = ({ data, tradeActions, pnl, nseiData, symbol }) => {
   }, [data, nseiData, isDarkMode]);
 
   const candlestickOptions = {
+    animation: false,
     scales: {
       x: {
         type: 'time',
@@ -200,17 +207,25 @@ const SimulationResults = ({ data, tradeActions, pnl, nseiData, symbol }) => {
         },
       },
       annotation: {
+        animations: {
+          numbers: {
+            duration: 0, // Disable animation for numbers
+          },
+          colors: {
+            duration: 0, // Disable animation for colors
+          },
+        },
         annotations: tradeActions?.map(action => ({
           type: 'line',
           // Conditional x/y min/max based on annotation type
           ...(showVerticalAnnotations ? {
-            xMin: +action.time + 5.5*60*60*1000,
-            xMax: +action.time + 5.5*60*60*1000,
+            xMin: +action.time + (5.5*60*60*1000 * is_timezone),
+            xMax: +action.time + (5.5*60*60*1000 * is_timezone),
           } : {
             yMin: action.price,
             yMax: action.price,
-            xMin: Math.min(...data.map(d => +d.time + 5.5*60*60*1000)),
-            xMax: Math.max(...data.map(d => +d.time + 5.5*60*60*1000)),
+            xMin: Math.min(...data.map(d => +d.time + (5.5*60*60*1000 * is_timezone))),
+            xMax: Math.max(...data.map(d => +d.time + (5.5*60*60*1000 * is_timezone))),
           }),
           borderColor: 
             action?.action.includes('Short') ? 'red' : 
@@ -323,7 +338,7 @@ const SimulationResults = ({ data, tradeActions, pnl, nseiData, symbol }) => {
               checked={showVerticalAnnotations}
               onChange={(e) => setShowVerticalAnnotations(e.target.checked)}
             />
-            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 dark:border-gray-600 peer-checked:bg-blue-600"></div>
             <span className="ml-3 text-sm font-medium">
               {showVerticalAnnotations ? 'Vertical' : 'Horizontal'} Annotations
             </span>
@@ -337,6 +352,55 @@ const SimulationResults = ({ data, tradeActions, pnl, nseiData, symbol }) => {
         </div>
       </div>
 
+    </div>
+  );
+};
+
+const SimulationResults = ({ data, tradeActions, pnl, nseiData, symbol, perDayResults }) => {
+  // Add state to track the active tab index
+  const [activeTab, setActiveTab] = React.useState(0);
+
+  // If we don't have per-day results, render a single chart
+  if (!perDayResults) {
+    return (
+      <div>
+        <SimulationChart data={data} tradeActions={tradeActions} pnl={pnl} nseiData={nseiData} symbol={symbol} />
+      </div>
+    );
+  }
+
+  // Otherwise, render tabs with each day's results
+  return (
+    <div>
+      {/* Tab Navigation */}
+      <div className="flex border-b mb-4 overflow-x-auto">
+        {perDayResults.map((result, index) => (
+          <button
+            key={index}
+            className={`px-4 py-2 font-medium ${
+              activeTab === index
+                ? 'border-b-2 border-blue-500 text-blue-600 dark:text-blue-400'
+                : 'text-gray-600 dark:text-gray-400 hover:text-blue-500 dark:hover:text-blue-300'
+            }`}
+            onClick={() => setActiveTab(index)}
+          >
+            {result.placedAt ? new Date(result.placedAt).toLocaleDateString() : `Day ${index + 1}`}
+          </button>
+        ))}
+      </div>
+      
+      {/* Active Tab Content */}
+      {perDayResults.map((result, index) => (
+        <div key={index} className={activeTab === index ? 'block' : 'hidden'}>
+          <SimulationChart 
+            data={result.data} 
+            tradeActions={result.tradeActions} 
+            pnl={result.pnl} 
+            nseiData={result.nseiData} 
+            symbol={symbol} 
+          />
+        </div>
+      ))}
     </div>
   );
 };
