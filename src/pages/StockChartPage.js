@@ -27,8 +27,8 @@ const StockChartPage = () => {
   const [loading, setLoading] = useState(true);
   const [selectedStock, setSelectedStock] = useState('');
   const [selectedInterval, setSelectedInterval] = useState('15m');
-  const [startDate, setStartDate] = useState(new Date('2024-10-30'));
-  const [endDate, setEndDate] = useState(new Date('2024-10-31'));
+  const [startDate, setStartDate] = useState(new Date('2025-03-20'));
+  const [endDate, setEndDate] = useState(new Date('2025-03-21'));
 
   // Copy the useEffect hooks and other necessary functions from Dashboard.js
   useEffect(() => {
@@ -184,9 +184,9 @@ const StockChartPage = () => {
   };
 
   return (
-    <div className="bg-gray-900 h-screen">
-      <div className="container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-6 text-white">Stock Chart</h1>
+    <div className="bg-gray-900 h-screen dark:bg-gray-900">
+      <div className="container mx-auto px-4 py-8 dark:text-white dark:bg-gray-900">
+        <h1 className="text-3xl font-bold mb-6 text-white dark:text-white dark:bg-gray-900">Stock Chart</h1>
         <StockChart
           selectedStock={selectedStock}
           selectedInterval={selectedInterval}
