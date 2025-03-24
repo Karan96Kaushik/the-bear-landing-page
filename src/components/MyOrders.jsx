@@ -112,7 +112,7 @@ export default function Orders() {
     return (
         <div className="container mx-auto pt-20 p-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                <div className="bg-white rounded-lg shadow-md">
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md">
                     <div className="p-4 border-b">
                         <h3 className="text-lg font-semibold">Order Status Distribution</h3>
                     </div>
@@ -123,14 +123,14 @@ export default function Orders() {
                     </div>
                 </div>
                 
-                <div className="bg-white rounded-lg shadow-md">
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md">
                     <div className="p-4 border-b">
                         <h3 className="text-lg font-semibold">Status Counts</h3>
                     </div>
                     <div className="p-4">
                         <div className="grid grid-cols-2 gap-4">
                             {stats?.map((stat) => (
-                                <div key={stat._id} className="text-center p-4 bg-gray-50 rounded">
+                                <div key={stat._id} className="text-center p-4 bg-gray-50 dark:bg-gray-700 rounded">
                                     <h3 className="font-semibold">{stat._id || 'Unknown'}</h3>
                                     <p className="text-2xl font-bold">{stat.count}</p>
                                 </div>
@@ -143,7 +143,7 @@ export default function Orders() {
             <div className="flex gap-4 mb-4">
                 <input
                     type="date"
-                    className="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-white"
                     name="date"
                     value={filters.date}
                     onChange={handleFilterChange}
@@ -151,7 +151,7 @@ export default function Orders() {
                 <input
                     type="text"
                     list="symbols"
-                    className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-white"
                     placeholder="Filter by symbol"
                     name="symbol"
                     value={filters.symbol}
@@ -166,7 +166,7 @@ export default function Orders() {
                 <input
                     type="text"
                     list="statuses"
-                    className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-white"
                     placeholder="Filter by status"
                     name="status"
                     value={filters.status}
@@ -179,7 +179,7 @@ export default function Orders() {
                 </datalist>
             </div>
             
-            <div className="bg-gray-200 text-gray-800">
+            <div className="bg-gray-200 dark:bg-gray-800 text-gray-800 dark:text-white">
                 <GeneralTable 
                     data={orders} 
                     fields={orderFields} 
