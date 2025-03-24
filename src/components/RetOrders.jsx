@@ -239,9 +239,9 @@ export default function Orders() {
                                     </p>
                                 </div>
                                 <div className="bg-gray-50 dark:bg-gray-700 p-3 rounded">
-                                    <p className="text-sm text-gray-600 dark:text-gray-300">Manual P&L</p>
-                                    <p className={`text-xl font-bold ${tradeAnalysis.summary.manualPnL >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-                                        ₹{tradeAnalysis.summary.manualPnL}
+                                    <p className="text-sm text-gray-600 dark:text-gray-300">Lightyear P&L</p>
+                                    <p className={`text-xl font-bold ${tradeAnalysis.summary.lightyearPnL >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                                        ₹{tradeAnalysis.summary.lightyearPnL}
                                     </p>
                                 </div>
 
@@ -252,6 +252,17 @@ export default function Orders() {
                                 <div className="bg-gray-50 dark:bg-gray-700 p-3 rounded">
                                     <p className="text-sm text-gray-600 dark:text-gray-300">Zaire Win Rate</p>
                                     <p className="text-xl font-bold dark:text-white">{tradeAnalysis.summary.zaireWinRate}%</p>
+                                </div>
+                                <div className="bg-gray-50 dark:bg-gray-700 p-3 rounded">
+                                    <p className="text-sm text-gray-600 dark:text-gray-300">Lightyear Win Rate</p>
+                                    <p className="text-xl font-bold dark:text-white">{tradeAnalysis.summary.lightyearWinRate}%</p>
+                                </div>
+
+                                <div className="bg-gray-50 dark:bg-gray-700 p-3 rounded">
+                                    <p className="text-sm text-gray-600 dark:text-gray-300">Manual P&L</p>
+                                    <p className={`text-xl font-bold ${tradeAnalysis.summary.manualPnL >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                                        ₹{tradeAnalysis.summary.manualPnL}
+                                    </p>
                                 </div>
                                 <div className="bg-gray-50 dark:bg-gray-700 p-3 rounded">
                                     <p className="text-sm text-gray-600 dark:text-gray-300">Manual Win Rate</p>
