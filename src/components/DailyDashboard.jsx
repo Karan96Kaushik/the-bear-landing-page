@@ -115,6 +115,7 @@ export default function Dashboard() {
                     <option value="all">All Sources</option>
                     <option value="bailey">Bailey</option>
                     <option value="zaire">Zaire</option>
+                    <option value="lightyear">Lightyear</option>
                     <option value="manual">Manual</option>
                 </select>
                 <select

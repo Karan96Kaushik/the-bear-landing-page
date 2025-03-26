@@ -91,16 +91,23 @@ const Dashboard = () => {
                 dateSourceGroups[date] = {
                     zaire: 0,
                     bailey: 0,
-                    sheet: 0  // for manual trades
+                    sheet: 0,  // for manual trades
+                    lightyear: 0,
+                    manual: 0
                 };
             }
             
             const source = trade.source || 'unknown';
             if (source === 'zaire') {
                 dateSourceGroups[date].zaire += trade.pnl;
-            } else if (source === 'bailey') {
+            } 
+            else if (source === 'bailey') {
                 dateSourceGroups[date].bailey += trade.pnl;
-            } else if (source === 'sheet') {
+            } 
+            else if (source === 'lightyear') {
+                dateSourceGroups[date].lightyear += trade.pnl;
+            }
+            else if (source === 'sheet') {
                 dateSourceGroups[date].sheet += trade.pnl;
             }
         });
@@ -117,15 +124,21 @@ const Dashboard = () => {
                     stack: 'Stack 0',
                 },
                 {
-                    label: 'Manual',
-                    data: sortedDates.map(date => parseFloat(dateSourceGroups[date].sheet.toFixed(2))),
-                    backgroundColor: 'rgba(255, 157, 0, 0.7)',
+                    label: 'Lightyear',
+                    data: sortedDates.map(date => parseFloat(dateSourceGroups[date].lightyear.toFixed(2))),
+                    backgroundColor: 'rgba(255, 255, 255, 0.7)',
                     stack: 'Stack 0',
                 },
                 {
                     label: 'Bailey',
                     data: sortedDates.map(date => parseFloat(dateSourceGroups[date].bailey.toFixed(2))),
-                    backgroundColor: 'rgba(75, 192, 192, 0.7)',
+                    backgroundColor: 'rgba(23, 245, 245, 0.7)',
+                    stack: 'Stack 0',
+                },
+                {
+                    label: 'Manual',
+                    data: sortedDates.map(date => parseFloat(dateSourceGroups[date].sheet.toFixed(2))),
+                    backgroundColor: 'rgba(255, 157, 0, 0.7)',
                     stack: 'Stack 0',
                 },
             ]

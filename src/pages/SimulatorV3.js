@@ -681,6 +681,7 @@ const ShortSellingSimulatorPage = () => {
 			  >
 				<option value={'zaire'}>Zaire</option>
 				<option value={'lightyear'}>Lightyear</option>
+				<option value={'bailey'}>Bailey</option>
 			  </select>
 			</div>
 			
