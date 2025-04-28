@@ -168,8 +168,8 @@ const ShortSellingSimulatorPage = () => {
           const nextDate = new Date(currentDate);
           nextDate.setDate(nextDate.getDate() + 1);
 
-          currentDate.setHours(1, 59, 59, 999);
-          nextDate.setHours(11, 59, 59, 999);
+          currentDate.setUTCHours(1, 59, 59, 999);
+          nextDate.setUTCHours(11, 59, 59, 999);
 
           // Skip weekends
           if (currentDate.getDay() === 0 || currentDate.getDay() === 6) {

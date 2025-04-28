@@ -42,7 +42,7 @@ const trialStockColumns = [
 	{key: 'datetime', label: 'Date'},
 	{key: 'quantity', label: 'Quantity'},
 	{key: 'direction', label: 'Direction'},
-	{key: 'pnl', label: 'P&L', classRenderer: (pnl) => pnl >= 0 ? 'text-green-600' : 'text-red-600', renderer: (pnl) => pnl?.toFixed(2)},
+	{key: 'pnl', label: 'P&L', classRenderer: (pnl) => Number(pnl) >= 0 ? 'text-green-600' : 'text-red-600', renderer: (pnl) => pnl?.toFixed(2)},
 	{key: 'triggerPrice', label: 'Trigger Price', renderer: (triggerPrice) => triggerPrice?.toFixed(2)},
 	{key: 'targetPrice', label: 'Target Price', renderer: (targetPrice) => targetPrice?.toFixed(2)},
 	{key: 'stopLossPrice', label: 'Stop Loss Price', renderer: (stopLossPrice) => stopLossPrice?.toFixed(2)}
@@ -74,7 +74,7 @@ const processTrialData = (trialData) => {
 
 	  const hourWisePnl = trialData.reduce((acc, curr) => {
 		  const date = new Date(curr.timestamp);
-		  const hourKey = `${date.getHours()}`;
+		  const hourKey = `${date.getUTCHours()}`;
 		  acc[hourKey] = acc[hourKey] || [];
 		  acc[hourKey].push(curr.pnl);
 		  return acc;
@@ -126,21 +126,15 @@ const selectionParams = {
 }
 
 const initialSelectionParamOptions = {
-  TOUCHING_SMA_TOLERANCE: { type: 'category', options: [0.0003] },
-  TOUCHING_SMA_15_TOLERANCE: { type: 'category', options: [0.0003] },
-  //   TOUCHING_SMA_15_TOLERANCE: { type: 'category', options: [0.00028, 0.0003] },
-  NARROW_RANGE_TOLERANCE: { type: 'category', options: [0.004] },
-  //   NARROW_RANGE_TOLERANCE: { type: 'category', options: [0.004, 0.0035] },
-  WIDE_RANGE_TOLERANCE: { type: 'category', options: [0.0005] },
-  //   WIDE_RANGE_TOLERANCE: { type: 'category', options: [0.001, 0.0005] },
-  CANDLE_CONDITIONS_SLOPE_TOLERANCE: { type: 'category', options: [1] },
-//   CANDLE_CONDITIONS_SLOPE_TOLERANCE: { type: 'category', options: [1, 1.00004, 1.00002] },
-  BASE_CONDITIONS_SLOPE_TOLERANCE: { type: 'category', options: [1] },
-//   BASE_CONDITIONS_SLOPE_TOLERANCE: { type: 'category', options: [1, 1.00004, 1.00002] },
-  MA_WINDOW: { type: 'category', options: [22] },
-  CHECK_75MIN: { type: 'category', options: [1] },
-  //   STOCK_LIST: { type: 'category', options: ['SimulationTest!D2:D550', 'SimulationTest!E2:E550', 'HIGHBETA!D2:D550'] },
-  STOCK_LIST: { type: 'category', options: ['HIGHBETA!D2:D550'] },
+  TOUCHING_SMA_TOLERANCE: { type: 'category', options: [0.0003, 0.00035] },
+  TOUCHING_SMA_15_TOLERANCE: { type: 'category', options: [0.0003, 0.00035] },
+  NARROW_RANGE_TOLERANCE: { type: 'category', options: [0.004, 0.0046] },
+  WIDE_RANGE_TOLERANCE: { type: 'category', options: [0.0005, 0.00055] },
+  CANDLE_CONDITIONS_SLOPE_TOLERANCE: { type: 'category', options: [1, 1.00004] },
+  BASE_CONDITIONS_SLOPE_TOLERANCE: { type: 'category', options: [1, 1.00004] },
+  MA_WINDOW: { type: 'category', options: [22, 44] },
+  CHECK_75MIN: { type: 'category', options: [1,0] },
+  STOCK_LIST: { type: 'category', options: ['HIGHBETA!J2:J550'] },
 };
 
 function ParameterPopup({ selectionParams, setSelectionParams }) {
@@ -384,7 +378,7 @@ const ShortSellingSimulatorPage = () => {
 	const [selectedResult, setSelectedResult] = useState(null);
 	const [selectedResultData, setSelectedResultData] = useState(null);
 	// const [selectedFunctions, setSelectedFunctions] = useState([]);
-	const [dateRange, setDateRange] = useState([new Date('2025-02-27'), new Date('2025-03-21')]);
+	const [dateRange, setDateRange] = useState([new Date('2025-04-21'), new Date('2025-04-25')]);
 	const [selectedSymbol, setSelectedSymbol] = useState([]);
 	const [pollInterval, setPollInterval] = useState(null);
 	const [pastResults, setPastResults] = useState(() => {
@@ -840,7 +834,7 @@ const ShortSellingSimulatorPage = () => {
 					  onClick={() => handleRowClick(result)}
 					>
 					  {trialStockColumns.map(column => (
-						  <td key={column.key} className={`py-2 px-4 ${column.classRenderer ? column.classRenderer(result[column.key]) : ''} dark:text-gray-300`}>{column.renderer ? column.renderer(result[column.key]) : result[column.key]}</td>
+						  <td key={column.key} className={`py-2 px-4 ${column.classRenderer ? column.classRenderer(result[column.key]) : ''} text-gray-300`}>{column.renderer ? column.renderer(result[column.key]) : result[column.key]}</td>
 					  ))}
 					</tr>
 				  ))}
