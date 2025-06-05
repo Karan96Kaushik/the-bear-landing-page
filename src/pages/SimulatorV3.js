@@ -783,7 +783,7 @@ const ShortSellingSimulatorPage = () => {
 			{state.simulation.updateSL && 
 			  <> 
 				<div className="px-2 mb-4 col-span-2">
-				  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Update SL Interval</label>
+				  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Update SL Bucket</label>
 				  <input
 					type="number"
 					step={5}
