@@ -126,15 +126,15 @@ const selectionParams = {
 }
 
 const initialSelectionParamOptions = {
-  TOUCHING_SMA_TOLERANCE: { type: 'category', options: [0.0003, 0.00035] },
-  TOUCHING_SMA_15_TOLERANCE: { type: 'category', options: [0.0003, 0.00035] },
-  NARROW_RANGE_TOLERANCE: { type: 'category', options: [0.004, 0.0046] },
-  WIDE_RANGE_TOLERANCE: { type: 'category', options: [0.0005, 0.00055] },
-  CANDLE_CONDITIONS_SLOPE_TOLERANCE: { type: 'category', options: [1, 1.00004] },
-  BASE_CONDITIONS_SLOPE_TOLERANCE: { type: 'category', options: [1, 1.00004] },
-  MA_WINDOW: { type: 'category', options: [22, 44] },
-  CHECK_75MIN: { type: 'category', options: [1,0] },
-  STOCK_LIST: { type: 'category', options: ['HIGHBETA!J2:J550'] },
+  TOUCHING_SMA_TOLERANCE: { type: 'category', options: [0.0003] },
+  TOUCHING_SMA_15_TOLERANCE: { type: 'category', options: [0.0003] },
+  NARROW_RANGE_TOLERANCE: { type: 'category', options: [0.0046] },
+  WIDE_RANGE_TOLERANCE: { type: 'category', options: [0.00055] },
+  CANDLE_CONDITIONS_SLOPE_TOLERANCE: { type: 'category', options: [1] },
+  BASE_CONDITIONS_SLOPE_TOLERANCE: { type: 'category', options: [1] },
+  MA_WINDOW: { type: 'category', options: [22] },
+  CHECK_75MIN: { type: 'category', options: [1] },
+  STOCK_LIST: { type: 'category', options: ['HIGHBETA!D2:D550'] },
 };
 
 function ParameterPopup({ selectionParams, setSelectionParams }) {
@@ -357,7 +357,7 @@ const initialState = {
 	simulation: {
 		result: null,
 		reEnterPosition: true,
-		cancelInMins: 5,
+		cancelInMins: 0,
 		updateSL: true,
 		updateSLInterval: 15,
 		updateSLFrequency: 15,
@@ -378,7 +378,7 @@ const ShortSellingSimulatorPage = () => {
 	const [selectedResult, setSelectedResult] = useState(null);
 	const [selectedResultData, setSelectedResultData] = useState(null);
 	// const [selectedFunctions, setSelectedFunctions] = useState([]);
-	const [dateRange, setDateRange] = useState([new Date('2025-04-21'), new Date('2025-04-25')]);
+	const [dateRange, setDateRange] = useState([new Date('2025-05-21'), new Date('2025-05-25')]);
 	const [selectedSymbol, setSelectedSymbol] = useState([]);
 	const [pollInterval, setPollInterval] = useState(null);
 	const [pastResults, setPastResults] = useState(() => {
@@ -460,13 +460,13 @@ const ShortSellingSimulatorPage = () => {
 						// Format and set the results
 						const formattedData = statusResponse.result.map(item => ({
 							symbol: item.sym,
-							date: moment(item.placedAt).format('DD-MM-YYYY'),
-							timestamp: new Date(item.placedAt),
-							datetime: moment(+new Date(item.placedAt) + 5.5 * 60 * 60 * 1000).format('DD-MM-YYYY HH:mm'),
+							date: moment( item.scannedCandleAt || item.placedAt).format('DD-MM-YYYY'),
+							timestamp: new Date(item.scannedCandleAt || item.placedAt),
+							datetime: moment(+new Date(item.scannedCandleAt || item.placedAt) + 5.5 * 60 * 60 * 1000).format('DD-MM-YYYY HH:mm'),
 							pnl: item.pnl,
 							direction: item.direction,
 							quantity: item.quantity,
-							data: state.simulation.type === 'lightyear' ? [] : item.data.filter(d => new Date(d.time).toISOString().split('T')[0] === new Date(item.placedAt).toISOString().split('T')[0]),
+							data: state.simulation.type === 'lightyear' ? [] : item.data.filter(d => new Date(d.time).toISOString().split('T')[0] === new Date(item.scannedCandleAt || item.placedAt).toISOString().split('T')[0]),
 							actions: item.actions,
 							perDayResults: item.perDayResults,
 							triggerPrice: item.triggerPrice,
