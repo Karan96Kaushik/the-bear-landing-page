@@ -754,8 +754,11 @@ const ShortSellingSimulatorPage = () => {
 			  >
 				<option value={'1:1'}>1:1</option>
 				<option value={'2:1'}>2:1</option>
-				<option value={'3:1'}>3:1</option>
+				<option value={'2:1.5'}>2:1.5</option>
+				<option value={'3:2'}>3:2</option>
 				<option value={'2:2'}>2:2</option>
+				<option value={'4:2'}>4:2</option>
+				<option value={'3:1'}>3:1</option>
 			  </select>
 			</div>
 			<div className="px-2 mb-4 col-span-1">
