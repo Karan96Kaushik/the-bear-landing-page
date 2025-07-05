@@ -121,6 +121,7 @@ const selectionParams = {
 	CANDLE_CONDITIONS_SLOPE_TOLERANCE: {type: 'number', start: 1, end: 2, step: 1, defaultValue: 1},
 	BASE_CONDITIONS_SLOPE_TOLERANCE: {type: 'number', start: 1, end: 2, step: 1, defaultValue: 1},
 	MA_WINDOW: {type: 'category', options: [22, 44], defaultValue: 44},
+	MA_WINDOW_5: {type: 'category', options: [22, 44], defaultValue: 22},
 	CHECK_75MIN: {type: 'category', options: [true, false], defaultValue: true},
 	TOUCHING_SMA_15_TOLERANCE: {type: 'number', start: 0.00030, end: 0.00040, step: 0.00005, defaultValue: -1}
 }
@@ -129,10 +130,11 @@ const initialSelectionParamOptions = {
   TOUCHING_SMA_TOLERANCE: { type: 'category', options: [0.0003] },
   TOUCHING_SMA_15_TOLERANCE: { type: 'category', options: [0.0003] },
   NARROW_RANGE_TOLERANCE: { type: 'category', options: [0.0046] },
-  WIDE_RANGE_TOLERANCE: { type: 'category', options: [0.00055] },
+  WIDE_RANGE_TOLERANCE: { type: 'category', options: [0.0015] },
   CANDLE_CONDITIONS_SLOPE_TOLERANCE: { type: 'category', options: [1] },
   BASE_CONDITIONS_SLOPE_TOLERANCE: { type: 'category', options: [1] },
-  MA_WINDOW: { type: 'category', options: [22] },
+  MA_WINDOW: { type: 'category', options: [44] },
+  MA_WINDOW_5: { type: 'category', options: [22] },
   CHECK_75MIN: { type: 'category', options: [1] },
   STOCK_LIST: { type: 'category', options: ['HIGHBETA!D2:D550'] },
 };
@@ -153,7 +155,6 @@ function ParameterPopup({ selectionParams, setSelectionParams }) {
   };
 
   const saveChanges = () => {
-	console.debug(tempParams)
     setSelectionParams(tempParams);
     closePopup();
   };
@@ -357,11 +358,11 @@ const initialState = {
 	simulation: {
 		result: null,
 		reEnterPosition: true,
-		cancelInMins: 0,
-		updateSL: true,
+		cancelInMins: 5,
+		updateSL: false,
 		updateSLInterval: 15,
 		updateSLFrequency: 15,
-		targetStopLossRatio: '2:1',
+		targetStopLossRatio: '2:2',
 		marketOrder: false,
 		type: 'zaire'
 	},
@@ -378,7 +379,7 @@ const ShortSellingSimulatorPage = () => {
 	const [selectedResult, setSelectedResult] = useState(null);
 	const [selectedResultData, setSelectedResultData] = useState(null);
 	// const [selectedFunctions, setSelectedFunctions] = useState([]);
-	const [dateRange, setDateRange] = useState([new Date('2025-05-21'), new Date('2025-05-25')]);
+	const [dateRange, setDateRange] = useState([new Date('2025-06-11'), new Date('2025-06-12')]);
 	const [selectedSymbol, setSelectedSymbol] = useState([]);
 	const [pollInterval, setPollInterval] = useState(null);
 	const [pastResults, setPastResults] = useState(() => {
@@ -588,11 +589,12 @@ const ShortSellingSimulatorPage = () => {
 
 	const startTrials = async () => {
 		const combinations = generateCombinations(selectionParams);
-		console.debug('combinations', combinations)
 		let simulation;
 
-		let startDate = dateRange[0].toISOString().split('T')[0];
-		let endDate = dateRange[1].toISOString().split('T')[0];
+
+		// Set the start and end date to 6 AM to handle UTC tz difference
+		let startDate = new Date(dateRange[0].setUTCHours(6, 0, 0, 0)).toISOString().split('T')[0];
+		let endDate = new Date(dateRange[1].setUTCHours(6, 0, 0, 0)).toISOString().split('T')[0];
 
 		toast.success(`Starting ${combinations.length} simulations...`);
 
@@ -629,8 +631,6 @@ const ShortSellingSimulatorPage = () => {
 		setIsLoading(true);
 		try {
 			setSelectedResult(result);
-			// console.log(result.data.map(d => new Date(d.time)))
-			console.debug({perDayResults: result.perDayResults})
 
 			setSelectedResultData({
 				data: result.data,
