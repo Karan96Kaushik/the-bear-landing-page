@@ -5560,6 +5560,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"date-fns@npm:^4.1.0":
+  version: 4.1.0
+  resolution: "date-fns@npm:4.1.0"
+  checksum: 10c0/b79ff32830e6b7faa009590af6ae0fb8c3fd9ffad46d930548fbb5acf473773b4712ae887e156ba91a7b3dc30591ce0f517d69fd83bd9c38650fdc03b4e0bac8
+  languageName: node
+  linkType: hard
+
 "debug@npm:2.6.9, debug@npm:^2.6.0":
   version: 2.6.9
   resolution: "debug@npm:2.6.9"
@@ -13569,6 +13576,7 @@ __metadata:
     chartjs-chart-financial: "npm:^0.2.1"
     chartjs-plugin-annotation: "npm:^3.1.0"
     chartjs-plugin-zoom: "npm:^2.0.1"
+    date-fns: "npm:^4.1.0"
     framer-motion: "npm:^11.10.0"
     lodash: "npm:^4.17.21"
     lucide-react: "npm:^0.453.0"

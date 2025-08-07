@@ -40,6 +40,7 @@ const RAW_RUNTIME_STATE =
           ["chartjs-chart-financial", "virtual:01eb9671084a1f3751f6d9a6b447b153ada1cfa2f1005eafefe00f5f5a2fe4d14d7adea4fdb2ad4f4055bc2abb7da87f92e19da53611443734d3d42236a931b5#npm:0.2.1"],\
           ["chartjs-plugin-annotation", "virtual:01eb9671084a1f3751f6d9a6b447b153ada1cfa2f1005eafefe00f5f5a2fe4d14d7adea4fdb2ad4f4055bc2abb7da87f92e19da53611443734d3d42236a931b5#npm:3.1.0"],\
           ["chartjs-plugin-zoom", "virtual:01eb9671084a1f3751f6d9a6b447b153ada1cfa2f1005eafefe00f5f5a2fe4d14d7adea4fdb2ad4f4055bc2abb7da87f92e19da53611443734d3d42236a931b5#npm:2.2.0"],\
+          ["date-fns", "npm:4.1.0"],\
           ["framer-motion", "virtual:01eb9671084a1f3751f6d9a6b447b153ada1cfa2f1005eafefe00f5f5a2fe4d14d7adea4fdb2ad4f4055bc2abb7da87f92e19da53611443734d3d42236a931b5#npm:11.18.2"],\
           ["lodash", "npm:4.17.21"],\
           ["lucide-react", "virtual:01eb9671084a1f3751f6d9a6b447b153ada1cfa2f1005eafefe00f5f5a2fe4d14d7adea4fdb2ad4f4055bc2abb7da87f92e19da53611443734d3d42236a931b5#npm:0.453.0"],\
@@ -7470,7 +7471,7 @@ const RAW_RUNTIME_STATE =
           ["@types/date-fns", null],\
           ["chart.js", "npm:4.5.0"],\
           ["chartjs-adapter-date-fns", "virtual:01eb9671084a1f3751f6d9a6b447b153ada1cfa2f1005eafefe00f5f5a2fe4d14d7adea4fdb2ad4f4055bc2abb7da87f92e19da53611443734d3d42236a931b5#npm:3.0.0"],\
-          ["date-fns", null]\
+          ["date-fns", "npm:4.1.0"]\
         ],\
         "packagePeers": [\
           "@types/chart.js",\
@@ -8449,6 +8450,13 @@ const RAW_RUNTIME_STATE =
         "packageLocation": "../../../.yarn/berry/cache/date-fns-npm-3.6.0-e59d980978-10c0.zip/node_modules/date-fns/",\
         "packageDependencies": [\
           ["date-fns", "npm:3.6.0"]\
+        ],\
+        "linkType": "HARD"\
+      }],\
+      ["npm:4.1.0", {\
+        "packageLocation": "../../../.yarn/berry/cache/date-fns-npm-4.1.0-764604ee0f-10c0.zip/node_modules/date-fns/",\
+        "packageDependencies": [\
+          ["date-fns", "npm:4.1.0"]\
         ],\
         "linkType": "HARD"\
       }]\
@@ -18587,6 +18595,7 @@ const RAW_RUNTIME_STATE =
           ["chartjs-chart-financial", "virtual:01eb9671084a1f3751f6d9a6b447b153ada1cfa2f1005eafefe00f5f5a2fe4d14d7adea4fdb2ad4f4055bc2abb7da87f92e19da53611443734d3d42236a931b5#npm:0.2.1"],\
           ["chartjs-plugin-annotation", "virtual:01eb9671084a1f3751f6d9a6b447b153ada1cfa2f1005eafefe00f5f5a2fe4d14d7adea4fdb2ad4f4055bc2abb7da87f92e19da53611443734d3d42236a931b5#npm:3.1.0"],\
           ["chartjs-plugin-zoom", "virtual:01eb9671084a1f3751f6d9a6b447b153ada1cfa2f1005eafefe00f5f5a2fe4d14d7adea4fdb2ad4f4055bc2abb7da87f92e19da53611443734d3d42236a931b5#npm:2.2.0"],\
+          ["date-fns", "npm:4.1.0"],\
           ["framer-motion", "virtual:01eb9671084a1f3751f6d9a6b447b153ada1cfa2f1005eafefe00f5f5a2fe4d14d7adea4fdb2ad4f4055bc2abb7da87f92e19da53611443734d3d42236a931b5#npm:11.18.2"],\
           ["lodash", "npm:4.17.21"],\
           ["lucide-react", "virtual:01eb9671084a1f3751f6d9a6b447b153ada1cfa2f1005eafefe00f5f5a2fe4d14d7adea4fdb2ad4f4055bc2abb7da87f92e19da53611443734d3d42236a931b5#npm:0.453.0"],\
