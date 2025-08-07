@@ -13570,6 +13570,7 @@ __metadata:
     chartjs-plugin-annotation: "npm:^3.1.0"
     chartjs-plugin-zoom: "npm:^2.0.1"
     framer-motion: "npm:^11.10.0"
+    lodash: "npm:^4.17.21"
     lucide-react: "npm:^0.453.0"
     moment: "npm:^2.30.1"
     postcss: "npm:^8.4.47"

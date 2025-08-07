@@ -41,6 +41,7 @@ const RAW_RUNTIME_STATE =
           ["chartjs-plugin-annotation", "virtual:01eb9671084a1f3751f6d9a6b447b153ada1cfa2f1005eafefe00f5f5a2fe4d14d7adea4fdb2ad4f4055bc2abb7da87f92e19da53611443734d3d42236a931b5#npm:3.1.0"],\
           ["chartjs-plugin-zoom", "virtual:01eb9671084a1f3751f6d9a6b447b153ada1cfa2f1005eafefe00f5f5a2fe4d14d7adea4fdb2ad4f4055bc2abb7da87f92e19da53611443734d3d42236a931b5#npm:2.2.0"],\
           ["framer-motion", "virtual:01eb9671084a1f3751f6d9a6b447b153ada1cfa2f1005eafefe00f5f5a2fe4d14d7adea4fdb2ad4f4055bc2abb7da87f92e19da53611443734d3d42236a931b5#npm:11.18.2"],\
+          ["lodash", "npm:4.17.21"],\
           ["lucide-react", "virtual:01eb9671084a1f3751f6d9a6b447b153ada1cfa2f1005eafefe00f5f5a2fe4d14d7adea4fdb2ad4f4055bc2abb7da87f92e19da53611443734d3d42236a931b5#npm:0.453.0"],\
           ["moment", "npm:2.30.1"],\
           ["postcss", "npm:8.5.6"],\
@@ -18587,6 +18588,7 @@ const RAW_RUNTIME_STATE =
           ["chartjs-plugin-annotation", "virtual:01eb9671084a1f3751f6d9a6b447b153ada1cfa2f1005eafefe00f5f5a2fe4d14d7adea4fdb2ad4f4055bc2abb7da87f92e19da53611443734d3d42236a931b5#npm:3.1.0"],\
           ["chartjs-plugin-zoom", "virtual:01eb9671084a1f3751f6d9a6b447b153ada1cfa2f1005eafefe00f5f5a2fe4d14d7adea4fdb2ad4f4055bc2abb7da87f92e19da53611443734d3d42236a931b5#npm:2.2.0"],\
           ["framer-motion", "virtual:01eb9671084a1f3751f6d9a6b447b153ada1cfa2f1005eafefe00f5f5a2fe4d14d7adea4fdb2ad4f4055bc2abb7da87f92e19da53611443734d3d42236a931b5#npm:11.18.2"],\
+          ["lodash", "npm:4.17.21"],\
           ["lucide-react", "virtual:01eb9671084a1f3751f6d9a6b447b153ada1cfa2f1005eafefe00f5f5a2fe4d14d7adea4fdb2ad4f4055bc2abb7da87f92e19da53611443734d3d42236a931b5#npm:0.453.0"],\
           ["moment", "npm:2.30.1"],\
           ["postcss", "npm:8.5.6"],\
