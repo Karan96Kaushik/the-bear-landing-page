@@ -114,18 +114,6 @@ const processTrialData = (trialData) => {
 	}
 }
 
-const selectionParams = {
-	TOUCHING_SMA_TOLERANCE: {type: 'number', start: 0.00030, end: 0.00040, step: 0.00005, defaultValue: 0.00045},
-	NARROW_RANGE_TOLERANCE: {type: 'number', start: 0.0040, end: 0.0050, step: 0.0010, defaultValue: 0.0046},
-	WIDE_RANGE_TOLERANCE: {type: 'number', start: 0.0010, end: 0.0020, step: 0.0001, defaultValue: 0.0015},
-	CANDLE_CONDITIONS_SLOPE_TOLERANCE: {type: 'number', start: 1, end: 2, step: 1, defaultValue: 1},
-	BASE_CONDITIONS_SLOPE_TOLERANCE: {type: 'number', start: 1, end: 2, step: 1, defaultValue: 1},
-	MA_WINDOW: {type: 'category', options: [22, 44], defaultValue: 44},
-	MA_WINDOW_5: {type: 'category', options: [22, 44], defaultValue: 22},
-	CHECK_75MIN: {type: 'category', options: [true, false], defaultValue: true},
-	TOUCHING_SMA_15_TOLERANCE: {type: 'number', start: 0.00030, end: 0.00040, step: 0.00005, defaultValue: -1}
-}
-
 const initialSelectionParamOptions = {
   TOUCHING_SMA_TOLERANCE: { type: 'category', options: [0.0003] },
   TOUCHING_SMA_15_TOLERANCE: { type: 'category', options: [0.0003] },
@@ -136,6 +124,7 @@ const initialSelectionParamOptions = {
   MA_WINDOW: { type: 'category', options: [44] },
   MA_WINDOW_5: { type: 'category', options: [22] },
   CHECK_75MIN: { type: 'category', options: [1] },
+  CHECK_NIFTY_50: { type: 'category', options: [1] },
   STOCK_LIST: { type: 'category', options: ['HIGHBETA!D2:D550'] },
 };
 
@@ -362,7 +351,7 @@ const initialState = {
 		updateSL: false,
 		updateSLInterval: 15,
 		updateSLFrequency: 15,
-		targetStopLossRatio: '2:2',
+		targetStopLossRatio: '2:1',
 		marketOrder: false,
 		type: 'zaire'
 	},
@@ -379,7 +368,7 @@ const ShortSellingSimulatorPage = () => {
 	const [selectedResult, setSelectedResult] = useState(null);
 	const [selectedResultData, setSelectedResultData] = useState(null);
 	// const [selectedFunctions, setSelectedFunctions] = useState([]);
-	const [dateRange, setDateRange] = useState([new Date('2025-06-11'), new Date('2025-06-12')]);
+	const [dateRange, setDateRange] = useState([new Date('2025-08-04'), new Date('2025-08-08')]);
 	const [selectedSymbol, setSelectedSymbol] = useState([]);
 	const [pollInterval, setPollInterval] = useState(null);
 	const [pastResults, setPastResults] = useState(() => {
