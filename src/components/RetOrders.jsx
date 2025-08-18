@@ -110,9 +110,9 @@ export default function Orders() {
         datasets: [{
             data: [
                 tradeAnalysis?.summary.zaireTargetExits, 
-                tradeAnalysis?.trades.filter(trade => trade.pnl > 0).length, 
+                tradeAnalysis?.trades.filter(trade => trade.pnl > 0 && trade.exitReason !== 'target').length, 
                 tradeAnalysis?.trades.filter(trade => trade.exitReason === 'stoploss').length, 
-                tradeAnalysis?.trades.filter(trade => trade.pnl < 0).length],
+                tradeAnalysis?.trades.filter(trade => trade.pnl < 0 && trade.exitReason !== 'stoploss').length],
             backgroundColor: [
                 '#6fcccc',
                 '#45c6ed',
