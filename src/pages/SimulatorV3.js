@@ -582,13 +582,13 @@ const ShortSellingSimulatorPage = () => {
 
 		const tzOffset = new Date().getTimezoneOffset() * 60000;
 
-		console.debug(dateRange[0], dateRange[1], tzOffset)
+		// console.debug(dateRange[0], dateRange[1], tzOffset)
 
 		// Set the start and end date to 6 AM to handle UTC tz difference
 		let startDate = new Date(+dateRange[0]-tzOffset).toISOString().split('T')[0];
 		let endDate = new Date(+dateRange[1]-tzOffset).toISOString().split('T')[0];
 
-		console.debug(startDate, endDate)
+		// console.debug(startDate, endDate)
 
 		toast.success(`Starting ${combinations.length} simulations...`);
 
