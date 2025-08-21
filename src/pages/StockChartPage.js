@@ -27,8 +27,8 @@ const StockChartPage = () => {
   const [loading, setLoading] = useState(true);
   const [selectedStock, setSelectedStock] = useState('');
   const [selectedInterval, setSelectedInterval] = useState('15m');
-  const [startDate, setStartDate] = useState(new Date('2025-03-20'));
-  const [endDate, setEndDate] = useState(new Date('2025-03-21'));
+  const [startDate, setStartDate] = useState(new Date('2025-08-18'));
+  const [endDate, setEndDate] = useState(new Date('2025-08-19'));
 
   // Copy the useEffect hooks and other necessary functions from Dashboard.js
   useEffect(() => {
@@ -37,13 +37,20 @@ const StockChartPage = () => {
       try {
         let _startDate = new Date(startDate);
         _startDate.setDate(_startDate.getDate() - 5);
+
+        let _endDate = new Date(endDate);
+        _endDate.setDate(_endDate.getDate() + 1);
+
+        // console.log(_startDate, _endDate)
+
         const [yahooResponse] = await Promise.all([
-          fetchAuthorizedData(`/data/yahoo?symbol=${selectedStock}&interval=${selectedInterval}&startDate=${_startDate.toISOString()}&endDate=${endDate.toISOString()}`)
+          fetchAuthorizedData(`/data/yahoo?symbol=${selectedStock}&interval=${selectedInterval}&startDate=${_startDate.toISOString()}&endDate=${_endDate.toISOString()}`)
         ]);
         yahooResponse.filter(d => d.time > startDate);
         setYahooData(yahooResponse.filter(d => d.time > startDate));
         setLoading(false);
       } catch (err) {
+        console.error(err);
         toast.error('Failed to fetch data');
         setLoading(false);
       }
@@ -195,7 +202,7 @@ const StockChartPage = () => {
           setStartDate={setStartDate}
           endDate={endDate}
           setEndDate={setEndDate}
-          yahooChartData={yahooChartData}
+          data={yahooChartData}
           candlestickOptions={candlestickOptions}
           stocks={stocks}
           ordersData={ordersData}
