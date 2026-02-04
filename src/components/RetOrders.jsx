@@ -227,6 +227,15 @@ export default function Orders() {
 
 
                                 <div className="bg-gray-50 dark:bg-gray-700 p-3 rounded">
+                                    <p className="text-sm text-gray-600 dark:text-gray-300">Benoit P&L</p>
+                                    <p className={`text-xl font-bold ${(tradeAnalysis.summary.benoitPnL) >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                                        ₹{tradeAnalysis.summary.benoitPnL}
+                                    </p>
+                                </div>
+
+
+
+                                <div className="bg-gray-50 dark:bg-gray-700 p-3 rounded">
                                     <p className="text-sm text-gray-600 dark:text-gray-300">Bailey P&L</p>
                                     <p className={`text-xl font-bold ${tradeAnalysis.summary.baileyPnL >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
                                         ₹{tradeAnalysis.summary.baileyPnL}

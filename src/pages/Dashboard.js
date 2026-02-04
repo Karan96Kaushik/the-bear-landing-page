@@ -23,6 +23,10 @@ import moment from 'moment';
 import {toast} from 'react-hot-toast'
 import zoomPlugin from 'chartjs-plugin-zoom';
 
+const user_offset = (new Date().getTimezoneOffset()) / 60;
+const indian_offset = 5.5;
+const OFFSET_TIME = (user_offset + indian_offset)*60*60*1000;
+
 ChartJS.register(
   CategoryScale,
   LinearScale,

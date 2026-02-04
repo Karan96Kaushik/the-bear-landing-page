@@ -14,6 +14,9 @@ import {
 import { CandlestickController, CandlestickElement } from 'chartjs-chart-financial';
 import { enIN } from 'date-fns/locale';
   
+const user_offset = (new Date().getTimezoneOffset()) / 60;
+const indian_offset = 5.5;
+const OFFSET_TIME = (user_offset + indian_offset)*60*60*1000;
 
 const stockOptions = [
   { value: 'AUROPHARMA', label: 'AUROPHARMA' },
@@ -219,13 +222,13 @@ const StockChart = ({
           type: 'line',
           // Conditional x/y min/max based on annotation type
           ...(showVerticalAnnotations ? {
-            xMin: +action.time + (5.5*60*60*1000 * is_timezone),
-            xMax: +action.time + (5.5*60*60*1000 * is_timezone),
+            xMin: +action.time + (OFFSET_TIME * is_timezone),
+            xMax: +action.time + (OFFSET_TIME * is_timezone),
           } : {
             yMin: action.price,
             yMax: action.price,
-            xMin: Math.min(...data?.map(d => +d.time + (5.5*60*60*1000 * is_timezone))),
-            xMax: Math.max(...data?.map(d => +d.time + (5.5*60*60*1000 * is_timezone))),
+            xMin: Math.min(...data?.map(d => +d.time + (OFFSET_TIME * is_timezone))),
+            xMax: Math.max(...data?.map(d => +d.time + (OFFSET_TIME * is_timezone))),
           }),
           borderColor: 
             action?.action.includes('Short') ? 'red' : 

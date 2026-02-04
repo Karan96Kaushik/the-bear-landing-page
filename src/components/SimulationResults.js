@@ -16,6 +16,10 @@ import { ChevronRightIcon } from 'lucide-react';
 // Check if the timezone is IST
 let is_timezone = 1 // 'Europe/London' != Intl.DateTimeFormat().resolvedOptions().timeZone ? 0 : 1;
 
+const user_offset = (new Date().getTimezoneOffset()) / 60;
+const indian_offset = 5.5;
+const OFFSET_TIME = (user_offset + indian_offset)*60*60*1000;
+
 // console.log('is_timezone', is_timezone, Intl.DateTimeFormat().resolvedOptions().timeZone)
 
 // Register the controllers and elements
@@ -68,7 +72,7 @@ const SimulationChart = ({ data, tradeActions, pnl, nseiData, symbol }) => {
         {
           label: 'Stock Price',
           data: data?.map((d) => ({
-            x: +d.time + 5.5*60*60*1000,
+            x: +d.time + OFFSET_TIME,
             o: d.open,
             h: d.high,
             l: d.low,
@@ -82,7 +86,7 @@ const SimulationChart = ({ data, tradeActions, pnl, nseiData, symbol }) => {
         {
           label: 'SMA44',
           data: data?.map((d) => ({
-            x: +d.time + 5.5*60*60*1000,
+            x: +d.time + OFFSET_TIME,
             y: d.sma44
           })) || [],
           type: 'line',
@@ -219,13 +223,13 @@ const SimulationChart = ({ data, tradeActions, pnl, nseiData, symbol }) => {
           type: 'line',
           // Conditional x/y min/max based on annotation type
           ...(showVerticalAnnotations ? {
-            xMin: +action.time + (5.5*60*60*1000 * is_timezone),
-            xMax: +action.time + (5.5*60*60*1000 * is_timezone),
+            xMin: +action.time + (OFFSET_TIME * is_timezone),
+            xMax: +action.time + (OFFSET_TIME * is_timezone),
           } : {
             yMin: action.price,
             yMax: action.price,
-            xMin: Math.min(...data.map(d => +d.time + (5.5*60*60*1000 * is_timezone))),
-            xMax: Math.max(...data.map(d => +d.time + (5.5*60*60*1000 * is_timezone))),
+            xMin: Math.min(...data.map(d => +d.time + (OFFSET_TIME * is_timezone))),
+            xMax: Math.max(...data.map(d => +d.time + (OFFSET_TIME * is_timezone))),
           }),
           borderColor: 
             action?.action.includes('Short') ? 'red' : 
@@ -325,7 +329,7 @@ const SimulationChart = ({ data, tradeActions, pnl, nseiData, symbol }) => {
       <ul className="list-disc pl-5">
         {tradeActions?.map((action, index) => (
           <li key={index} className={`mb-1 ${getActionColor(action)}`}>
-            {new Date(action.time + 5.5*60*60*1000).toLocaleString()}: {action?.action} at {action?.price?.toFixed(2)}
+            {new Date(action.time + OFFSET_TIME).toLocaleString()}: {action?.action} at {action?.price?.toFixed(2)}
           </li>
         ))}
       </ul>
