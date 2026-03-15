@@ -2,6 +2,7 @@ import React from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
+import { showProgressToast } from '../utils/toastHelpers';
 
 function PollingBadge() {
   const navigate = useNavigate();
@@ -12,6 +13,8 @@ function PollingBadge() {
   }
 
   const handleClick = () => {
+    showProgressToast(pollingState.progress, pollingState.timeLeft);
+
     navigate('/simulator-v3');
   };
 

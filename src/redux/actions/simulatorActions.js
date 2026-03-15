@@ -37,6 +37,8 @@ export const CLEAR_ERROR = 'simulator/CLEAR_ERROR';
 export const INCREMENT_RETRY_COUNT = 'simulator/INCREMENT_RETRY_COUNT';
 export const RESET_RETRY_COUNT = 'simulator/RESET_RETRY_COUNT';
 
+export const CANCEL_SIMULATION = 'simulator/CANCEL_SIMULATION';
+
 // Action creators
 export const setSimulationConfig = (config) => ({
   type: SET_SIMULATION_CONFIG,
@@ -70,6 +72,19 @@ export const clearError = () => ({
 export const clearHistory = () => ({
   type: CLEAR_HISTORY
 });
+
+/**
+ * Cancel ongoing simulation and clear polling state
+ */
+export const cancelSimulation = () => {
+  return (dispatch) => {
+    if (pollingIntervalId) {
+      clearInterval(pollingIntervalId);
+      pollingIntervalId = null;
+    }
+    dispatch({ type: CANCEL_SIMULATION });
+  };
+};
 
 // Async thunks
 let pollingIntervalId = null;
@@ -252,11 +267,11 @@ export const startPolling = (jobId, requestParams, dateRange) => {
             payload: {
               currentDate: statusResponse.currentDate,
               progress: progress.overallProgress,
-              startTime: statusResponse.startTime
+              startTime: statusResponse.startTime,
+              timeLeft
             }
           });
 
-          showProgressToast(progress.overallProgress, timeLeft);
         }
       } catch (err) {
         console.error('Error polling simulation status:', err);

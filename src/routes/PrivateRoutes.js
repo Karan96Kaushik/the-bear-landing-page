@@ -11,6 +11,7 @@ import StockChartPage from '../pages/StockChartPage';
 import MyOrdersPage from '../pages/MyOrdersPage';
 import RetOrders from '../components/RetOrders';
 import Dashboard from '../components/Dashboard';
+import CSVViewer from '../pages/CSVViewer';
 
 const routes = [
   { path: '/profile', Component: Profile, name: 'Profile' },
@@ -23,6 +24,7 @@ const routes = [
   { path: '/my-orders', Component: MyOrdersPage, name: 'Orders' },
   { path: '/ret-orders', Component: RetOrders, name: 'Day Dashboard' },
   { path: '/dashboard', Component: Dashboard, name: 'Long Term Dashboard' },
+  { path: '/csv-logs', Component: CSVViewer, name: 'CSV Logs' },
 ];
 
 const PrivateRoutes = () => {

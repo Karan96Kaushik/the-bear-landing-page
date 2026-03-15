@@ -21,7 +21,8 @@ import {
   SET_ERROR,
   CLEAR_ERROR,
   INCREMENT_RETRY_COUNT,
-  RESET_RETRY_COUNT
+  RESET_RETRY_COUNT,
+  CANCEL_SIMULATION
 } from '../actions/simulatorActions';
 import { defaultSimulationState, initialSelectionParamOptions, MAX_HISTORY_ENTRIES } from '../../constants/simulatorConstants';
 
@@ -231,6 +232,21 @@ const simulatorReducer = (state = initialState, action) => {
           retryCount: 0,
           nextRetryDelay: 0
         }
+      };
+      
+    case CANCEL_SIMULATION:
+      return {
+        ...state,
+        pollingState: {
+          ...state.pollingState,
+          isActive: false
+        },
+        loading: {
+          isSimulating: false,
+          isPolling: false,
+          isLoadingChart: false
+        },
+        error: initialState.error
       };
       
     default:
