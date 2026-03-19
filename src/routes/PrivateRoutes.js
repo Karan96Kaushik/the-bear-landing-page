@@ -12,19 +12,21 @@ import MyOrdersPage from '../pages/MyOrdersPage';
 import RetOrders from '../components/RetOrders';
 import Dashboard from '../components/Dashboard';
 import CSVViewer from '../pages/CSVViewer';
+import ManualOrder from '../pages/ManualOrder';
 
 const routes = [
   { path: '/profile', Component: Profile, name: 'Profile' },
   // { path: '/dashboard', Component: Dashboard, name: 'Dashboard' },
   // { path: '/orders', Component: Orders, name: 'Orders' },
   // { path: '/simulator', Component: Simulator, name: 'Simulator' },
-  { path: '/simulator-v2', Component: SimulatorV2, name: 'Simulator V2' },
+  // { path: '/simulator-v2', Component: SimulatorV2, name: 'Simulator V2' },
   { path: '/simulator-v3', Component: SimulatorV3, name: 'Simulator V3' },
-  { path: '/stock-chart', Component: StockChartPage, name: 'Stock Chart' },
+  // { path: '/stock-chart', Component: StockChartPage, name: 'Stock Chart' },
   { path: '/my-orders', Component: MyOrdersPage, name: 'Orders' },
   { path: '/ret-orders', Component: RetOrders, name: 'Day Dashboard' },
   { path: '/dashboard', Component: Dashboard, name: 'Long Term Dashboard' },
   { path: '/csv-logs', Component: CSVViewer, name: 'CSV Logs' },
+  { path: '/manual-order', Component: ManualOrder, name: 'Manual Order' },
 ];
 
 const PrivateRoutes = () => {
