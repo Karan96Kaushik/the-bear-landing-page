@@ -39,6 +39,7 @@ export default function Orders() {
         date: new Date().toISOString().split('T')[0]
     });
     const [tradeAnalysis, setTradeAnalysis] = useState(null);
+    const [slProgression, setSlProgression] = useState({ progression: {}, pricesByStock: {} });
 
     const uniqueSymbols = [...new Set(orders.map(order => order.tradingsymbol))];
     const uniqueActions = [...new Set(orders.map(order => order.action))];
@@ -81,11 +82,21 @@ export default function Orders() {
         }
     };
 
+    const fetchSlProgression = async () => {
+        try {
+            const response = await fetchAuthorizedData(`/db-orders/sl-progression?date=${filters.date}`);
+            setSlProgression(response);
+        } catch (error) {
+            console.error('Error fetching SL progression:', error);
+        }
+    };
+
     useEffect(() => {
         const loadData = async () => {
-            fetchOrders()
-            fetchStats()
+            fetchOrders();
+            fetchStats();
             fetchTradeAnalysis();
+            fetchSlProgression();
         };
         loadData();
     }, [page, filters]);
@@ -378,6 +389,44 @@ export default function Orders() {
                 )}
             </div>
 
+            {Object.keys(slProgression.progression || {}).length > 0 && (
+                <div className="mt-6 bg-white dark:bg-gray-800 rounded-lg shadow-md p-4">
+                    <h3 className="text-lg font-semibold mb-4 dark:text-white">SL Progression</h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                        How stoploss was placed, updated, and exited per stock (list of prices in order).
+                    </p>
+                    <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+                        {Object.entries(slProgression.progression).map(([symbol, list]) => (
+                            <div
+                                key={symbol}
+                                className="border dark:border-gray-700 rounded-lg p-3 bg-gray-50 dark:bg-gray-700/50"
+                            >
+                                <div className="font-semibold text-gray-800 dark:text-white mb-2">{symbol}</div>
+                                <ul className="space-y-1 text-sm">
+                                    {list.map((item, idx) => (
+                                        <li key={idx} className="flex items-center gap-2 flex-wrap">
+                                            <span className="text-gray-600 dark:text-gray-300">
+                                                {item.event === 'sl_placed' && 'SL placed'}
+                                                {item.event === 'sl_updated' && 'SL updated'}
+                                                {item.event === 'exited' && 'Exited'}
+                                            </span>
+                                            <span className="font-medium dark:text-white">₹{Number(item.price).toFixed(2)}</span>
+                                            {item.timestamp && (
+                                                <span className="text-gray-500 dark:text-gray-400 text-xs">
+                                                    {new Date(item.timestamp).toLocaleTimeString()}
+                                                </span>
+                                            )}
+                                        </li>
+                                    ))}
+                                </ul>
+                                <div className="mt-2 pt-2 border-t dark:border-gray-600 text-xs text-gray-500 dark:text-gray-400">
+                                    Prices: {slProgression.pricesByStock?.[symbol]?.map(p => `₹${Number(p).toFixed(2)}`).join(' → ') || '—'}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
 
             <div className="bg-gray-200 dark:bg-gray-800 text-gray-800 dark:text-gray-200 mt-4">
                 <GeneralTable 
