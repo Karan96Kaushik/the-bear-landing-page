@@ -7,13 +7,13 @@ export default function ManualOrder() {
   const [mode, setMode] = useState('direct'); // 'levels' | 'direct'
   const [symbol, setSymbol] = useState('');
   const [direction, setDirection] = useState('BULLISH');
-
+  const [targetPrice, setTargetPrice] = useState('');
 
   // direct mode
   const [triggerPrice, setTriggerPrice] = useState('');
   const [stopLossPrice, setStopLossPrice] = useState('');
   const [quantity, setQuantity] = useState('');
-
+  const [slUpdateInterval, setSlUpdateInterval] = useState('5');
   const [riskAmount, setRiskAmount] = useState(200);
   const [reviseSL, setReviseSL] = useState('15'); // optional
 
@@ -53,9 +53,12 @@ export default function ManualOrder() {
       setResult(resp.result || resp);
       toast.success('Manual order created (check API response)');
     } catch (err) {
+      const responseData = err?.response?.data;
       const msg =
-        err?.response?.data?.message ||
-        err?.response?.data?.error ||
+        (typeof responseData === 'string' ? responseData : undefined) ||
+        responseData?.message ||
+        responseData?.error ||
+        responseData?.errors?.[0]?.message ||
         err?.message ||
         'Failed to create order';
       toast.error(msg);
@@ -138,6 +141,15 @@ export default function ManualOrder() {
                   />
                 </div>
                 <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Target Price</label>
+                  <input
+                    type="number"
+                    value={targetPrice}
+                    onChange={(e) => setTargetPrice(e.target.value)}
+                    className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                  />
+                </div>
+                <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Quantity (optional)</label>
                   <input
                     type="number"
@@ -149,12 +161,23 @@ export default function ManualOrder() {
               </>
             
 
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Revise SL (optional)</label>
+            <div className="md:col-span-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">SL Update Frequency</label>
               <input
                 type="number"
                 value={reviseSL}
                 onChange={(e) => setReviseSL(e.target.value)}
+                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                placeholder="leave empty to use default"
+              />
+            </div>
+
+            <div className="md:col-span-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">SL Update Backlook</label>
+              <input
+                type="number"
+                value={slUpdateInterval}
+                onChange={(e) => setSlUpdateInterval(e.target.value)}
                 className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                 placeholder="leave empty to use default"
               />
