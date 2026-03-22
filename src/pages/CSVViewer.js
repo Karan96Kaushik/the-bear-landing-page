@@ -164,7 +164,7 @@ const CSVViewer = () => {
   const showTableBlock = selectedFile && (headers.length > 0 || total > 0 || hasActiveFilters);
 
   return (
-    <div className="bg-gray-900 dark:bg-gray-950 min-h-screen pt-20 pb-12">
+    <div className="bg-gray-900 dark:bg-gray-900 dark:text-white min-h-screen pt-20 pb-12">
       <div className="container mx-auto px-4">
         <h1 className="text-3xl font-bold mb-6 text-white flex items-center gap-2">
           <FileText className="w-8 h-8" />

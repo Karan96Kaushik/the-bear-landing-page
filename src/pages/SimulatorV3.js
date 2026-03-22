@@ -47,7 +47,7 @@ const ShortSellingSimulatorPage = () => {
   };
 
   return (
-    <div className="bg-gray-900 dark:bg-gray-950 min-h-screen relative">
+    <div className="bg-gray-900 dark:bg-gray-900 dark:text-white min-h-screen relative">
       {/* Simulation Progress - Sticky Header */}
       {/* <SimulationProgress /> */}
       

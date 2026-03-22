@@ -110,7 +110,7 @@ export default function Orders() {
     // if (loading) return <div>Loading...</div>;
 
     return (
-        <div className="container mx-auto pt-20 p-4">
+        <div className="container mx-auto pt-20 p-4 dark:bg-gray-900 dark:text-white">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                 <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md">
                     <div className="p-4 border-b">
