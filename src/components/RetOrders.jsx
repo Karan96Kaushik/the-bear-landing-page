@@ -120,9 +120,9 @@ export default function Orders() {
         ],
         datasets: [{
             data: [
-                tradeAnalysis?.summary.zaireTargetExits, 
-                tradeAnalysis?.trades.filter(trade => trade.pnl > 0 && trade.exitReason !== 'target').length, 
-                tradeAnalysis?.trades.filter(trade => trade.exitReason === 'stoploss').length, 
+                tradeAnalysis?.summary.sourceBreakdown?.find((s) => s.id === 'zaire')?.targetExits ?? 0,
+                tradeAnalysis?.trades.filter(trade => trade.pnl > 0 && trade.exitReason !== 'target').length,
+                tradeAnalysis?.trades.filter(trade => trade.exitReason === 'stoploss').length,
                 tradeAnalysis?.trades.filter(trade => trade.pnl < 0 && trade.exitReason !== 'stoploss').length],
             backgroundColor: [
                 '#6fcccc',
@@ -237,57 +237,24 @@ export default function Orders() {
                                 </div>
 
 
-                                <div className="bg-gray-50 dark:bg-gray-700 p-3 rounded">
-                                    <p className="text-sm text-gray-600 dark:text-gray-300">Benoit P&L</p>
-                                    <p className={`text-xl font-bold ${(tradeAnalysis.summary.benoitPnL) >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-                                        ₹{tradeAnalysis.summary.benoitPnL}
-                                    </p>
-                                </div>
-
-
-
-                                <div className="bg-gray-50 dark:bg-gray-700 p-3 rounded">
-                                    <p className="text-sm text-gray-600 dark:text-gray-300">Bailey P&L</p>
-                                    <p className={`text-xl font-bold ${tradeAnalysis.summary.baileyPnL >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-                                        ₹{tradeAnalysis.summary.baileyPnL}
-                                    </p>
-                                </div>
-                                <div className="bg-gray-50 dark:bg-gray-700 p-3 rounded">
-                                    <p className="text-sm text-gray-600 dark:text-gray-300">Zaire P&L</p>
-                                    <p className={`text-xl font-bold ${tradeAnalysis.summary.zairePnL >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-                                        ₹{tradeAnalysis.summary.zairePnL}
-                                    </p>
-                                </div>
-                                <div className="bg-gray-50 dark:bg-gray-700 p-3 rounded">
-                                    <p className="text-sm text-gray-600 dark:text-gray-300">Lightyear P&L</p>
-                                    <p className={`text-xl font-bold ${tradeAnalysis.summary.lightyearPnL >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-                                        ₹{tradeAnalysis.summary.lightyearPnL}
-                                    </p>
-                                </div>
-
-                                <div className="bg-gray-50 dark:bg-gray-700 p-3 rounded">
-                                    <p className="text-sm text-gray-600 dark:text-gray-300">Bailey Win Rate</p>
-                                    <p className="text-xl font-bold dark:text-white">{tradeAnalysis.summary.baileyWinRate}%</p>
-                                </div>
-                                <div className="bg-gray-50 dark:bg-gray-700 p-3 rounded">
-                                    <p className="text-sm text-gray-600 dark:text-gray-300">Zaire Win Rate</p>
-                                    <p className="text-xl font-bold dark:text-white">{tradeAnalysis.summary.zaireWinRate}%</p>
-                                </div>
-                                <div className="bg-gray-50 dark:bg-gray-700 p-3 rounded">
-                                    <p className="text-sm text-gray-600 dark:text-gray-300">Lightyear Win Rate</p>
-                                    <p className="text-xl font-bold dark:text-white">{tradeAnalysis.summary.lightyearWinRate}%</p>
-                                </div>
-
-                                <div className="bg-gray-50 dark:bg-gray-700 p-3 rounded">
-                                    <p className="text-sm text-gray-600 dark:text-gray-300">Manual P&L</p>
-                                    <p className={`text-xl font-bold ${tradeAnalysis.summary.manualPnL >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-                                        ₹{tradeAnalysis.summary.manualPnL}
-                                    </p>
-                                </div>
-                                <div className="bg-gray-50 dark:bg-gray-700 p-3 rounded">
-                                    <p className="text-sm text-gray-600 dark:text-gray-300">Manual Win Rate</p>
-                                    <p className="text-xl font-bold dark:text-white">{tradeAnalysis.summary.manualWinRate}%</p>
-                                </div>
+                                {(tradeAnalysis.summary.sourceBreakdown || []).map((src) => (
+                                    <React.Fragment key={src.id}>
+                                        <div className="bg-gray-50 dark:bg-gray-700 p-3 rounded">
+                                            <p className="text-sm text-gray-600 dark:text-gray-300">{src.label} P&L</p>
+                                            <p className={`text-xl font-bold ${src.pnl >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                                                ₹{src.pnl}
+                                            </p>
+                                        </div>
+                                        <div className="bg-gray-50 dark:bg-gray-700 p-3 rounded">
+                                            <p className="text-sm text-gray-600 dark:text-gray-300">{src.label} Win Rate</p>
+                                            <p className="text-xl font-bold dark:text-white">{src.winRate}%</p>
+                                        </div>
+                                        <div className="bg-gray-50 dark:bg-gray-700 p-3 rounded">
+                                            <p className="text-sm text-gray-600 dark:text-gray-300">{src.label} Trades</p>
+                                            <p className="text-xl font-bold dark:text-white">{src.trades}</p>
+                                        </div>
+                                    </React.Fragment>
+                                ))}
 
                                 <div className="bg-gray-50 dark:bg-gray-700 p-3 rounded">
                                     <p className="text-sm text-gray-600 dark:text-gray-300">Total Trades</p>
@@ -298,59 +265,7 @@ export default function Orders() {
                                     <p className="text-sm text-gray-600 dark:text-gray-300">Open Trades</p>
                                     <p className="text-xl font-bold dark:text-white">{tradeAnalysis.summary.openTrades}</p>
                                 </div>
-    
-                                <div className="bg-gray-50 dark:bg-gray-700 p-3 rounded">
-                                    <p className="text-sm text-gray-600 dark:text-gray-300">Zaire Trades</p>
-                                    <p className="text-xl font-bold dark:text-white">{tradeAnalysis.summary.zaireTrades}</p>
-                                </div>
-                                {/* <div className="bg-gray-50 p-3 rounded">
-                                    <p className="text-sm text-gray-600">Zaire Target Exits</p>
-                                    <p className="text-xl font-bold">{tradeAnalysis.summary.zaireTargetExits}</p>
-                                </div> */}
-                                {/* <div className="bg-gray-50 p-3 rounded">
-                                    <p className="text-sm text-gray-600">Zaire Stoploss Exits</p>
-                                    <p className="text-xl font-bold">{tradeAnalysis.summary.zaireStopLossExits}</p>
-                                </div>
-                                <div className="bg-gray-50 p-3 rounded">
-                                    <p className="text-sm text-gray-600">Zaire Full Stoploss UD Exits</p>
-                                    <p className="text-xl font-bold">{tradeAnalysis.summary.zaireStopLossUDExits}</p>
-                                </div>
-                                <div className="bg-gray-50 p-3 rounded">
-                                    <p className="text-sm text-gray-600">Zaire Other Exits</p>
-                                    <p className="text-xl font-bold">{tradeAnalysis.summary.zaireOtherExits}</p>
-                                </div> */}
-                                {/* <div className="bg-gray-50 p-3 rounded">
-                                    <p className="text-sm text-gray-600">Manual Trades</p>
-                                    <p className="text-xl font-bold">{tradeAnalysis.summary.manualTrades}</p>
-                                </div>
-                                <div className="bg-gray-50 p-3 rounded">
-                                    <p className="text-sm text-gray-600">Manual Win Rate</p>
-                                    <p className="text-xl font-bold">{tradeAnalysis.summary.manualWinRate}%</p>
-                                </div>
-                                <div className="bg-gray-50 p-3 rounded">
-                                    <p className="text-sm text-gray-600">Manual Target Exits</p>
-                                    <p className="text-xl font-bold">{tradeAnalysis.summary.manualTargetExits}</p>
-                                </div> */}
-                                {/* <div className="bg-gray-50 p-3 rounded">
-                                    <p className="text-sm text-gray-600">Manual Stoploss Exits</p>
-                                    <p className="text-xl font-bold">{tradeAnalysis.summary.manualStopLossExits}</p>
-                                </div>
-                                <div className="bg-gray-50 p-3 rounded">
-                                    <p className="text-sm text-gray-600">Manual Full Stoploss Exits</p>
-                                    <p className="text-xl font-bold">{tradeAnalysis.summary.manualStopLossUDExits}</p>
-                                </div> */}
-                                {/* <div className="bg-gray-50 p-3 rounded">
-                                    <p className="text-sm text-gray-600">Manual Other Exits</p>
-                                    <p className="text-xl font-bold">{tradeAnalysis.summary.manualOtherExits}</p>
-                                </div> */}
-                                {/* <div className="bg-gray-50 p-3 rounded">
-                                    <p className="text-sm text-gray-600">Manual Win Rate</p>
-                                    <p className="text-xl font-bold">{tradeAnalysis.summary.manualWinRate}%</p>
-                                </div> */}
-                                {/* <div className="bg-gray-50 p-3 rounded">
-                                    <p className="text-sm text-gray-600">Bailey Win Rate</p>
-                                    <p className="text-xl font-bold">{tradeAnalysis.summary.baileyWinRate}%</p>
-                                </div> */}
+                                {/* Per-source exit counts: map tradeAnalysis.summary.sourceBreakdown (targetExits, stopLossExits, stopLossUDExits, otherExits). */}
                             </div>
                         </div>
 

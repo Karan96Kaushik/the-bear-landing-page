@@ -41,10 +41,12 @@ export default function ManualOrder() {
     };
 
     payload.triggerPrice = Number(triggerPrice);
+    payload.targetPrice = Number(targetPrice);
     payload.stopLossPrice = Number(stopLossPrice);
     if (quantity !== '') payload.quantity = Number(quantity);
 
     if (reviseSL !== '') payload.reviseSL = Number(reviseSL);
+    if (slUpdateInterval !== '') payload.slInterval = Number(slUpdateInterval);
 
     setLoading(true);
     setResult(null);
