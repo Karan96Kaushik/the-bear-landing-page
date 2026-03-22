@@ -101,7 +101,7 @@ function AppShell() {
       {/* Left sidebar */}
       <aside
         className={[
-          'fixed inset-y-0 left-0 z-50 flex w-56 flex-col border-r border-gray-800 bg-gray-900 transition-transform duration-300 md:transition-[width] md:duration-300',
+          'fixed inset-y-0 left-0 z-50 flex w-56 flex-col border-r border-gray-700 bg-gray-800 transition-transform duration-300 md:transition-[width] md:duration-300',
           mobileNavOpen ? 'translate-x-0' : '-translate-x-full',
           'md:translate-x-0',
           collapsed ? 'md:w-16' : 'md:w-56',
