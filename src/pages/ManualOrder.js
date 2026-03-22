@@ -13,9 +13,9 @@ export default function ManualOrder() {
   const [triggerPrice, setTriggerPrice] = useState('');
   const [stopLossPrice, setStopLossPrice] = useState('');
   const [quantity, setQuantity] = useState('');
-  const [slUpdateInterval, setSlUpdateInterval] = useState('5');
+  const [slUpdateInterval, setSlUpdateInterval] = useState('3');
   const [riskAmount, setRiskAmount] = useState(200);
-  const [reviseSL, setReviseSL] = useState('15'); // optional
+  const [reviseSL, setReviseSL] = useState('9'); // optional
 
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
