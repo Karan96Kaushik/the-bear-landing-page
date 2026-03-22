@@ -70,7 +70,7 @@ export default function ManualOrder() {
   };
 
   return (
-    <div className="container mx-auto pt-20 p-4 bg-gray-800 min-h-screen">
+    <div className="container mx-auto pt-20 p-4 dark:bg-gray-900 dark:text-white min-h-screen">
       <div className="max-w-3xl mx-auto">
         <h1 className="text-3xl font-bold mb-6 text-white">Manual Order</h1>
 
