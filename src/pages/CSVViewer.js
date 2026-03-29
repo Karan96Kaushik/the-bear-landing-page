@@ -11,6 +11,7 @@ import {
   ChevronRight,
   ChevronsRight,
   Filter,
+  ChevronsLeft,
 } from 'lucide-react';
 
 const PAGE_SIZE_OPTIONS = [25, 50, 100, 200];
@@ -330,6 +331,15 @@ const CSVViewer = () => {
                   )}
                 </p>
                 <div className="flex flex-wrap items-center gap-2">
+                <button
+                    type="button"
+                    onClick={() => setPage(1)}
+                    disabled={page == 1 || loading}
+                    className="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <ChevronsLeft className="w-4 h-4" />
+                    First
+                  </button>
                   <button
                     type="button"
                     onClick={() => setPage((p) => Math.max(1, p - 1))}

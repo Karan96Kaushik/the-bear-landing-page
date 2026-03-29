@@ -208,12 +208,13 @@ export const startPolling = (jobId, requestParams, dateRange) => {
           );
           const totalPnl = formattedData.reduce((acc, curr) => acc + curr.pnl, 0);
           const trialData = processTrialData(formattedData);
+          const runId = Date.now();
 
           // Add to history
           dispatch({
             type: ADD_TO_HISTORY,
             payload: {
-              id: Date.now(),
+              id: runId,
               timestamp: new Date().toISOString(),
               params: requestParams,
               dateRange: [dateRange[0].toISOString(), dateRange[1].toISOString()],
@@ -225,6 +226,7 @@ export const startPolling = (jobId, requestParams, dateRange) => {
           dispatch({
             type: ADD_TO_TRIALS,
             payload: {
+              runId,
               results: trialData,
               params: requestParams.simulation,
               selectionParams: requestParams.selectionParams,

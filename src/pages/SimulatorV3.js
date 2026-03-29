@@ -109,7 +109,7 @@ const ShortSellingSimulatorPage = () => {
         <PastResultsTable />
 
         {/* Trial Statistics */}
-        <TrialStatisticsGrid />
+        {/* <TrialStatisticsGrid /> */}
       </div>
     </div>
   );
