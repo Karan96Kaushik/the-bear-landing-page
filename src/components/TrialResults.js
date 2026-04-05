@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import moment from 'moment';
+import { exportSymbolStatsToCSV } from '../utils/csvExport';
 
 export default function TrialResults({ data }) {
   const { params, results, startTime, selectionParams } = data;
@@ -61,6 +62,10 @@ export default function TrialResults({ data }) {
   };
 
   const fmt2 = (n) => (typeof n === 'number' && Number.isFinite(n) ? n.toFixed(2) : 'N/A');
+
+  const hasSymbolStatsForExport =
+    Object.keys(results?.symbolWiseBullishStats || {}).length > 0 ||
+    Object.keys(results?.symbolWiseBearishStats || {}).length > 0;
 
   const renderSymbolStats = (statsBySymbol, directionLabel) => {
     const entries = Object.entries(statsBySymbol || {});
@@ -127,6 +132,16 @@ export default function TrialResults({ data }) {
 
       {renderSection('Symbol Statistics', 'showSymbolStats', (
         <>
+          <div className="flex justify-end mb-2">
+            <button
+              type="button"
+              disabled={!hasSymbolStatsForExport}
+              onClick={() => exportSymbolStatsToCSV(results, startTime)}
+              className="text-sm bg-green-500 text-white px-3 py-1.5 rounded-md hover:bg-green-600 dark:bg-green-600 dark:hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-green-500"
+            >
+              Export symbol statistics CSV
+            </button>
+          </div>
           <div className="text-sm text-gray-600 dark:text-gray-400 mb-1 font-medium">Bullish</div>
           {renderSymbolStats(results.symbolWiseBullishStats, 'BULLISH')}
 
