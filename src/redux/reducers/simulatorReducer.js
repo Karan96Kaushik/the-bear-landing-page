@@ -39,7 +39,8 @@ const initialState = {
     isActive: false,
     currentDate: null,
     progress: 0,
-    startTime: null
+    startTime: null,
+    timeLeft: { minutes: 0, seconds: 0 }
   },
   
   // Results
@@ -121,7 +122,8 @@ const simulatorReducer = (state = initialState, action) => {
           isActive: true,
           currentDate: null,
           progress: 0,
-          startTime: new Date().toISOString()
+          startTime: new Date().toISOString(),
+          timeLeft: { minutes: 0, seconds: 0 }
         },
         loading: { ...state.loading, isPolling: true },
         selectedResult: null,
@@ -135,7 +137,8 @@ const simulatorReducer = (state = initialState, action) => {
           ...state.pollingState,
           currentDate: action.payload.currentDate,
           progress: action.payload.progress,
-          startTime: action.payload.startTime
+          startTime: action.payload.startTime,
+          timeLeft: action.payload.timeLeft || state.pollingState.timeLeft || { minutes: 0, seconds: 0 }
         }
       };
       

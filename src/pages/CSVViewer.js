@@ -204,12 +204,11 @@ const CSVViewer = () => {
         </div>
 
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
-          {loading ? (
-            <div className="p-12 flex items-center justify-center text-gray-500 dark:text-gray-400">
-              <Loader2 className="w-8 h-8 animate-spin mr-2" />
-              Loading file…
+          {!selectedFile ? (
+            <div className="p-12 text-center text-gray-500 dark:text-gray-400">
+              Select a file above to view its contents.
             </div>
-          ) : showTableBlock ? (
+          ) : (
             <>
               <div className="px-4 sm:px-6 py-3 border-b dark:border-gray-700 flex flex-col gap-4">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
@@ -319,83 +318,90 @@ const CSVViewer = () => {
                 </div>
               </div>
 
-              <div className="px-4 sm:px-6 py-3 border-b dark:border-gray-700 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Page {page} of {totalPages}
-                  {total > 0 && (
-                    <span className="text-gray-500 dark:text-gray-500">
-                      {' '}
-                      (showing {(page - 1) * pageSize + 1}–
-                      {Math.min(page * pageSize, total)} of {total.toLocaleString()})
-                    </span>
-                  )}
-                </p>
-                <div className="flex flex-wrap items-center gap-2">
-                <button
-                    type="button"
-                    onClick={() => setPage(1)}
-                    disabled={page == 1 || loading}
-                    className="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    <ChevronsLeft className="w-4 h-4" />
-                    First
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setPage((p) => Math.max(1, p - 1))}
-                    disabled={page <= 1 || loading}
-                    className="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    <ChevronLeft className="w-4 h-4" />
-                    Previous
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                    disabled={page >= totalPages || loading}
-                    className="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    Next
-                    <ChevronRight className="w-4 h-4" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setPage(totalPages)}
-                    disabled={page >= totalPages || loading}
-                    className="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    Last
-                    <ChevronsRight className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
+              {(showTableBlock || loading) && (
+                <>
+                  <div className="px-4 sm:px-6 py-3 border-b dark:border-gray-700 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      Page {page} of {totalPages}
+                      {total > 0 && (
+                        <span className="text-gray-500 dark:text-gray-500">
+                          {' '}
+                          (showing {(page - 1) * pageSize + 1}–
+                          {Math.min(page * pageSize, total)} of {total.toLocaleString()})
+                        </span>
+                      )}
+                    </p>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setPage(1)}
+                        disabled={page == 1 || loading}
+                        className="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <ChevronsLeft className="w-4 h-4" />
+                        First
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setPage((p) => Math.max(1, p - 1))}
+                        disabled={page <= 1 || loading}
+                        className="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <ChevronLeft className="w-4 h-4" />
+                        Previous
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                        disabled={page >= totalPages || loading}
+                        className="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        Next
+                        <ChevronRight className="w-4 h-4" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setPage(totalPages)}
+                        disabled={page >= totalPages || loading}
+                        className="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        Last
+                        <ChevronsRight className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
 
-              <div className="p-4">
-                {rows.length > 0 ? (
-                  <GeneralTable
-                    data={rows}
-                    fields={fields}
-                    stickyHeader
-                    stickyFirstColumn
-                    verticalBorders
-                  />
-                ) : (
-                  <p className="text-center text-gray-500 dark:text-gray-400 py-8">
-                    {hasActiveFilters
-                      ? 'No rows match your search or filter.'
-                      : 'No data in this file.'}
-                  </p>
-                )}
-              </div>
+                  <div className="p-4">
+                    {loading && rows.length === 0 ? (
+                      <div className="py-12 flex items-center justify-center text-gray-500 dark:text-gray-400">
+                        <Loader2 className="w-8 h-8 animate-spin mr-2" />
+                        Loading file…
+                      </div>
+                    ) : rows.length > 0 ? (
+                      <GeneralTable
+                        data={rows}
+                        fields={fields}
+                        stickyHeader
+                        stickyFirstColumn
+                        verticalBorders
+                      />
+                    ) : (
+                      <p className="text-center text-gray-500 dark:text-gray-400 py-8">
+                        {hasActiveFilters
+                          ? 'No rows match your search or filter.'
+                          : 'No data in this file.'}
+                      </p>
+                    )}
+                  </div>
+                </>
+              )}
+
+              {!showTableBlock && !loading && (
+                <div className="p-12 text-center text-gray-500 dark:text-gray-400">
+                  No data in this file.
+                </div>
+              )}
             </>
-          ) : selectedFile ? (
-            <div className="p-12 text-center text-gray-500 dark:text-gray-400">
-              No data in this file.
-            </div>
-          ) : (
-            <div className="p-12 text-center text-gray-500 dark:text-gray-400">
-              Select a file above to view its contents.
-            </div>
           )}
         </div>
       </div>

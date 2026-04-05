@@ -68,7 +68,11 @@ export const showInfoToast = (message, options = {}) => {
  * Show progress toast with custom styling
  */
 export const showProgressToast = (progress, timeLeft) => {
-  toast(`Simulation running: (${progress}%) | ${timeLeft.minutes}m ${timeLeft.seconds}s left`, {
+  const safeProgress = Number.isFinite(progress) ? progress : 0;
+  const minutes = Number.isFinite(timeLeft?.minutes) ? timeLeft.minutes : 0;
+  const seconds = Number.isFinite(timeLeft?.seconds) ? timeLeft.seconds : 0;
+
+  toast(`Simulation running: (${safeProgress}%) | ${minutes}m ${seconds}s left`, {
     duration: 3000,
     icon: '🔍',
     style: {

@@ -10,7 +10,7 @@ export default function TrialResults({ data }) {
       showDailyStats: true,
       showOrderStats: false,
       showWeeklyStats: false,
-      showSymbolStats: false,
+      showSymbolStats: true,
       showDirectionStats: false,
       showHourlyStats: false,
     },
@@ -60,6 +60,43 @@ export default function TrialResults({ data }) {
     );
   };
 
+  const fmt2 = (n) => (typeof n === 'number' && Number.isFinite(n) ? n.toFixed(2) : 'N/A');
+
+  const renderSymbolStats = (statsBySymbol, directionLabel) => {
+    const entries = Object.entries(statsBySymbol || {});
+    if (entries.length === 0) return <div className="text-sm text-gray-400">No {directionLabel} data.</div>;
+
+    const sorted = entries.sort(
+      ([, aStats], [, bStats]) => (bStats?.totalPnl ?? 0) - (aStats?.totalPnl ?? 0)
+    );
+
+    return sorted.map(([symbol, stats]) => {
+      const totalPnl = stats?.totalPnl ?? 0;
+      const trades = stats?.trades ?? 0;
+      const positiveTrades = stats?.positiveTrades ?? 0;
+      const positivePct = trades > 0 ? (positiveTrades * 100) / trades : 0;
+
+      return (
+        <div key={`${directionLabel}-${symbol}`} className="border dark:border-gray-700 rounded-lg p-2 bg-gray-950/10 dark:bg-gray-800">
+          <div className="font-semibold">
+            {symbol} ({directionLabel})
+          </div>
+          <div>
+            Total PnL:{' '}
+            <span className={totalPnl >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}>
+              {fmt2(totalPnl)}
+            </span>
+          </div>
+          <div>
+            Positive Trades: {positiveTrades} / {trades} ({fmt2(positivePct)}%)
+          </div>
+          <div>Mean: {fmt2(stats?.meanPnlPerTrade)}</div>
+          <div>Std Dev: {fmt2(stats?.stdDevPnlPerTrade)}</div>
+        </div>
+      );
+    });
+  };
+
   return (
     <div className="space-y-2 p-2 dark:bg-gray-800 rounded-lg">
         <div className="flex flex-row">
@@ -84,6 +121,17 @@ export default function TrialResults({ data }) {
           <div>Mean PnL per Trade: <span className={results.meanPnlPerTrade >= 0 ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}>{results.meanPnlPerTrade ? results.meanPnlPerTrade?.toFixed(2) : 'N/A'}</span></div>
           <div>Std Dev PnL per Trade: {results.stdDevPnlPerTrade ? results.stdDevPnlPerTrade?.toFixed(2) : 'N/A'}</div>
           <div>Positive Trades: {results.positiveTrades} / {results.totalTrades} ({(results.positiveTrades*100 / results.totalTrades).toFixed(2)}%)</div>
+        </>
+      ))}
+
+
+      {renderSection('Symbol Statistics', 'showSymbolStats', (
+        <>
+          <div className="text-sm text-gray-600 dark:text-gray-400 mb-1 font-medium">Bullish</div>
+          {renderSymbolStats(results.symbolWiseBullishStats, 'BULLISH')}
+
+          <div className="text-sm text-gray-600 dark:text-gray-400 mt-3 mb-1 font-medium">Bearish</div>
+          {renderSymbolStats(results.symbolWiseBearishStats, 'BEARISH')}
         </>
       ))}
 

@@ -5,6 +5,28 @@ import { OFFSET_TIME } from '../constants/simulatorConstants';
  * Process trial data to generate statistics
  */
 export const processTrialData = (trialData) => {
+  const calcPnLStats = (pnls) => {
+    const trades = pnls.length;
+    const totalPnl = pnls.reduce((acc, curr) => acc + curr, 0);
+    const positiveTrades = pnls.filter((pnl) => pnl > 0).length;
+    const positivePercent = trades ? (positiveTrades * 100) / trades : 0;
+    const meanPnlPerTrade = trades ? totalPnl / trades : 0;
+    const variance =
+      trades > 0
+        ? pnls.reduce((acc, val) => acc + Math.pow(val - meanPnlPerTrade, 2), 0) / trades
+        : 0;
+    const stdDevPnlPerTrade = Math.sqrt(variance);
+
+    return {
+      totalPnl,
+      trades,
+      positiveTrades,
+      positivePercent,
+      meanPnlPerTrade,
+      stdDevPnlPerTrade,
+    };
+  };
+
   const dailyPnl = Object.values(
     trialData.reduce((acc, curr) => {
       const date = curr.timestamp.toISOString().split('T')[0];
@@ -50,9 +72,50 @@ export const processTrialData = (trialData) => {
     }, {})
   );
 
-  const meanPnlPerTrade = (trialData.reduce((acc, curr) => acc + curr.pnl, 0) / trialData.length);
-  const stdDevPnlPerTrade = Math.sqrt(trialData.reduce((acc, curr) => acc + Math.pow(curr.pnl - meanPnlPerTrade, 2), 0) / trialData.length);
+  const meanPnlPerTrade = trialData.length
+    ? trialData.reduce((acc, curr) => acc + curr.pnl, 0) / trialData.length
+    : 0;
+  const stdDevPnlPerTrade = trialData.length
+    ? Math.sqrt(
+      trialData.reduce((acc, curr) => acc + Math.pow(curr.pnl - meanPnlPerTrade, 2), 0) / trialData.length
+    )
+    : 0;
   const positiveTrades = trialData.filter(trade => trade.pnl > 0).length;
+
+  // Stock-symbol level bearish/bullish aggregation
+  const symbolWiseBullishPnl = trialData.reduce((acc, curr) => {
+    const direction = typeof curr.direction === 'string' ? curr.direction.toUpperCase() : String(curr.direction || '');
+    if (direction !== 'BULLISH') return acc;
+
+    const symbol = curr.symbol || 'unknown';
+    acc[symbol] = acc[symbol] || [];
+    acc[symbol].push(curr.pnl);
+    return acc;
+  }, {});
+
+  const symbolWiseBearishPnl = trialData.reduce((acc, curr) => {
+    const direction = typeof curr.direction === 'string' ? curr.direction.toUpperCase() : String(curr.direction || '');
+    if (direction !== 'BEARISH') return acc;
+
+    const symbol = curr.symbol || 'unknown';
+    acc[symbol] = acc[symbol] || [];
+    acc[symbol].push(curr.pnl);
+    return acc;
+  }, {});
+
+  const symbolWiseBullishStats = Object.fromEntries(
+    Object.entries(symbolWiseBullishPnl).map(([symbol, pnls]) => [
+      symbol,
+      calcPnLStats(pnls),
+    ])
+  );
+
+  const symbolWiseBearishStats = Object.fromEntries(
+    Object.entries(symbolWiseBearishPnl).map(([symbol, pnls]) => [
+      symbol,
+      calcPnLStats(pnls),
+    ])
+  );
 
   return {
     dailyPnl,
@@ -65,6 +128,10 @@ export const processTrialData = (trialData) => {
     stdDevPnlPerTrade,
     totalPnl,
     totalTrades,
+    symbolWiseBullishPnl,
+    symbolWiseBearishPnl,
+    symbolWiseBullishStats,
+    symbolWiseBearishStats,
   };
 };
 
@@ -202,9 +269,17 @@ export const calculateProgress = (currentDate, dateRange) => {
  * Calculate estimated time remaining
  */
 export const calculateTimeRemaining = (overallProgress, startTime) => {
+  if (!startTime || !Number.isFinite(overallProgress) || overallProgress <= 0) {
+    return { minutes: 0, seconds: 0 };
+  }
+
   const timeSinceStart = new Date() - new Date(startTime);
   const timeSinceStartInMins = timeSinceStart / (1000 * 60);
   const timeLeft = (100 - overallProgress) * timeSinceStartInMins / overallProgress;
+
+  if (!Number.isFinite(timeLeft) || timeLeft <= 0) {
+    return { minutes: 0, seconds: 0 };
+  }
   
   return {
     minutes: parseInt(timeLeft),
