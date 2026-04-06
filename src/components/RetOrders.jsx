@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import GeneralTable from './GeneralTable';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
@@ -40,6 +40,7 @@ export default function Orders() {
     });
     const [tradeAnalysis, setTradeAnalysis] = useState(null);
     const [slProgression, setSlProgression] = useState({ progression: {}, pricesByStock: {} });
+    const [refreshIntervalSec, setRefreshIntervalSec] = useState(15);
 
     const uniqueSymbols = [...new Set(orders.map(order => order.tradingsymbol))];
     const uniqueActions = [...new Set(orders.map(order => order.action))];
@@ -91,15 +92,23 @@ export default function Orders() {
         }
     };
 
+    const loadAllData = () => {
+        fetchOrders();
+        fetchStats();
+        fetchTradeAnalysis();
+        fetchSlProgression();
+    };
+    const loadAllDataRef = useRef(loadAllData);
+    loadAllDataRef.current = loadAllData;
+
     useEffect(() => {
-        const loadData = async () => {
-            fetchOrders();
-            fetchStats();
-            fetchTradeAnalysis();
-            fetchSlProgression();
-        };
-        loadData();
+        loadAllData();
     }, [page, filters]);
+
+    useEffect(() => {
+        const id = setInterval(() => loadAllDataRef.current(), refreshIntervalSec * 1000);
+        return () => clearInterval(id);
+    }, [refreshIntervalSec]);
 
     const handleFilterChange = (e) => {
         const { name, value } = e.target;
@@ -170,7 +179,26 @@ export default function Orders() {
                 </div>
             </div>
 
-            <div className="flex gap-4 mb-4">
+            <div className="flex flex-wrap items-center gap-4 mb-4">
+                <div className="flex items-center gap-2 min-w-[200px]">
+                    <label htmlFor="ret-orders-refresh" className="text-sm whitespace-nowrap text-gray-700 dark:text-gray-300">
+                        Refresh
+                    </label>
+                    <input
+                        id="ret-orders-refresh"
+                        type="range"
+                        min={5}
+                        max={60}
+                        step={1}
+                        value={refreshIntervalSec}
+                        onChange={(e) => setRefreshIntervalSec(Number(e.target.value))}
+                        className="w-28 accent-blue-500"
+                        aria-valuemin={5}
+                        aria-valuemax={60}
+                        aria-valuenow={refreshIntervalSec}
+                    />
+                    <span className="text-sm tabular-nums text-gray-800 dark:text-gray-200 w-10">{refreshIntervalSec}s</span>
+                </div>
                 <input
                     type="date"
                     className="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
