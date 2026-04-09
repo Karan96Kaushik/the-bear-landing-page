@@ -103,7 +103,7 @@ function AdvancedSettings() {
             <>
               <div className="flex flex-col gap-2">
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Update SL Interval (minutes)
+                  Update SL Interval (lookback minutes)
                 </label>
                 <input
                   type="number"
