@@ -22,7 +22,8 @@ const orderFields = [
     { 
         key: 'timestamp', 
         label: 'Timestamp',
-        render: (timestamp) => new Date(timestamp).toLocaleString()
+        render: ts => ts ? new Date(ts).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }) : ''
+   
     }
 ];
 
@@ -356,7 +357,7 @@ export default function Orders() {
                                             <span className="font-medium dark:text-white">₹{Number(item.price).toFixed(2)}</span>
                                             {item.timestamp && (
                                                 <span className="text-gray-500 dark:text-gray-400 text-xs">
-                                                    {new Date(item.timestamp).toLocaleTimeString()}
+                                                    {new Date(item.timestamp).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}
                                                 </span>
                                             )}
                                         </li>
