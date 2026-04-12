@@ -75,19 +75,24 @@ export const stockOptions = [
 
 // Trial stock columns configuration
 export const trialStockColumns = [
-  { key: 'symbol', label: 'Stock' },
-  { key: 'datetime', label: 'Date' },
-  { key: 'quantity', label: 'Quantity' },
-  { key: 'direction', label: 'Direction' },
+  { key: 'symbol', type: 'string', label: 'Stock' },
+  { key: 'datetime', type: 'date', label: 'Date' },
+  { key: 'quantity', type: 'number', label: 'Quantity' },
+  { key: 'direction', type: 'string', label: 'Direction' },
   { 
     key: 'pnl', 
+    type: 'number',
     label: 'P&L', 
     classRenderer: (pnl) => Number(pnl) >= 0 ? 'text-green-600' : 'text-red-600', 
     renderer: (pnl) => pnl?.toFixed(2) 
   },
-  { key: 'triggerPrice', label: 'Trigger Price', renderer: (triggerPrice) => triggerPrice?.toFixed(2) },
-  { key: 'targetPrice', label: 'Target Price', renderer: (targetPrice) => targetPrice?.toFixed(2) },
-  { key: 'stopLossPrice', label: 'Stop Loss Price', renderer: (stopLossPrice) => stopLossPrice?.toFixed(2) }
+  // { key: 'triggerPrice', label: 'Trigger Price', renderer: (triggerPrice) => triggerPrice?.toFixed(2) },
+  // { key: 'targetPrice', label: 'Target Price', renderer: (targetPrice) => targetPrice?.toFixed(2) },
+  // { key: 'stopLossPrice', label: 'Stop Loss Price', renderer: (stopLossPrice) => stopLossPrice?.toFixed(2) },
+  { key: 'exitReason', type: 'string', label: 'Exit Reason', renderer: (exitReason) => exitReason || 'N/A' },
+  { key: 't1*', type: 'string', label: 'T1 Candle', renderer: (scanData) => scanData?.t1Candle?.close > scanData?.t1Candle?.open ? 'Bullish' : 'Bearish' },
+  { key: 't2*', type: 'string', label: 'T2 Candle', renderer: (scanData) => scanData?.t2Candle?.close > scanData?.t2Candle?.open ? 'Bullish' : 'Bearish' },
+  { key: 'vol*', type: 'number', label: 'Vol Ratio', renderer: (scanData) => scanData?.currentCandle?.volume / scanData?.avgVol?.toFixed(4) },
 ];
 
 // Default simulation state

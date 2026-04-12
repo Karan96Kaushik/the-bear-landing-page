@@ -101,8 +101,9 @@ export const startSimulationTrials = () => {
     showSuccessToast(`Starting ${combinations.length} simulations...`);
 
     const tzOffset = new Date().getTimezoneOffset() * 60000;
-    const startDate = new Date(+dateRange[0] - tzOffset).toISOString().split('T')[0];
-    const endDate = new Date(+dateRange[1] - tzOffset).toISOString().split('T')[0];
+
+    const startDate = new Date(+new Date(dateRange[0]) - tzOffset).toISOString().split('T')[0];
+    const endDate = new Date(+new Date(dateRange[1]) - tzOffset).toISOString().split('T')[0];
 
     for (const combination of combinations) {
       try {
@@ -217,7 +218,7 @@ export const startPolling = (jobId, requestParams, dateRange) => {
               id: runId,
               timestamp: new Date().toISOString(),
               params: requestParams,
-              dateRange: [dateRange[0].toISOString(), dateRange[1].toISOString()],
+              dateRange: [new Date(dateRange[0]).toISOString(), new Date(dateRange[1]).toISOString()],
               totalPnl
             }
           });

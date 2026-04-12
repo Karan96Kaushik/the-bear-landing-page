@@ -10,6 +10,8 @@ function SimulationForm() {
   const dispatch = useDispatch();
   const { config, dateRange, selectedSymbols, selectionParams } = useSelector(state => state.simulator);
 
+  console.debug('dateRange', dateRange);
+
   const updateConfig = (key, value) => {
     dispatch(setSimulationConfig({ [key]: value }));
   };
@@ -26,9 +28,9 @@ function SimulationForm() {
           </label>
           <DatePicker
             selectsRange={true}
-            startDate={dateRange[0]}
-            endDate={dateRange[1]}
-            onChange={(update) => dispatch(setDateRange(update))}
+            startDate={dateRange[0] ? new Date(dateRange[0]) : null}
+            endDate={dateRange[1] ? new Date(dateRange[1]) : null}
+            onChange={(update) => {console.debug('update', update); dispatch(setDateRange(update))}}
             dateFormat="yyyy-MM-dd"
             className="px-3 py-2 text-base border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white w-full"
           />

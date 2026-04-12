@@ -219,7 +219,9 @@ export const formatSimulationResults = (result, simulationType) => {
     perDayResults: item.perDayResults,
     triggerPrice: item.triggerPrice,
     targetPrice: item.targetPrice,
-    stopLossPrice: item.stopLossPrice
+    stopLossPrice: item.stopLossPrice,
+    exitReason: item.exitReason,
+    scanData: item.scanData,
   }));
 };
 
