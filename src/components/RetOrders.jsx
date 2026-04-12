@@ -22,7 +22,7 @@ const orderFields = [
     { 
         key: 'timestamp', 
         label: 'Timestamp',
-        render: ts => ts ? new Date(ts).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }) : ''
+        render: ts => ts ? new Date(ts).toISOString().split('T')[1].split('.')[0] : ''//.toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }) : ''
    
     }
 ];

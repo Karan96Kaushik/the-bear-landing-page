@@ -29,8 +29,8 @@ import { defaultSimulationState, initialSelectionParamOptions, MAX_HISTORY_ENTRI
 const initialState = {
   // Configuration
   config: defaultSimulationState,
-  selectionParams: initialSelectionParamOptions.benoit,
-  dateRange: [new Date('2025-10-15'), new Date('2025-10-15')],
+  selectionParams: initialSelectionParamOptions.baxter,
+  dateRange: ['2026-04-06', '2026-04-10'],
   selectedSymbols: [],
   
   // Polling state (persists across navigation)

@@ -29,14 +29,16 @@ export const initialSelectionParamOptions = {
   benoit: {
     TOUCHING_SMA_TOLERANCE: { type: 'category', options: [0.0001] },
     NARROW_RANGE_TOLERANCE: { type: 'category', options: [0.0046] },
-    MA_WINDOW: { type: 'category', options: [22] },
+    MA_WINDOW: { type: 'category', options: [200] },
     STOCK_LIST: { type: 'category', options: ['HIGHBETA!C2:C550'] },
   },
   baxter: {
-    TOUCHING_SMA_TOLERANCE: { type: 'category', options: [0.002] },
-    NARROW_RANGE_TOLERANCE: { type: 'category', options: [0.0046] },
-    MA_WINDOW: { type: 'category', options: [44] },
-    STOCK_LIST: { type: 'category', options: ['HIGHBETA!C2:C550'] },
+    TOUCHING_SMA_TOLERANCE: { type: 'category', options: [0] },
+    NARROW_RANGE_TOLERANCE: { type: 'category', options: [0.01] },
+    MA_WINDOW: { type: 'category', options: [200] },
+    AVG_VOLUME_FACTOR: { type: 'category', options: [1.2] },
+    AVG_VOLUME_COUNT: { type: 'category', options: [10] },
+    STOCK_LIST: { type: 'category', options: ['BAXTER-StockList'] },
   },
   bailey: {
     STOCK_LIST: { type: 'category', options: ['HIGHBETA!C2:C550'] },
@@ -92,14 +94,14 @@ export const trialStockColumns = [
 export const defaultSimulationState = {
   result: null,
   reEnterPosition: true,
-  cancelInMins: 10,
+  cancelInMins: 5,
   updateSL: true,
-  updateSLInterval: 5,
-  updateSLFrequency: 15,
-  targetStopLossRatio: '2:1',
+  updateSLInterval: 15,
+  updateSLFrequency: 5,
+  targetStopLossRatio: '5:1',
   marketOrder: false,
-  type: 'benoit',
-  enableTriggerDoubleConfirmation: true,
+  type: 'baxter',
+  enableTriggerDoubleConfirmation: false,
   enableStopLossDoubleConfirmation: false,
   doubleConfirmationLookbackHours: 3
 };

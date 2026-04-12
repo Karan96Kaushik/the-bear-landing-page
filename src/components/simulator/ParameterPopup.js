@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { setSelectionParams } from '../../redux/actions/simulatorActions';
+import { initialSelectionParamOptions } from '../../constants/simulatorConstants';
 
 function ParameterPopup({ selectionParams, type }) {
   const dispatch = useDispatch();
@@ -21,6 +22,14 @@ function ParameterPopup({ selectionParams, type }) {
   const saveChanges = () => {
     dispatch(setSelectionParams(tempParams));
     closePopup();
+  };
+
+  const resetToDefaults = () => {
+    const defaults =
+      initialSelectionParamOptions[type] || initialSelectionParamOptions.baxter;
+    setTempParams(JSON.parse(JSON.stringify(defaults)));
+    setNewOptionValue('');
+    setSelectedKeyForNewOption('');
   };
 
   const addNewOptionToKey = () => {
@@ -105,19 +114,30 @@ function ParameterPopup({ selectionParams, type }) {
               ))}
             </div>
 
-            <div className="mt-6 flex justify-end space-x-4">
+            <div className="mt-6 flex justify-between items-center gap-4">
               <button
-                onClick={closePopup}
-                className="bg-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-400 dark:bg-gray-600 dark:text-gray-200 dark:hover:bg-gray-500"
+                type="button"
+                onClick={resetToDefaults}
+                className="bg-amber-500 text-white px-4 py-2 rounded-lg hover:bg-amber-600 dark:bg-amber-600 dark:hover:bg-amber-700"
               >
-                Cancel
+                Reset to defaults
               </button>
-              <button
-                onClick={saveChanges}
-                className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700"
-              >
-                Save
-              </button>
+              <div className="flex space-x-4">
+                <button
+                  type="button"
+                  onClick={closePopup}
+                  className="bg-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-400 dark:bg-gray-600 dark:text-gray-200 dark:hover:bg-gray-500"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={saveChanges}
+                  className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700"
+                >
+                  Save
+                </button>
+              </div>
             </div>
           </div>
         </div>
