@@ -78,6 +78,7 @@ export default function Orders() {
     const fetchTradeAnalysis = async () => {
         try {
             const response = await fetchAuthorizedData(`/db-orders/trade-analysis?date=${filters.date}`);
+            response.trades.sort((a, b) => new Date(a.entryTime) - new Date(b.entryTime));
             setTradeAnalysis(response);
         } catch (error) {
             console.error('Error fetching trade analysis:', error);
@@ -307,7 +308,8 @@ export default function Orders() {
                                             <th className="px-4 py-2 dark:text-gray-300">Symbol</th>
                                             <th className="px-4 py-2 dark:text-gray-300">Direction</th>
                                             <th className="px-4 py-2 dark:text-gray-300">Source</th>
-                                            <th className="px-4 py-2 dark:text-gray-300">Exit Reason SL-LTP-TG</th>
+                                            <th className="px-4 py-2 dark:text-gray-300">Start Time</th>
+                                            <th className="px-4 py-2 dark:text-gray-300 max-w-[100px]">Exit Reason SL-LTP-TG</th>
                                             <th className="px-4 py-2 dark:text-gray-300">Status</th>
                                             <th className="px-4 py-2 dark:text-gray-300">P&L</th>
                                         </tr>
@@ -318,6 +320,7 @@ export default function Orders() {
                                                 <td className="px-4 py-2 dark:text-gray-300">{trade.symbol}</td>
                                                 <td className="px-4 py-2 dark:text-gray-300">{trade.direction}</td>
                                                 <td className="px-4 py-2 uppercase dark:text-gray-300">{trade.source}</td>
+                                                <td className="px-4 py-2 dark:text-gray-300">{trade.entryTimeIST.split(' ')[1]}</td>
                                                 <td className="px-4 py-2 capitalize dark:text-gray-300">{trade.exitReason}</td>
                                                 <td className="px-4 py-2 dark:text-gray-300">{trade.status}</td>
                                                 <td className={`px-4 py-2 ${trade.pnl >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
