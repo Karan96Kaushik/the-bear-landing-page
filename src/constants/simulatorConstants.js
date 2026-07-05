@@ -40,6 +40,11 @@ export const initialSelectionParamOptions = {
     AVG_VOLUME_COUNT: { type: 'category', options: [10] },
     STOCK_LIST: { type: 'category', options: ['BAXTER-StockList'] },
   },
+  athena: {
+    EMA_WINDOW: { type: 'category', options: [50] },
+    RISK_AMOUNT: { type: 'category', options: [200] },
+    STOCK_LIST: { type: 'category', options: ['Athena-StockList'] },
+  },
   bailey: {
     STOCK_LIST: { type: 'category', options: ['HIGHBETA!C2:C550'] },
   },

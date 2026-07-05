@@ -2,7 +2,8 @@ import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
-import { setSimulationConfig, setDateRange, setSelectedSymbols } from '../../redux/actions/simulatorActions';
+import { setSimulationConfig, setDateRange, setSelectedSymbols, setSelectionParams } from '../../redux/actions/simulatorActions';
+import { initialSelectionParamOptions } from '../../constants/simulatorConstants';
 import StockSelector from './StockSelector';
 import ParameterPopup from './ParameterPopup';
 
@@ -13,6 +14,11 @@ function SimulationForm() {
   console.debug('dateRange', dateRange);
 
   const updateConfig = (key, value) => {
+    if (key === 'type') {
+      const defaults =
+        initialSelectionParamOptions[value] || initialSelectionParamOptions.baxter;
+      dispatch(setSelectionParams(JSON.parse(JSON.stringify(defaults))));
+    }
     dispatch(setSimulationConfig({ [key]: value }));
   };
 
@@ -46,6 +52,7 @@ function SimulationForm() {
             onChange={(e) => updateConfig('type', e.target.value)}
             className="px-3 py-2 text-base border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white w-full"
           >
+            <option value="athena">Athena</option>
             <option value="benoit">Benoit</option>
             <option value="baxter">Baxter</option>
             <option value="zaire">Zaire</option>

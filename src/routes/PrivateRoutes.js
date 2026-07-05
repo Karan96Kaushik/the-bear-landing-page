@@ -13,6 +13,7 @@ import RetOrders from '../components/RetOrders';
 import Dashboard from '../components/Dashboard';
 import CSVViewer from '../pages/CSVViewer';
 import ManualOrder from '../pages/ManualOrder';
+import NseHistoricalPage from '../pages/NseHistoricalPage';
 
 const routes = [
   { path: '/profile', Component: Profile, name: 'Profile' },
@@ -27,6 +28,7 @@ const routes = [
   { path: '/dashboard', Component: Dashboard, name: 'Long Term Dashboard' },
   { path: '/csv-logs', Component: CSVViewer, name: 'CSV Logs' },
   { path: '/manual-order', Component: ManualOrder, name: 'Manual Order' },
+  { path: '/nse-historical', Component: NseHistoricalPage, name: 'NSE Historical' },
 ];
 
 const PrivateRoutes = () => {

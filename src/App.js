@@ -8,6 +8,7 @@ import {
   Compass,
   FileSpreadsheet,
   FlaskConical,
+  History,
   Home,
   Info,
   LayoutDashboard,
@@ -41,6 +42,7 @@ const NAV_ICON_BY_PATH = {
   '/dashboard': LineChart,
   '/csv-logs': FileSpreadsheet,
   '/manual-order': PenLine,
+  '/nse-historical': History,
 };
 
 function AppShell() {
